@@ -1,0 +1,64 @@
+<!-- 待整理收件箱页面 -->
+<view class="page">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="header-title">待整理</text>
+    <view class="header-badge" wx:if="{{unreadCount > 0}}">{{unreadCount}}</view>
+    <view class="header-placeholder" wx:else></view>
+  </view>
+
+  <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="empty-state" wx:if="{{items.length === 0}}">
+      <text class="empty-icon">✅</text>
+      <text class="empty-title">全部整理完毕</text>
+      <text class="empty-desc">拍照后的识别结果会出现在这里</text>
+    </view>
+
+    <view class="inbox-list" wx:else>
+      <view class="tip-banner">
+        <text>💡 左滑删除废片，右滑确认入账</text>
+      </view>
+
+      <view class="inbox-item" wx:for="{{items}}" wx:key="id">
+        <!-- 缩略图 -->
+        <image class="item-thumb" src="{{item.image_url || item.image_local}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.image_url || item.image_local}}"/>
+
+        <!-- 信息 -->
+        <view class="item-info">
+          <!-- 处理中 -->
+          <view wx:if="{{item.status === 'processing'}}" class="status-processing">
+            <text class="spinner">⏳</text>
+            <text class="status-text">AI 识别中...</text>
+          </view>
+
+          <!-- 待确认 -->
+          <view wx:elif="{{item.status === 'pending' && item.ai_result}}" class="result-pending">
+            <view class="result-top">
+              <text class="result-amount {{item.ai_result.confidence < 0.6 ? 'uncertain' : ''}}">
+                ¥{{item.ai_result.amountYuan || '?'}}
+              </text>
+              <view class="confidence-badge {{item.ai_result.confidence >= 0.8 ? 'high' : 'low'}}">
+                {{item.ai_result.confidence >= 0.8 ? '高置信' : '低置信'}}
+              </view>
+            </view>
+            <text class="result-category">{{item.ai_result.category_name || '未分类'}}</text>
+            <text class="result-note" wx:if="{{item.ai_result.note}}">{{item.ai_result.note}}</text>
+            <view class="result-actions">
+              <button class="btn-confirm" size="mini" bindtap="onConfirm" data-id="{{item.id}}">✓ 确认入账</button>
+              <button class="btn-edit" size="mini" bindtap="onEdit" data-id="{{item.id}}">修改</button>
+              <button class="btn-reject" size="mini" bindtap="onReject" data-id="{{item.id}}">✕ 删除</button>
+            </view>
+          </view>
+
+          <!-- 识别失败 -->
+          <view wx:elif="{{item.status === 'error'}}" class="status-error">
+            <text class="status-text">识别失败</text>
+            <button class="btn-retry" size="mini" bindtap="onRetry" data-id="{{item.id}}">重新识别</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

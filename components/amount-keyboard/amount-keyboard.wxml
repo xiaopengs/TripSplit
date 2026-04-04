@@ -1,0 +1,16 @@
+<!-- 金额键盘组件 -->
+<view class="keyboard">
+  <view class="key-row" wx:for="{{keys}}" wx:key="index">
+    <view 
+      class="key {{item === '' ? 'empty' : (item === '⌫' ? 'backspace' : 'num')}}"
+      wx:for="{{item}}"
+      wx:for-item="k"
+      wx:key="*this"
+      catchtap="onKeyTap"
+      data-key="{{k}}"
+      hover-class="key-hover"
+    >
+      <text class="key-text">{{k}}</text>
+    </view>
+  </view>
+</view>

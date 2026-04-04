@@ -1,0 +1,108 @@
+/* === 拼途记账 - 全局样式变量 === */
+page {
+  /* Brand */
+  --color-primary: #34C759;
+  --color-primary-light: #5ED47A;
+  --color-primary-dark: #248A3D;
+  --color-secondary: #FF9500;
+  --color-accent: #5856D6;
+
+  /* Semantic */
+  --color-success: #34C759;
+  --color-warning: #FFCC00;
+  --color-danger: #FF3B30;
+  --color-info: #007AFF;
+
+  /* Text */
+  --text-primary: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --text-tertiary: #AEAEB2;
+  --text-white: #FFFFFF;
+  --text-on-primary: #FFFFFF;
+
+  /* Backgrounds */
+  --bg-primary: #F2F2F7;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-mask: rgba(0, 0, 0, 0.45);
+
+  /* Borders */
+  --border-color: #E5E5EA;
+  --border-radius-sm: 8rpx;
+  --border-radius-md: 16rpx;
+  --border-radius-lg: 24rpx;
+  --border-radius-xl: 32rpx;
+
+  /* Spacing */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  /* Shadows */
+  --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.14);
+
+  /* Animation */
+  --spring-curve: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+/* === Reset === */
+view, text, image, button, input, textarea {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  line-height: inherit;
+}
+
+button::after {
+  border: none;
+}
+
+/* === Utility Classes === */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-row { display: flex; flex-direction: row; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-1 { flex: 1; }
+.flex-wrap { flex-wrap: wrap; }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
+
+.font-bold { font-weight: 600; }
+.font-amount { font-size: var(--font-amount); font-weight: 700; color: var(--color-primary); }
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.p-md { padding: var(--spacing-md); }
+
+/* Safe area bottom for FAB */
+.safe-bottom { padding-bottom: calc(120rpx + env(safe-area-inset-bottom)); }

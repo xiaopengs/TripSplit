@@ -1,0 +1,74 @@
+<!-- 账单详情页 -->
+<view class="page">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="header-title">账单详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}" wx:if="{{bill}}">
+    <!-- 顶部类目卡片 -->
+    <view class="top-card">
+      <text class="cat-icon-lg">{{bill.category_icon}}</text>
+      <text class="amount">{{bill.amountDisplay}}</text>
+      <text class="cat-name">{{bill.category_name}}</text>
+      <text class="note" wx:if="{{bill.note}}">{{bill.note}}</text>
+    </view>
+
+    <!-- 信息 -->
+    <view class="info-card">
+      <view class="info-row">
+        <text class="label">支付人</text>
+        <text class="value">{{bill.payer_name}}</text>
+      </view>
+      <view class="info-row">
+        <text class="label">时间</text>
+        <text class="value">{{bill.timeDisplay}}</text>
+      </view>
+      <view class="info-row">
+        <text class="label">来源</text>
+        <text class="value">{{bill.source === 'manual' ? '手动记账' : 'AI 拍照'}}</text>
+      </view>
+    </view>
+
+    <!-- 分摊明细 -->
+    <view class="split-card" wx:if="{{bill.splits && bill.splits.length > 0}}">
+      <text class="card-title">分摊明细</text>
+      <view class="split-item" wx:for="{{bill.splits}}" wx:key="member_id">
+        <view class="split-left">
+          <text class="split-name">{{item.name}}</text>
+          <text class="shadow-tag" wx:if="{{item.is_shadow}}">影子</text>
+        </view>
+        <text class="split-amount">{{item.shareDisplay}}</text>
+      </view>
+      <view class="split-total">
+        <text>合计</text>
+        <text class="total-amount">{{bill.amountDisplay}}</text>
+      </view>
+    </view>
+
+    <!-- 图片 -->
+    <view class="images-card" wx:if="{{bill.images && bill.images.length > 0}}">
+      <text class="card-title">附件</text>
+      <view class="images-list">
+        <image 
+          class="detail-img" 
+          wx:for="{{bill.images}}" 
+          wx:key="*this"
+          src="{{item}}" 
+          mode="aspectFill" 
+          bindtap="previewImage" 
+          data-url="{{item}}"
+        />
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="actions">
+      <button class="btn-edit" bindtap="onEdit">编辑</button>
+      <button class="btn-delete" bindtap="onDelete">删除账单</button>
+    </view>
+  </scroll-view>
+</view>

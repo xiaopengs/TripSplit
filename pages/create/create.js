@@ -1,0 +1,148 @@
+/**
+ * 创建账本页面
+ */
+const bookService = require('../../services/book.service')
+const { SKIN_COLORS, CURRENCIES } = require('../../utils/constants')
+const { formatDate } = require('../../utils/date')
+const locationUtil = require('../../utils/location')
+
+Page({
+  data: {
+    bookName: '',
+    currencies: [],
+    currencyIndex: 0,
+    startDate: '',
+    skinColors: SKIN_COLORS,
+    selectedSkinIndex: Math.floor(Math.random() * SKIN_COLORS.length),
+    selectedSkinColor: SKIN_COLORS[0].value,
+    shadowMembers: [],
+    newShadowName: '',
+    canCreate: false
+  },
+
+  onLoad() {
+    const displayCurrencies = CURRENCIES.map(c => ({
+      ...c,
+      display: `${c.flag} ${c.name} (${c.symbol})`
+    }))
+
+    this.setData({
+      currencies: displayCurrencies,
+      startDate: formatDate(new Date()),
+      selectedSkinColor: SKIN_COLORS[this.data.selectedSkinIndex].value
+    })
+  },
+
+  onNameInput(e) {
+    const name = e.detail.value
+    this.setData({ bookName: name, canCreate: name.trim().length > 0 })
+  },
+
+  onCurrencyChange(e) {
+    this.setData({ currencyIndex: parseInt(e.detail.value) })
+  },
+
+  onDateChange(e) {
+    this.setData({ startDate: e.detail.value })
+  },
+
+  onSkinTap(e) {
+    const index = e.currentTarget.dataset.index
+    const color = e.currentTarget.dataset.color
+    wx.vibrateShort({ type: 'light' })
+    this.setData({ selectedSkinIndex: index, selectedSkinColor: color })
+  },
+
+  onShadowInput(e) {
+    this.setData({ newShadowName: e.detail.value })
+  },
+
+  addShadowMember() {
+    const name = this.data.newShadowName.trim()
+    if (!name) {
+      wx.showToast({ title: '请输入成员名称', icon: 'none' })
+      return
+    }
+
+    if (this.data.shadowMembers.includes(name)) {
+      wx.showToast({ title: '该成员已添加', icon: 'none' })
+      return
+    }
+
+    if (this.data.shadowMembers.length >= 20) {
+      wx.showToast({ title: '最多添加20个成员', icon: 'none' })
+      return
+    }
+
+    this.setData({
+      shadowMembers: [...this.data.shadowMembers, name],
+      newShadowName: ''
+    })
+    wx.vibrateShort({ type: 'light' })
+  },
+
+  removeShadow(e) {
+    const index = e.currentTarget.dataset.index
+    const list = [...this.data.shadowMembers]
+    list.splice(index, 1)
+    this.setData({ shadowMembers: list })
+  },
+
+  onAutoDetect() {
+    wx.showLoading({ title: '定位中...', mask: true })
+    
+    locationUtil.getLocation()
+      .then(loc => {
+        wx.hideLoading()
+        const currency = locationUtil.detectCurrency(loc.city, '')
+        
+        const idx = this.data.currencies.findIndex(c => c.code === currency)
+        if (idx > -1) {
+          this.setData({ currencyIndex: idx })
+          wx.showToast({ title: `检测到 ${this.data.currencies[idx].name}`, icon: 'success' })
+        } else {
+          wx.showToast({ title: '默认使用人民币', icon: 'none' })
+        }
+      })
+      .catch(err => {
+        wx.hideLoading()
+        wx.showToast({ title: '定位失败，使用默认币种', icon: 'none' })
+      })
+  },
+
+  goBack() {
+    wx.navigateBack()
+  },
+
+  onCreate() {
+    if (!this.data.canCreate) return
+
+    wx.showLoading({ title: '创建中...', mask: true })
+
+    try {
+      const currency = this.data.currencies[this.data.currencyIndex]
+      
+      const book = bookService.createBook({
+        name: this.data.bookName.trim(),
+        currency: currency.code,
+        currencySymbol: currency.symbol,
+        coverColor: this.data.skinColors[this.data.selectedSkinIndex].value,
+        startDate: this.data.startDate,
+        creatorId: '', // TODO: 获取用户 openid
+        creatorName: '我',
+        shadowMembers: this.data.shadowMembers
+      })
+
+      wx.hideLoading()
+      wx.showToast({ title: '创建成功', icon: 'success' })
+
+      setTimeout(() => {
+        wx.switchTab({ url: '/pages/index/index' })
+      }, 500)
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: '创建失败', icon: 'none' })
+      console.error('Create book error:', err)
+    }
+  }
+})

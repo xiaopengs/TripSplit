@@ -1,0 +1,246 @@
+/* 创建账本页样式 */
+.page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部 */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 24rpx;
+  padding-top: calc(16rpx + env(safe-area-inset-top));
+  background: white;
+}
+
+.back-btn {
+  width: 64rpx; height: 64rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  color: var(--text-primary);
+}
+
+.header-title {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.header-placeholder {
+  width: 64rpx;
+}
+
+/* 表单区域 */
+.form-area {
+  flex: 1;
+  padding: 0 32rpx;
+  padding-bottom: 200rpx;
+}
+
+/* Logo */
+.logo-section {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0 32rpx;
+}
+
+.logo-wrap {
+  width: 120rpx; height: 120rpx;
+  border-radius: var(--border-radius-xl);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: background 200ms ease;
+}
+
+.logo-text {
+  font-size: 56rpx;
+}
+
+/* 表单项 */
+.form-item {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.form-hint {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 16rpx 20rpx;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.char-count {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  text-align: right;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* Picker */
+.picker-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+  font-size: 28rpx;
+}
+
+.picker-arrow {
+  font-size: 36rpx;
+  color: var(--text-tertiary);
+}
+
+.auto-detect {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: var(--color-info);
+  text-align: right;
+}
+
+/* 皮肤选择 */
+.skin-grid {
+  display: flex;
+  gap: 20rpx;
+  flex-wrap: wrap;
+  margin-bottom: 8rpx;
+}
+
+.skin-item {
+  width: 80rpx; height: 80rpx;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 4rpx solid transparent;
+  transition: all 150ms ease;
+  position: relative;
+}
+
+.skin-item.active {
+  border-color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.skin-check {
+  color: white;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.skin-name {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  display: block;
+  text-align: center;
+  margin-top: 8rpx;
+}
+
+/* 影子成员 */
+.shadow-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.shadow-tag {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  background: #FFF9E6;
+  border: 1rpx solid #FFE4A0;
+  border-radius: 24rpx;
+  font-size: 26rpx;
+  color: #8B6914;
+}
+
+.shadow-remove {
+  color: #B8922A;
+  font-size: 24rpx;
+  width: 32rpx; height: 32rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.add-shadow-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.shadow-input {
+  flex: 1;
+  padding: 16rpx 20rpx;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
+  font-size: 28rpx;
+}
+
+.add-shadow-btn {
+  padding: 16rpx 28rpx;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  font-size: 26rpx;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  white-space: nowrap;
+}
+
+/* 底部按钮 */
+.bottom-area {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: white;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+}
+
+.btn-create {
+  width: 100%;
+  padding: 24rpx 0;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(52,199,89,0.35);
+}
+
+.btn-create.disabled {
+  opacity: 0.5;
+}
+
+.hover-opacity {
+  opacity: 0.7;
+}

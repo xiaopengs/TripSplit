@@ -1,0 +1,67 @@
+<!-- 成员管理页面 -->
+<view class="page">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="header-title">成员管理</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 邀请卡片 -->
+    <view class="invite-card" bindtap="onShare" hover-class="hover-opacity">
+      <view class="invite-left">
+        <text class="invite-icon">🔗</text>
+        <view>
+          <text class="invite-title">邀请好友加入账本</text>
+          <text class="invite-desc">分享链接给好友，可认领影子身份</text>
+        </view>
+      </view>
+      <text class="invite-arrow">›</text>
+    </view>
+
+    <!-- 已加入成员 -->
+    <view class="section" wx:if="{{realMembers.length > 0}}">
+      <text class="section-title">已加入 ({{realMembers.length}})</text>
+      <view class="member-list">
+        <view class="member-item" wx:for="{{realMembers}}" wx:key="id">
+          <view class="avatar admin">{{(item.nickname || '?')[0]}}</view>
+          <view class="member-info">
+            <text class="name">{{item.nickname}}</text>
+            <text class="sub">{{item.role === 'admin' ? '管理员' : '成员'}} · 已加入</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 影子成员 -->
+    <view class="section" wx:if="{{shadowMembers.length > 0}}">
+      <text class="section-title">影子成员 ({{shadowMembers.length}})</text>
+      <view class="shadow-tip">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">好友扫码后可认领对应身份，历史记录自动迁移</text>
+      </view>
+      <view class="member-list">
+        <view class="member-item shadow" wx:for="{{shadowMembers}}" wx:key="id">
+          <view class="avatar shadow-avatar">👤</view>
+          <view class="member-info">
+            <view class="name-row">
+              <text class="name">{{item.shadow_name}}</text>
+              <text class="tag" wx:if="{{!item.is_claimed}}">待认领</text>
+              <text class="tag claimed" wx:else>已认领</text>
+            </view>
+            <text class="sub">等待真实用户绑定</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 添加影子成员 -->
+    <view class="add-section">
+      <button class="btn-add" bindtap="onAddShadow">
+        <text>+ 添加影子成员</text>
+      </button>
+    </view>
+  </scroll-view>
+</view>

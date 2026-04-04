@@ -1,0 +1,120 @@
+/* FAB 扇形菜单样式 */
+.fab-container {
+  position: fixed;
+  z-index: 999;
+  right: 24rpx;
+  bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.fab-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-mask);
+  z-index: -1;
+}
+
+/* 主按钮 */
+.fab-main {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 8rpx 32rpx rgba(52,199,89,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+.fab-main.open {
+  animation: fabBounce 200ms var(--spring-curve);
+}
+
+.fab-static {
+  animation: none;
+}
+
+.fab-hover {
+  opacity: 0.85;
+  transform: scale(0.95);
+}
+
+.fab-plus {
+  color: white;
+  font-size: 56rpx;
+  font-weight: 300;
+  line-height: 1;
+  transition: transform 200ms var(--spring-curve);
+}
+
+.fab-plus.rotated {
+  transform: rotate(45deg);
+  display: block;
+}
+
+/* 子按钮 */
+.fab-sub-buttons {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.sub-btn {
+  position: absolute;
+  width: 220rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: white;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx 0 16rpx;
+  transition: all 200ms var(--spring-curve);
+  white-space: nowrap;
+}
+
+.sub-btn-left {
+  right: 100rpx;
+  top: -16rpx;
+  flex-direction: row-reverse;
+}
+
+.sub-btn-right {
+  left: 100rpx;
+  top: -16rpx;
+}
+
+.sub-btn-hover {
+  transform: scale(0.95) !important;
+  opacity: 0.9 !important;
+}
+
+.sub-btn-icon {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.sub-btn-label {
+  font-size: 26rpx;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* 动画 */
+@keyframes fabBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}

@@ -1,0 +1,127 @@
+<!-- 创建账本页 -->
+<view class="page">
+  <view class="header">
+    <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="header-title">新建账本</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <scroll-view class="form-area" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- Logo -->
+    <view class="logo-section">
+      <view class="logo-wrap" style="background: {{selectedSkinColor}}">
+        <text class="logo-text">🧩</text>
+      </view>
+    </view>
+
+    <!-- 账本名称 -->
+    <view class="form-item">
+      <text class="form-label">账本名称</text>
+      <input 
+        class="form-input" 
+        placeholder="例如：曼谷大吃大喝之旅"
+        value="{{bookName}}"
+        bindinput="onNameInput"
+        maxlength="20"
+        focus="{{true}}"
+      />
+      <text class="char-count">{{bookName.length}}/20</text>
+    </view>
+
+    <!-- 币种选择 -->
+    <view class="form-item">
+      <text class="form-label">默认币种</text>
+      <picker 
+        mode="selector" 
+        range="{{currencies}}" 
+        range-key="display"
+        value="{{currencyIndex}}"
+        bindchange="onCurrencyChange"
+      >
+        <view class="picker-value">
+          <text>{{currencies[currencyIndex].flag}} {{currencies[currencyIndex].name}} ({{currencies[currencyIndex].symbol}})</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+      <view class="auto-detect" bindtap="onAutoDetect" hover-class="hover-opacity">
+        <text>📍 自动检测</text>
+      </view>
+    </view>
+
+    <!-- 开始日期 -->
+    <view class="form-item">
+      <text class="form-label">开始日期</text>
+      <picker 
+        mode="date" 
+        value="{{startDate}}" 
+        bindchange="onDateChange"
+      >
+        <view class="picker-value">
+          <text>{{startDate}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 视觉皮肤 -->
+    <view class="form-item">
+      <text class="form-label">视觉皮肤</text>
+      <view class="skin-grid">
+        <view 
+          class="skin-item {{selectedSkinIndex === index ? 'active' : ''}}"
+          wx:for="{{skinColors}}"
+          wx:key="value"
+          bindtap="onSkinTap"
+          data-index="{{index}}"
+          data-color="{{item.value}}"
+          style="background: {{item.value}}"
+        >
+          <text class="skin-check" wx:if="{{selectedSkinIndex === index}}">✓</text>
+        </view>
+      </view>
+      <text class="skin-name">{{skinColors[selectedSkinIndex].name}}</text>
+    </view>
+
+    <!-- 影子成员 -->
+    <view class="form-item">
+      <view class="form-row">
+        <text class="form-label">影子成员</text>
+        <text class="form-hint">可先预设成员，后期扫码认领</text>
+      </view>
+
+      <!-- 已添加的影子成员 -->
+      <view class="shadow-list">
+        <view class="shadow-tag" wx:for="{{shadowMembers}}" wx:key="index">
+          <text>👤 {{item}}</text>
+          <text class="shadow-remove" data-index="{{index}}" catchtap="removeShadow">✕</text>
+        </view>
+      </view>
+
+      <!-- 添加输入 -->
+      <view class="add-shadow-row">
+        <input 
+          class="shadow-input" 
+          placeholder="输入成员名称"
+          value="{{newShadowName}}"
+          bindinput="onShadowInput"
+          bindconfirm="addShadowMember"
+          maxlength="10"
+        />
+        <view class="add-shadow-btn" bindtap="addShadowMember" hover-class="hover-opacity">
+          <text>+ 添加</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部创建按钮 -->
+  <view class="bottom-area">
+    <button 
+      class="btn-create {{canCreate ? '' : 'disabled'}}"
+      bindtap="onCreate"
+      disabled="{{!canCreate}}"
+    >创建账本</button>
+  </view>
+</view>

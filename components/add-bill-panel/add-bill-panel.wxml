@@ -1,0 +1,128 @@
+<!-- 手动记账 - 半屏模态面板 -->
+<view class="panel-mask" wx:if="{{visible}}" bindtap="onClose" catchtouchmove="preventMove"></view>
+
+<view class="panel-container {{visible ? 'show' : ''}}">
+  <!-- 头部 -->
+  <view class="panel-header">
+    <text class="panel-title">记一笔</text>
+    <view class="close-btn" bindtap="onClose">
+      <text>✕</text>
+    </view>
+  </view>
+
+  <!-- 滚动区域 -->
+  <scroll-view class="panel-body" scroll-y enhanced show-scrollbar="{{false}}">
+    <!-- 金额显示 -->
+    <view class="amount-display">
+      <text class="amount-symbol">{{currencySymbol}}</text>
+      <text class="amount-value">{{displayValue || '0.00'}}</text>
+    </view>
+
+    <!-- 类目选择 -->
+    <view class="section">
+      <text class="section-label">选择类目</text>
+      <view class="category-grid">
+        <view 
+          class="category-tile {{selectedCategory === item.key ? 'active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="key"
+          bindtap="onCategoryTap"
+          data-key="{{item.key}}"
+        >
+          <text class="cat-icon">{{item.icon}}</text>
+          <text class="cat-name">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分摊成员 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-label">分摊给</text>
+        <view class="split-mode-switch" bindtap="toggleSplitMode">
+          <text>{{splitMode === 'equal' ? '均分' : '自定义'}}</text>
+        </view>
+      </view>
+
+      <!-- 均分模式 -->
+      <view class="member-avatars" wx:if="{{splitMode === 'equal'}}">
+        <view 
+          class="member-avatar {{selectedMembers.indexOf(item.id) > -1 ? 'selected' : ''}} {{item.type === 'shadow' ? 'shadow' : ''}}"
+          wx:for="{{members}}"
+          wx:key="id"
+          bindtap="toggleMember"
+          data-id="{{item.id}}"
+        >
+          <text class="avatar-text">{{(item.nickname || item.shadow_name || '?')[0]}}</text>
+          <view class="check-mark" wx:if="{{selectedMembers.indexOf(item.id) > -1}}">✓</view>
+          <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">影</view>
+        </view>
+
+        <!-- 均分预览 -->
+        <view class="share-preview" wx:if="{{selectedMembers.length > 0 && amount > 0}}">
+          <text>每人 {{perPersonAmount}}</text>
+        </view>
+      </view>
+
+      <!-- 自定义模式 -->
+      <view class="custom-splits" wx:else>
+        <view class="custom-split-item" wx:for="{{members}}" wx:key="id">
+          <text class="cs-name">{{item.nickname || item.shadow_name || '?'}}</text>
+          <input 
+            class="cs-input" 
+            type="digit" 
+            placeholder="金额"
+            value="{{customSplitValues[item.id] || ''}}"
+            bindinput="onCustomInput"
+            data-id="{{item.id}}"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-label">备注</text>
+      </view>
+      <input 
+        class="note-input" 
+        placeholder="添加备注..."
+        value="{{note}}"
+        bindinput="onNoteInput"
+        maxlength="50"
+      />
+      
+      <!-- 图片上传 -->
+      <view class="image-upload-area">
+        <view class="uploaded-images">
+          <image 
+            class="upload-thumb" 
+            wx:for="{{images}}"
+            wx:key="*this"
+            src="{{item}}"
+            mode="aspectFill"
+            bindtap="previewImage"
+            data-url="{{item}}"
+          />
+        </view>
+        <view class="add-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}">
+          <text>+</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部：键盘 + 提交 -->
+  <view class="panel-footer">
+    <!-- 金额键盘 -->
+    <amount-keyboard
+      value="{{rawValue}}"
+      bind:oninput="onKeyboardInput"
+      bind:onbackspace="onKeyboardBackspace"
+      bind:onconfirm="onSubmit"
+    />
+
+    <!-- 提交按钮（嵌入键盘上方） -->
+  </view>
+</view>

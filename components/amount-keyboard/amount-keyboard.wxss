@@ -1,0 +1,61 @@
+/* 金额键盘样式 */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  background: #F2F2F7;
+  padding: 8rpx 12rpx;
+  padding-bottom: calc(8rpx + env(safe-area-inset-bottom));
+}
+
+.key-row {
+  display: flex;
+  gap: 10rpx;
+  margin-bottom: 10rpx;
+}
+
+.key-row:last-child {
+  margin-bottom: 0;
+}
+
+.key {
+  flex: 1;
+  height: 96rpx;
+  border-radius: var(--border-radius-md);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1rpx 4rpx rgba(0,0,0,0.06);
+  transition: all 100ms ease;
+}
+
+.key.empty {
+  background: transparent;
+  box-shadow: none;
+}
+
+.key.backspace {
+  background: #E5E5EA;
+}
+
+.key.num:active,
+.key.backspace:active {
+  background: #D1D1D6;
+  transform: scale(0.97);
+}
+
+.key-hover {
+  opacity: 0.7 !important;
+  transform: scale(0.97) !important;
+}
+
+.key-text {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.key.backspace .key-text {
+  font-size: 32rpx;
+  color: var(--text-secondary);
+}
