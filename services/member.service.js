@@ -63,8 +63,8 @@ function claimShadowMember(bookId, shadowMemberId, userId, userInfo) {
   shadowMember.claimed_by = userId
   shadowMember.claimed_at = Date.now()
   shadowMember.user_id = userId
-  shadowMember.nickname = userInfo?.nickName || shadowMember.shadow_name
-  shadowMember.avatar_url = userInfo?.avatarUrl || ''
+  shadowMember.nickname = (userInfo && userInfo.nickName) || shadowMember.shadow_name
+  shadowMember.avatar_url = (userInfo && userInfo.avatarUrl) || ''
 
   // 将该成员的账单归属权迁移（如有）
   migrateBillOwnership(bookId, shadowMemberId, userId)

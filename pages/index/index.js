@@ -209,8 +209,8 @@ Page({
     try {
       const result = await aiService.captureAndProcess(
         this.data.currentBook.id,
-        this.data.members.find(m => m.type === 'real')?.id,
-        this.data.members.map(m => m.id)
+        (this.data.members.find(function(m) { return m.type === 'real' }) || {}).id,
+        this.data.members.map(function(m) { return m.id })
       )
 
       wx.showToast({ title: '拍照成功，识别中...', icon: 'none' })
@@ -356,17 +356,22 @@ Page({
   // === 私有方法 ===
 
   _formatGroupedBills(grouped) {
-    const formatted = grouped.map(group => ({
-      ...group,
-      dateLabel: formatChineseDate(group.date),
-      totalDisplay: formatAmount(group.total, this.data.currencySymbol),
-      items: group.items.map(bill => ({
-        ...bill,
-        category_icon: getCategoryByKey(bill.category)?.icon || '📦',
-        amountDisplay: formatAmount(bill.amount, this.data.currencySymbol),
-        timeDisplay: formatDateTimeCN(bill.paid_at)
-      }))
-    }))
+    var self = this
+    var formatted = grouped.map(function(group) {
+      var items = group.items.map(function(bill) {
+        var catInfo = getCategoryByKey(bill.category)
+        return Object.assign({}, bill, {
+          category_icon: (catInfo && catInfo.icon) || '📦',
+          amountDisplay: formatAmount(bill.amount, self.data.currencySymbol),
+          timeDisplay: formatDateTimeCN(bill.paid_at)
+        })
+      })
+      return Object.assign({}, group, {
+        dateLabel: formatChineseDate(group.date),
+        totalDisplay: formatAmount(group.total, self.data.currencySymbol),
+        items: items
+      })
+    })
     this.setData({ groupedBills: formatted })
   },
 

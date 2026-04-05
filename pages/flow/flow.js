@@ -35,15 +35,20 @@ Page({
     const formatted = grouped.map(group => {
       total += group.total
       return {
-        ...group,
-        dateLabel: formatChineseDate(group.date),
-        totalDisplay: formatAmount(group.total, this.data.currencySymbol),
-        items: group.items.map(bill => ({
-          ...bill,
-          category_icon: getCategoryByKey(bill.category)?.icon || '📦',
-          amountDisplay: formatAmount(bill.amount, this.data.currencySymbol),
+      var self = this
+      var items = group.items.map(function(bill) {
+        var catInfo = getCategoryByKey(bill.category)
+        return Object.assign({}, bill, {
+          category_icon: (catInfo && catInfo.icon) || '📦',
+          amountDisplay: formatAmount(bill.amount, self.data.currencySymbol),
           timeDisplay: formatDateTimeCN(bill.paid_at)
-        }))
+        })
+      })
+      return Object.assign({}, group, {
+        dateLabel: formatChineseDate(group.date),
+        totalDisplay: formatAmount(group.total, self.data.currencySymbol),
+        items: items
+      })
       }
     })
 

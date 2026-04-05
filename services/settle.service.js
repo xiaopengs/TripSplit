@@ -50,13 +50,13 @@ function calculateSettlement(members, bills, options = {}) {
       if (options.roundToYuan) {
         debtAmount = roundToYuan(debtAmount)
       }
-      debtors.push({ id, name: members.find(m => m.id === id)?._name || '未知', amount: debtAmount })
+      debtors.push({ id, name: (members.find(function(m) { return m.id === id }) || {})._name || '未知', amount: debtAmount })
     } else if (amount > THRESHOLD) {
       let creditAmount = amount
       if (options.roundToYuan) {
         creditAmount = roundToYuan(creditAmount)
       }
-      creditors.push({ id, name: members.find(m => m.id === id)?._name || '未知', amount: creditAmount })
+      creditors.push({ id, name: (members.find(function(m) { return m.id === id }) || {})._name || '未知', amount: creditAmount })
     }
   }
 

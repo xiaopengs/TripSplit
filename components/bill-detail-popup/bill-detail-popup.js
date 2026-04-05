@@ -26,14 +26,16 @@ Component({
       if (!bill) return
       
       // 格式化账单数据
+      const catInfo = getCategoryByKey(bill.category)
       const formatted = Object.assign({}, bill, {
-        category_icon: getCategoryByKey(bill.category)?.icon || '📦',
+        category_icon: (catInfo && catInfo.icon) || '📦',
         amountDisplay: formatAmount(bill.amount, this.data.currencySymbol),
         timeDisplay: formatDateTimeCN(bill.paid_at),
-        splits: (bill.splits || []).map(s => ({
-          ...s,
-          shareDisplay: formatAmount(s.share, this.data.currencySymbol)
-        }))
+        splits: (bill.splits || []).map(function(s) {
+          return Object.assign({}, s, {
+            shareDisplay: formatAmount(s.share, this.data.currencySymbol)
+          })
+        }.bind(this))
       })
 
       this.setData({ _formattedBill: formatted })
@@ -53,7 +55,8 @@ Component({
 
     previewImage(e) {
       const url = e.currentTarget.dataset.url
-      const images = this.data._formattedBill?.images || []
+      const fb = this.data._formattedBill
+      const images = (fb && fb.images) || []
       wx.previewImage({ current: url, urls: images })
     },
 
@@ -68,7 +71,8 @@ Component({
         confirmColor: '#FF3B30',
         success: res => {
           if (res.confirm) {
-            this.triggerEvent('ondelete', { id: this.data.bill?.id })
+            var billId = this.data.bill && this.data.bill.id
+            this.triggerEvent('ondelete', { id: billId })
             this.triggerEvent('onclose')
           }
         }

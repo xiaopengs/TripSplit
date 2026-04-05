@@ -37,7 +37,7 @@ Page({
       title: '添加影子成员', editable: true, placeholderText: '输入成员名称',
       confirmText: '添加', confirmColor: '#34C759',
       success: res => {
-        if (res.confirm && res.content?.trim()) {
+        if (res.confirm && res.content && res.content.trim()) {
           memberService.addShadowMember(this.data.bookId, res.content.trim())
           this._loadMembers()
           wx.showToast({ title: '已添加', icon: 'success' })

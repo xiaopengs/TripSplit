@@ -41,8 +41,8 @@ function convert(amountInFen, fromCurrency, toCurrency) {
   if (!amountInFen && amountInFen !== 0) return 0
   
   const rates = getRates()
-  const fromRate = rates[fromCurrency]?.rate || 1
-  const toRate = rates[toCurrency]?.rate || 1
+  const fromRate = (rates[fromCurrency] && rates[fromCurrency].rate) || 1
+  const toRate = (rates[toCurrency] && rates[toCurrency].rate) || 1
 
   // 先转为 CNY，再转为目标币种
   const cnyAmount = amountInFen / (fromRate * 100)
@@ -57,7 +57,7 @@ function convert(amountInFen, fromCurrency, toCurrency) {
 function formatWithCurrency(fen, currencyCode) {
   const rates = getRates()
   const info = rates[currencyCode] || rates['CNY']
-  const symbol = info?.symbol || '¥'
+  const symbol = (info && info.symbol) || '¥'
   
   const yuan = Math.abs(fen) / 100
   const formatted = yuan.toFixed(2)

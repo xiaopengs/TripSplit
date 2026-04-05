@@ -19,17 +19,20 @@ Page({
     const bill = billService.getBillById(id)
     if (!bill) { wx.showToast({ title: '记录不存在', icon: 'none' }); return }
 
+    var catInfo = getCategoryByKey(bill.category)
+    var splits = (bill.splits || []).map(function(s) {
+      return Object.assign({}, s, {
+        shareDisplay: formatAmount(s.share, this.data.currencySymbol)
+      })
+    }.bind(this))
+
     this.setData({
-      bill: {
-        ...bill,
-        category_icon: getCategoryByKey(bill.category)?.icon || '📦',
+      bill: Object.assign({}, bill, {
+        category_icon: (catInfo && catInfo.icon) || '📦',
         amountDisplay: formatAmount(bill.amount, this.data.currencySymbol),
         timeDisplay: formatDateTimeCN(bill.paid_at),
-        splits: (bill.splits || []).map(s => ({
-          ...s,
-          shareDisplay: formatAmount(s.share, this.data.currencySymbol)
-        }))
-      }
+        splits: splits
+      })
     })
   },
 
