@@ -48,12 +48,12 @@
       <view class="member-avatars" wx:if="{{splitMode === 'equal'}}">
         <view 
           class="member-avatar {{selectedMembers.indexOf(item.id) > -1 ? 'selected' : ''}} {{item.type === 'shadow' ? 'shadow' : ''}}"
-          wx:for="{{members}}"
+          wx:for="{{_enrichedMembers}}"
           wx:key="id"
           bindtap="toggleMember"
           data-id="{{item.id}}"
         >
-          <text class="avatar-text">{{(item.nickname || item.shadow_name || '?')[0]}}</text>
+          <text class="avatar-text">{{item.avatar_char}}</text>
           <view class="check-mark" wx:if="{{selectedMembers.indexOf(item.id) > -1}}">✓</view>
           <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">影</view>
         </view>
@@ -66,7 +66,7 @@
 
       <!-- 自定义模式 -->
       <view class="custom-splits" wx:else>
-        <view class="custom-split-item" wx:for="{{members}}" wx:key="id">
+        <view class="custom-split-item" wx:for="{{_enrichedMembers}}" wx:key="id">
           <text class="cs-name">{{item.nickname || item.shadow_name || '?'}}</text>
           <input 
             class="cs-input" 

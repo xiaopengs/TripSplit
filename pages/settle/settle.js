@@ -38,6 +38,15 @@ Page({
       roundToYuan: this.data.roundToYuan
     })
 
+    // 预处理转账人首字（WXML 不支持 [0] 索引）
+    if (result && result.transfers) {
+      result.transfers.forEach(t => {
+        t.from_char = (t.from_name || '?')[0] || '?'
+        t.to_char = (t.to_name || '?')[0] || '?'
+        t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)
+      })
+    }
+
     if (result.transfers.length > 0) {
       result.transfers.forEach(t => {
         t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)

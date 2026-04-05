@@ -51,6 +51,12 @@ Component({
       }
     },
     'members': function(members) {
+      // 预处理头像首字（WXML 不支持 expr[0]）
+      const enriched = (members || []).map(m => ({
+        ...m,
+        avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?'
+      }))
+      this.setData({ _enrichedMembers: enriched })
       this._selectAllMembers()
     },
     'amount, selectedMembers.length': function(amount, count) {
@@ -120,7 +126,8 @@ Component({
     },
 
     _selectAllMembers() {
-      const ids = (this.data.members || []).map(m => m.id)
+      const list = this.data._enrichedMembers || this.data.members || []
+      const ids = list.map(m => m.id)
       this.setData({ selectedMembers: ids })
     },
 
@@ -203,10 +210,12 @@ Component({
       // 构建提交数据
       let splits = []
 
+      const memberList = this.data._enrichedMembers || this.data.members || []
+
       if (this.data.splitMode === SPLIT_TYPE.CUSTOM) {
         // 自定义模式：验证总额
         let customTotal = 0
-        ;(this.data.members || []).forEach(m => {
+        memberList.forEach(m => {
           const val = this.data.customSplitValues[m.id]
           if (val) {
             customTotal += parseFloat(val) * 100
@@ -227,7 +236,7 @@ Component({
       } else {
         const shares = splitEqual(this.data.amount, this.data.selectedMembers.length)
         splits = this.data.selectedMembers.map((mid, idx) => {
-          const member = (this.data.members || []).find(m => m.id === mid)
+          const member = memberList.find(m => m.id === mid)
           return {
             member_id: mid,
             name: member ? (member.nickname || member.shadow_name || '?') : '?',
@@ -245,7 +254,7 @@ Component({
         payerId: null,
         payerName: '',
         memberIds: this.data.selectedMembers,
-        members: this.data.members,
+        members: memberList,
         splitType: this.data.splitMode,
         customSplits: splits.length > 0 ? splits : undefined
       }
@@ -255,7 +264,7 @@ Component({
       if (catInfo) submitData.category.name = catInfo.name
 
       // 默认支付人为第一个真实成员
-      const realMember = (this.data.members || []).find(m => m.type === 'real') || this.data.members[0]
+      const realMember = memberList.find(m => m.type === 'real') || memberList[0]
       if (realMember) {
         submitData.payerId = realMember.id
         submitData.payerName = realMember.nickname || '我'

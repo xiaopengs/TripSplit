@@ -22,9 +22,13 @@ Page({
 
   _loadMembers() {
     const members = memberService.getMembers(this.data.bookId)
+    const addAvatarChar = list => list.map(m => ({
+      ...m,
+      avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?'
+    }))
     this.setData({
-      realMembers: members.filter(m => m.type === 'real' || !m.type),
-      shadowMembers: members.filter(m => m.type === 'shadow')
+      realMembers: addAvatarChar(members.filter(m => m.type === 'real' || !m.type)),
+      shadowMembers: addAvatarChar(members.filter(m => m.type === 'shadow'))
     })
   },
 

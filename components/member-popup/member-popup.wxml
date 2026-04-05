@@ -27,7 +27,7 @@
     
     <view class="member-item" wx:for="{{realMembers}}" wx:key="id">
       <view class="avatar {{item.role === 'admin' ? 'admin' : ''}}">
-        <text>{{(item.nickname || '?')[0]}}</text>
+        <text>{{item.avatar_char}}</text>
       </view>
       <view class="member-info">
         <text class="member-name">{{item.nickname}}</text>

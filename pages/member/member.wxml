@@ -26,7 +26,7 @@
       <text class="section-title">已加入 ({{realMembers.length}})</text>
       <view class="member-list">
         <view class="member-item" wx:for="{{realMembers}}" wx:key="id">
-          <view class="avatar admin">{{(item.nickname || '?')[0]}}</view>
+          <view class="avatar admin">{{item.avatar_char}}</view>
           <view class="member-info">
             <text class="name">{{item.nickname}}</text>
             <text class="sub">{{item.role === 'admin' ? '管理员' : '成员'}} · 已加入</text>

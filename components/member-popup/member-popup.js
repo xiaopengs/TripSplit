@@ -22,7 +22,11 @@ Component({
 
   observers: {
     'members': function(members) {
-      const real = (members || []).filter(m => m.type === 'real' || !m.type)
+      const addChar = list => list.map(m => ({
+        ...m,
+        avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?'
+      }))
+      const real = addChar((members || []).filter(m => m.type === 'real' || !m.type))
       const shadow = (members || []).filter(m => m.type === 'shadow')
       const unclaimed = shadow.filter(m => !m.is_claimed).length
 

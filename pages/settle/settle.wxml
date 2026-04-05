@@ -53,7 +53,7 @@
         <view class="transfer-card" wx:for="{{result.transfers}}" wx:key="id">
           <view class="transfer-header">
             <view class="person from-person">
-              <view class="person-avatar">{{item.from_name[0]}}</view>
+              <view class="person-avatar">{{item.from_char}}</view>
               <text class="person-name">{{item.from_name}}</text>
               <text class="person-role">付款</text>
             </view>
@@ -63,7 +63,7 @@
             </view>
             
             <view class="person to-person">
-              <view class="person-avatar receive">{{item.to_name[0]}}</view>
+              <view class="person-avatar receive">{{item.to_char}}</view>
               <text class="person-name">{{item.to_name}}</text>
               <text class="person-role">收款</text>
             </view>
