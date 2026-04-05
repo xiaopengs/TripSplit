@@ -27,7 +27,7 @@ function getBillsGroupedByDate(bookId) {
   const groups = {}
 
   bills.forEach(bill => {
-    const dateKey = bill.paid_at ? bill.paid_at.split('T')[0] : bill.local_created.split('T')[0]
+    const dateKey = bill.paid_at ? bill.paid_at.split('T')[0] : (bill.local_created ? bill.local_created.split('T')[0] : new Date().toISOString().split('T')[0])
     if (!groups[dateKey]) {
       groups[dateKey] = {
         date: dateKey,
@@ -60,9 +60,9 @@ function createBill(data) {
     splits = data.customSplits
   } else if (memberIds && memberIds.length > 0) {
     // 均分
-    const shares = splitEqual(amount, memberIds.length)
+    const shares = splitEqual(amount || 0, memberIds.length)
     splits = memberIds.map((mid, idx) => {
-      const member = members.find(m => m.id === mid)
+      const member = (members || []).find(m => m.id === mid)
       return {
         member_id: mid,
         name: member ? (member.nickname || member.shadow_name || '未知') : '未知',
@@ -77,8 +77,8 @@ function createBill(data) {
     book_id: bookId,
     amount: amount,
     amount_display: formatAmountDisplay(amount),
-    category: category.key,
-    category_name: category.name,
+    category: category ? category.key : '',
+    category_name: category ? category.name : '',
     note: note || '',
     images: images || [],
     payer_id: payerId,
@@ -142,8 +142,10 @@ function getTotalExpense(bookId) {
 }
 
 function formatAmountDisplay(fen) {
-  if (!fen && fen !== 0) return '0.00'
-  return (Math.abs(fen) / 100).toFixed(2)
+  if (fen == null || fen === '') return '0.00'
+  const val = Number(fen)
+  if (isNaN(val)) return '0.00'
+  return (Math.abs(val) / 100).toFixed(2)
 }
 
 module.exports = {

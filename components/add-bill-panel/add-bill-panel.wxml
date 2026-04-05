@@ -1,16 +1,23 @@
-<!-- 手动记账 - 半屏模态面板 -->
-<view class="panel-mask" wx:if="{{visible}}" bindtap="onClose" catchtouchmove="preventMove"></view>
+<!-- 手动记账 - 近全屏底部面板 -->
 
-<view class="panel-container {{visible ? 'show' : ''}}">
-  <!-- 头部 -->
+<!-- 遮罩层 -->
+<view
+  class="panel-mask {{visible ? 'show' : ''}}"
+  bindtap="onClose"
+  catchtouchmove="preventMove"
+></view>
+
+<!-- 面板容器 -->
+<view class="panel {{visible ? 'show' : ''}}">
+  <!-- 头部：标题 + 关闭 -->
   <view class="panel-header">
     <text class="panel-title">记一笔</text>
-    <view class="close-btn" bindtap="onClose">
-      <text>✕</text>
+    <view class="close-btn" bindtap="onClose" hover-class="close-btn-hover">
+      <text class="close-icon">✕</text>
     </view>
   </view>
 
-  <!-- 滚动区域 -->
+  <!-- 滚动内容区 -->
   <scroll-view class="panel-body" scroll-y enhanced show-scrollbar="{{false}}">
     <!-- 金额显示 -->
     <view class="amount-display">
@@ -18,16 +25,17 @@
       <text class="amount-value">{{displayValue || '0.00'}}</text>
     </view>
 
-    <!-- 类目选择 -->
+    <!-- 类目选择（3x2 网格） -->
     <view class="section">
       <text class="section-label">选择类目</text>
       <view class="category-grid">
-        <view 
+        <view
           class="category-tile {{selectedCategory === item.key ? 'active' : ''}}"
           wx:for="{{categories}}"
           wx:key="key"
           bindtap="onCategoryTap"
           data-key="{{item.key}}"
+          hover-class="tile-hover"
         >
           <text class="cat-icon">{{item.icon}}</text>
           <text class="cat-name">{{item.name}}</text>
@@ -39,38 +47,45 @@
     <view class="section">
       <view class="section-header">
         <text class="section-label">分摊给</text>
-        <view class="split-mode-switch" bindtap="toggleSplitMode">
-          <text>{{splitMode === 'equal' ? '均分' : '自定义'}}</text>
+        <view class="split-mode-tag" bindtap="toggleSplitMode" hover-class="tag-hover">
+          <text class="split-mode-text">{{splitMode === 'equal' ? '均分' : '自定义'}}</text>
         </view>
       </view>
 
-      <!-- 均分模式 -->
+      <!-- 均分模式：头像列表 -->
       <view class="member-avatars" wx:if="{{splitMode === 'equal'}}">
-        <view 
+        <view
           class="member-avatar {{selectedMembers.indexOf(item.id) > -1 ? 'selected' : ''}} {{item.type === 'shadow' ? 'shadow' : ''}}"
           wx:for="{{_enrichedMembers}}"
           wx:key="id"
           bindtap="toggleMember"
           data-id="{{item.id}}"
+          hover-class="avatar-hover"
         >
-          <text class="avatar-text">{{item.avatar_char}}</text>
-          <view class="check-mark" wx:if="{{selectedMembers.indexOf(item.id) > -1}}">✓</view>
-          <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">影</view>
-        </view>
-
-        <!-- 均分预览 -->
-        <view class="share-preview" wx:if="{{selectedMembers.length > 0 && amount > 0}}">
-          <text>每人 {{perPersonAmount}}</text>
+          <text class="avatar-char">{{item.avatar_char}}</text>
+          <!-- 选中绿色勾 -->
+          <view class="check-badge" wx:if="{{selectedMembers.indexOf(item.id) > -1}}">
+            <text class="check-icon">✓</text>
+          </view>
+          <!-- 影子成员标记 -->
+          <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">
+            <text class="shadow-text">影</text>
+          </view>
         </view>
       </view>
 
-      <!-- 自定义模式 -->
-      <view class="custom-splits" wx:else>
-        <view class="custom-split-item" wx:for="{{_enrichedMembers}}" wx:key="id">
+      <!-- 均分预览 -->
+      <view class="share-preview" wx:if="{{splitMode === 'equal' && selectedMembers.length > 0 && amount > 0}}">
+        <text class="share-text">每人 {{perPersonAmount}}</text>
+      </view>
+
+      <!-- 自定义分摊模式 -->
+      <view class="custom-splits" wx:if="{{splitMode !== 'equal'}}">
+        <view class="custom-row" wx:for="{{_enrichedMembers}}" wx:key="id">
           <text class="cs-name">{{item.nickname || item.shadow_name || '?'}}</text>
-          <input 
-            class="cs-input" 
-            type="digit" 
+          <input
+            class="cs-input"
+            type="digit"
             placeholder="金额"
             value="{{customSplitValues[item.id] || ''}}"
             bindinput="onCustomInput"
@@ -80,24 +95,21 @@
       </view>
     </view>
 
-    <!-- 备注 -->
+    <!-- 备注 + 图片 -->
     <view class="section">
-      <view class="section-header">
-        <text class="section-label">备注</text>
-      </view>
-      <input 
-        class="note-input" 
+      <text class="section-label">备注</text>
+      <input
+        class="note-input"
         placeholder="添加备注..."
         value="{{note}}"
         bindinput="onNoteInput"
         maxlength="50"
       />
-      
-      <!-- 图片上传 -->
-      <view class="image-upload-area">
-        <view class="uploaded-images">
-          <image 
-            class="upload-thumb" 
+      <!-- 图片上传区 -->
+      <view class="image-area">
+        <view class="image-list">
+          <image
+            class="upload-thumb"
             wx:for="{{images}}"
             wx:key="*this"
             src="{{item}}"
@@ -106,23 +118,31 @@
             data-url="{{item}}"
           />
         </view>
-        <view class="add-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}">
-          <text>+</text>
+        <view class="add-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}" hover-class="add-image-hover">
+          <text class="add-image-icon">+</text>
         </view>
       </view>
     </view>
   </scroll-view>
 
-  <!-- 底部：键盘 + 提交 -->
+  <!-- 底部：提交按钮 + 键盘 -->
   <view class="panel-footer">
+    <!-- 提交按钮 -->
+    <view class="submit-row">
+      <view
+        class="submit-btn {{amount > 0 && selectedCategory ? '' : 'disabled'}}"
+        bindtap="onSubmit"
+        hover-class="{{amount > 0 && selectedCategory ? 'submit-hover' : ''}}"
+      >
+        <text class="submit-text">记一笔{{amount > 0 ? ' ' + displayValue : ''}}</text>
+      </view>
+    </view>
+
     <!-- 金额键盘 -->
     <amount-keyboard
       value="{{rawValue}}"
       bind:oninput="onKeyboardInput"
       bind:onbackspace="onKeyboardBackspace"
-      bind:onconfirm="onSubmit"
     />
-
-    <!-- 提交按钮（嵌入键盘上方） -->
   </view>
 </view>

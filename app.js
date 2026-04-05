@@ -23,8 +23,7 @@ App({
     // 初始化本地缓存
     cache.init()
 
-    // 从缓存恢复 Store 状态
-    store.restore()
+    // Store 仅在内存中管理运行时状态，持久化由 cache.js 统一负责
 
     // 检查登录状态
     this.checkLogin()

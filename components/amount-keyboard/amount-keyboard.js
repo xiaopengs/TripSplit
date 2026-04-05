@@ -1,6 +1,7 @@
 /**
  * 金额键盘组件
- * 3×4 网格：7-8-9 / 4-5-6 / 1-2-3 / .-0-⌫
+ * 3x4 网格：7-8-9 / 4-5-6 / 1-2-3 / .-0-⌫
+ * 事件：oninput（数字/小数点输入 { key }）、onbackspace（退格）
  */
 Component({
   properties: {
@@ -27,7 +28,7 @@ Component({
       if (key === '⌫') {
         this.triggerEvent('onbackspace')
       } else {
-        this.triggerEvent('oninput', { detail: key })
+        this.triggerEvent('oninput', { key: key })
       }
     }
   }

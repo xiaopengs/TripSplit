@@ -76,23 +76,16 @@ function claimShadowMember(bookId, shadowMemberId, userId, userInfo) {
 /**
  * 迁移账单归属权：将影子成员的记录迁移至真实用户 ID
  */
-function migrateBillOwnership(bookId, oldMemberId, newUserId) {
+function migrateBillOwnership(bookId, shadowMemberId, userId) {
   const bills = cache.get('bills') || []
   let updated = false
 
   bills.forEach(bill => {
     if (bill.book_id !== bookId) return
     
-    // 更新支付人
-    if (bill.payer_id === oldMemberId) {
-      bill.payer_id = `user_${newUserId}`
-      updated = true
-    }
-
-    // 更新分摊列表
+    // Only update the is_shadow flag in splits, keep member_id unchanged
     ;(bill.splits || []).forEach(split => {
-      if (split.member_id === oldMemberId) {
-        split.member_id = `user_${newUserId}`
+      if (split.member_id === shadowMemberId) {
         split.is_shadow = false
         updated = true
       }

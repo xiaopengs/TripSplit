@@ -1,61 +1,59 @@
-/* 金额键盘样式 */
+/* === 金额键盘样式 === */
+
 .keyboard {
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: #F2F2F7;
-  padding: 8rpx 12rpx;
-  padding-bottom: calc(8rpx + env(safe-area-inset-bottom));
+  padding: 12rpx 16rpx;
+  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
 }
 
 .key-row {
   display: flex;
-  gap: 10rpx;
-  margin-bottom: 10rpx;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
 }
 
 .key-row:last-child {
   margin-bottom: 0;
 }
 
+/* 单个按键 */
 .key {
   flex: 1;
-  height: 96rpx;
-  border-radius: var(--border-radius-md);
-  background: white;
+  height: 100rpx;
+  border-radius: 12rpx;
+  background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1rpx 4rpx rgba(0,0,0,0.06);
-  transition: all 100ms ease;
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.04);
+  transition: background-color 80ms ease;
 }
 
-.key.empty {
-  background: transparent;
+/* 退格键 */
+.key-backspace {
+  background: #E5E5EA;
   box-shadow: none;
 }
 
-.key.backspace {
-  background: #E5E5EA;
+/* 按下态 */
+.key-active {
+  background: #D1D1D6 !important;
 }
 
-.key.num:active,
-.key.backspace:active {
-  background: #D1D1D6;
-  transform: scale(0.97);
-}
-
-.key-hover {
-  opacity: 0.7 !important;
-  transform: scale(0.97) !important;
-}
-
+/* 按键文字 */
 .key-text {
-  font-size: 36rpx;
+  font-size: 36px;
   font-weight: 500;
   color: var(--text-primary);
+  line-height: 1;
+  user-select: none;
 }
 
-.key.backspace .key-text {
-  font-size: 32rpx;
+/* 退格键文字稍小、灰色 */
+.key-backspace .key-text {
+  font-size: 32px;
   color: var(--text-secondary);
 }

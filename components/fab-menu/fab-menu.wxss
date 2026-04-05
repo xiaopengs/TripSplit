@@ -1,120 +1,137 @@
-/* FAB 扇形菜单样式 */
-.fab-container {
-  position: fixed;
-  z-index: 999;
-  right: 24rpx;
-  bottom: calc(120rpx + env(safe-area-inset-bottom));
-}
+/* === FAB 浮动菜单样式 === */
 
-.fab-mask {
+/* 遮罩层：全屏半透明黑色 */
+.fab-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-mask);
-  z-index: -1;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
 }
 
-/* 主按钮 */
+.fab-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 按钮组容器：固定右下角 */
+.fab-group {
+  position: fixed;
+  right: 40rpx;
+  bottom: calc(40rpx + env(safe-area-inset-bottom));
+  z-index: 999;
+  width: 112rpx;
+  height: 112rpx;
+}
+
+/* === 主按钮 === */
 .fab-main {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
   background: var(--color-primary);
-  box-shadow: 0 8rpx 32rpx rgba(52,199,89,0.4);
+  box-shadow: 0 8rpx 32rpx rgba(52, 199, 89, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 10;
+  transition: background-color 200ms ease, box-shadow 200ms ease;
 }
 
+/* 展开时主按钮变红 */
 .fab-main.open {
-  animation: fabBounce 200ms var(--spring-curve);
+  background: var(--color-danger);
+  box-shadow: 0 8rpx 32rpx rgba(255, 59, 48, 0.4);
 }
 
-.fab-static {
-  animation: none;
-}
-
-.fab-hover {
+.fab-main-hover {
   opacity: 0.85;
-  transform: scale(0.95);
+  transform: scale(0.93);
 }
 
-.fab-plus {
-  color: white;
+/* 主按钮图标：白色 "+" */
+.fab-icon {
+  color: #FFFFFF;
   font-size: 56rpx;
   font-weight: 300;
   line-height: 1;
   transition: transform 200ms var(--spring-curve);
 }
 
-.fab-plus.rotated {
+/* 展开时旋转 45° 变为 "×" */
+.fab-icon.rotated {
   transform: rotate(45deg);
-  display: block;
 }
 
-/* 子按钮 */
-.fab-sub-buttons {
+/* === 子按钮（通用） === */
+.fab-sub {
   position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.sub-btn {
-  position: absolute;
-  width: 220rpx;
-  height: 80rpx;
-  border-radius: 40rpx;
-  background: white;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  padding: 0 20rpx 0 16rpx;
-  transition: all 200ms var(--spring-curve);
-  white-space: nowrap;
-}
-
-.sub-btn-left {
-  right: 100rpx;
-  top: -16rpx;
-  flex-direction: row-reverse;
-}
-
-.sub-btn-right {
-  left: 100rpx;
-  top: -16rpx;
-}
-
-.sub-btn-hover {
-  transform: scale(0.95) !important;
-  opacity: 0.9 !important;
-}
-
-.sub-btn-icon {
-  width: 52rpx;
-  height: 52rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: 50%;
-  background: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
-  margin-right: 12rpx;
-  flex-shrink: 0;
+  /* 初始位置：与主按钮中心重叠 */
+  left: 12rpx;
+  bottom: 12rpx;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: all 200ms var(--spring-curve);
+  pointer-events: none;
+  z-index: 5;
 }
 
-.sub-btn-label {
-  font-size: 26rpx;
-  color: var(--text-primary);
-  font-weight: 500;
+/* 手动记账：白底 + 绿色边框 */
+.sub-manual {
+  background: #FFFFFF;
+  border: 3rpx solid var(--color-primary);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
 }
 
-/* 动画 */
-@keyframes fabBounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+/* 拍照记账：绿色填充 */
+.sub-camera {
+  background: var(--color-primary);
+  box-shadow: 0 4rpx 16rpx rgba(52, 199, 89, 0.35);
+}
+
+/* 展开动画：垂直向上弹出 */
+/* 拍照按钮（较近）：主按钮高度112 + 间距24 = 136rpx 偏移 → 减去初始12rpx = -124rpx */
+.sub-camera.show {
+  transform: translateY(-124rpx) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 手动按钮（较远）：136 + 子按钮88 + 间距20 = 244rpx 偏移 → 减去初始12rpx = -232rpx */
+.sub-manual.show {
+  transform: translateY(-232rpx) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 30ms;
+}
+
+.fab-sub-hover {
+  opacity: 0.8 !important;
+  transform: translateY(var(--sub-y, 0)) scale(0.92) !important;
+}
+
+/* 子按钮图标 */
+.sub-icon {
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.sub-manual .sub-icon {
+  color: var(--color-primary);
+}
+
+.sub-camera .sub-icon {
+  color: #FFFFFF;
 }

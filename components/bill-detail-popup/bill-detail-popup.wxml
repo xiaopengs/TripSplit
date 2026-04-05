@@ -1,47 +1,47 @@
 <!-- 账单详情弹窗 -->
 <view class="popup-mask" wx:if="{{visible}}" bindtap="onClose" catchtouchmove="preventMove"></view>
 
-<view class="popup-container {{visible ? 'show' : ''}}" wx:if="{{bill}}">
+<view class="popup-container {{visible ? 'show' : ''}}" wx:if="{{_formattedBill}}">
   <!-- 关闭按钮 -->
   <view class="close-btn" catchtap="onClose"><text>✕</text></view>
 
   <!-- 类目图标 -->
   <view class="detail-icon-wrap">
-    <text class="detail-icon">{{bill.category_icon || '📦'}}</text>
+    <text class="detail-icon">{{_formattedBill.category_icon || '📦'}}</text>
   </view>
 
   <!-- 金额 -->
-  <text class="detail-amount">{{bill.amountDisplay}}</text>
-  <text class="detail-category">{{bill.category_name || '其他'}}</text>
+  <text class="detail-amount">{{_formattedBill.amountDisplay}}</text>
+  <text class="detail-category">{{_formattedBill.category_name || '其他'}}</text>
 
   <!-- 备注 -->
-  <text class="detail-note" wx:if="{{bill.note}}">{{bill.note}}</text>
+  <text class="detail-note" wx:if="{{_formattedBill.note}}">{{_formattedBill.note}}</text>
 
   <!-- 信息行 -->
   <view class="info-section">
     <view class="info-row">
       <text class="info-label">支付人</text>
-      <text class="info-value">{{bill.payer_name || '未知'}}</text>
+      <text class="info-value">{{_formattedBill.payer_name || '未知'}}</text>
     </view>
     <view class="info-row">
       <text class="info-label">时间</text>
-      <text class="info-value">{{bill.timeDisplay}}</text>
+      <text class="info-value">{{_formattedBill.timeDisplay}}</text>
     </view>
-    <view class="info-row" wx:if="{{bill.source === 'ai' || bill.source === 'ai_confirmed'}}">
+    <view class="info-row" wx:if="{{_formattedBill.source === 'ai' || _formattedBill.source === 'ai_confirmed'}}">
       <text class="info-label">来源</text>
       <text class="info-value">AI 拍照识别</text>
     </view>
   </view>
 
   <!-- 分摊明细 -->
-  <view class="split-section" wx:if="{{bill.splits && bill.splits.length > 0}}">
+  <view class="split-section" wx:if="{{_formattedBill.splits && _formattedBill.splits.length > 0}}">
     <text class="split-title">分摊明细</text>
     
     <view class="split-list">
-      <view class="split-item" wx:for="{{bill.splits}}" wx:key="member_id">
+      <view class="split-item" wx:for="{{_formattedBill.splits}}" wx:key="member_id">
         <view class="split-left">
           <text class="split-name">{{item.name}}</text>
-          <text class="shadow-label" wx:if="{{item.is_shadow}}">影子成员</text>
+          <text class="shadow-label" wx:if="{{item.is_shadow}}">影子</text>
         </view>
         <text class="split-share">{{item.shareDisplay}}</text>
       </view>
@@ -50,17 +50,17 @@
     <!-- 合计 -->
     <view class="split-total">
       <text class="total-label">合计</text>
-      <text class="total-value">{{bill.amountDisplay}}</text>
+      <text class="total-value">{{_formattedBill.amountDisplay}}</text>
     </view>
   </view>
 
   <!-- 图片 -->
-  <view class="images-section" wx:if="{{bill.images && bill.images.length > 0}}">
+  <view class="images-section" wx:if="{{_formattedBill.images && _formattedBill.images.length > 0}}">
     <text class="images-title">附件图片</text>
     <view class="images-list">
       <image 
         class="detail-image" 
-        wx:for="{{bill.images}}" 
+        wx:for="{{_formattedBill.images}}" 
         wx:key="*this"
         src="{{item}}" 
         mode="aspectFill" 

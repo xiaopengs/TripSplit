@@ -24,8 +24,8 @@ function subtract(a, b) {
  * @returns {number} 四舍五入到分的整数
  */
 function multiply(amount, multiplier) {
-  if (!amount || !multiplier) return 0
-  return Math.round((amount * multiplier * 100)) / 100
+  if (amount == null || multiplier == null) return 0
+  return Math.round(amount * multiplier)
 }
 
 /**

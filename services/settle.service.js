@@ -2,6 +2,9 @@
  * 结算服务 - 最少转账次数算法
  */
 const { add, subtract, roundToYuan } = require('../utils/calc')
+const cache = require('../utils/cache')
+
+const TRANSFER_STATUS_KEY = 'transfer_statuses'
 
 /**
  * 核心结算算法：计算最优转账方案
@@ -93,6 +96,14 @@ function calculateSettlement(members, bills, options = {}) {
     if (creditor.amount <= THRESHOLD) j++
   }
 
+  // Apply saved statuses
+  const savedStatuses = cache.get(TRANSFER_STATUS_KEY) || {}
+  transfers.forEach(t => {
+    if (savedStatuses[t.id]) {
+      t.status = savedStatuses[t.id]
+    }
+  })
+
   return {
     transfers,
     totalTransfers: transfers.length,
@@ -107,7 +118,9 @@ function calculateSettlement(members, bills, options = {}) {
  * 标记转账已完成
  */
 function markTransferPaid(transferId) {
-  // TODO: 更新本地/云端状态
+  const statuses = cache.get(TRANSFER_STATUS_KEY) || {}
+  statuses[transferId] = 'paid'
+  cache.set(TRANSFER_STATUS_KEY, statuses)
   return true
 }
 
@@ -115,12 +128,22 @@ function markTransferPaid(transferId) {
  * 标记"下顿他请"（免除债务）
  */
 function forgiveTransfer(transferId) {
-  // TODO: 免除并记录
+  const statuses = cache.get(TRANSFER_STATUS_KEY) || {}
+  statuses[transferId] = 'forgiven'
+  cache.set(TRANSFER_STATUS_KEY, statuses)
   return true
+}
+
+/**
+ * 获取转账状态
+ */
+function getTransferStatuses() {
+  return cache.get(TRANSFER_STATUS_KEY) || {}
 }
 
 module.exports = {
   calculateSettlement,
   markTransferPaid,
-  forgiveTransfer
+  forgiveTransfer,
+  getTransferStatuses
 }

@@ -1,51 +1,40 @@
-<!-- 扇形弹出菜单组件 -->
-<view class="fab-container" wx:if="{{visible}}">
-  <!-- 遮罩 -->
-  <view class="fab-mask" bindtap="onHide" catchtouchmove="preventMove"></view>
+<!-- FAB 浮动菜单组件 -->
 
-  <!-- 子按钮 -->
-  <view class="fab-sub-buttons">
-    <!-- 手动记账 -->
-    <view 
-      class="sub-btn sub-btn-left"
-      style="opacity: {{visible ? 1 : 0}}; transform: translate({{visible ? '-60' : '0'}}rpx, {{visible ? '-40' : '0'}}rpx);"
-      catchtap="onSelect"
-      data-key="manual"
-      hover-class="sub-btn-hover"
-    >
-      <text class="sub-btn-icon">✏</text>
-      <text class="sub-btn-label">手动记一笔</text>
-    </view>
+<!-- 遮罩层：半透明黑色覆盖 -->
+<view
+  class="fab-overlay {{visible ? 'show' : ''}}"
+  bindtap="onOverlayTap"
+  catchtouchmove="preventMove"
+></view>
 
-    <!-- 拍照记账 -->
-    <view 
-      class="sub-btn sub-btn-right"
-      style="opacity: {{visible ? 1 : 0}}; transform: translate({{visible ? '60' : '0'}}rpx, {{visible ? '-40' : '0'}}rpx);"
-      catchtap="onSelect"
-      data-key="camera"
-      hover-class="sub-btn-hover"
-    >
-      <text class="sub-btn-icon">📷</text>
-      <text class="sub-btn-label">拍照记账</text>
-    </view>
+<!-- FAB 按钮组（固定右下角） -->
+<view class="fab-group">
+  <!-- 子按钮：手动记账（上方，白底绿边圆形） -->
+  <view
+    class="fab-sub sub-manual {{visible ? 'show' : ''}}"
+    catchtap="onSelect"
+    data-key="manual"
+    hover-class="fab-sub-hover"
+  >
+    <text class="sub-icon">✏</text>
   </view>
 
-  <!-- 主按钮 -->
-  <view 
+  <!-- 子按钮：拍照记账（中间，绿底白字圆形） -->
+  <view
+    class="fab-sub sub-camera {{visible ? 'show' : ''}}"
+    catchtap="onSelect"
+    data-key="camera"
+    hover-class="fab-sub-hover"
+  >
+    <text class="sub-icon">📷</text>
+  </view>
+
+  <!-- 主按钮（始终可见） -->
+  <view
     class="fab-main {{visible ? 'open' : ''}}"
     catchtap="onToggle"
-    hover-class="fab-hover"
+    hover-class="fab-main-hover"
   >
-    <text class="fab-plus {{visible ? 'rotated' : ''}}">+</text>
+    <text class="fab-icon {{visible ? 'rotated' : ''}}">+</text>
   </view>
-</view>
-
-<!-- 收起状态的主按钮（不显示遮罩时） -->
-<view 
-  wx:else
-  class="fab-main fab-static"
-  catchtap="onShow"
-  hover-class="fab-hover"
->
-  <text class="fab-plus">+</text>
 </view>

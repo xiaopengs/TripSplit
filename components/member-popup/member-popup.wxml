@@ -8,85 +8,82 @@
     <view class="close-btn" bindtap="onClose"><text>✕</text></view>
   </view>
 
-  <!-- 邀请区域 -->
-  <view class="invite-section">
-    <view class="invite-card">
-      <view class="invite-text">
+  <!-- 可滚动内容区 -->
+  <scroll-view class="scroll-body" scroll-y enhanced show-scrollbar="{{false}}">
+
+    <!-- 邀请好友卡片 -->
+    <view class="invite-card" hover-class="hover-opacity" bindtap="onShare">
+      <view class="invite-info">
         <text class="invite-title">邀请好友加入账本</text>
         <text class="invite-desc">生成分享卡片，好友可认领影子身份</text>
       </view>
-      <view class="share-btn" hover-class="hover-opacity" bindtap="onShare">
-        <text class="share-icon">⤴</text>
+      <view class="share-circle">
+        <text class="share-icon">↗</text>
       </view>
     </view>
-  </view>
 
-  <!-- 已加入成员 -->
-  <view class="section" wx:if="{{realMembers.length > 0}}">
-    <text class="section-title">已加入成员 ({{realMembers.length}})</text>
-    
-    <view class="member-item" wx:for="{{realMembers}}" wx:key="id">
-      <view class="avatar {{item.role === 'admin' ? 'admin' : ''}}">
-        <text>{{item.avatar_char}}</text>
-      </view>
-      <view class="member-info">
-        <text class="member-name">{{item.nickname}}</text>
-        <view class="member-status">
-          <text class="status-joined">✓ 已加入</text>
-          <text class="role-tag" wx:if="{{item.role === 'admin'}}">完整权限</text>
-          <text class="role-tag" wx:else>完整权限</text>
+    <!-- ======== 已加入成员 ======== -->
+    <view class="section" wx:if="{{realMembers.length > 0}}">
+      <text class="section-title">已加入成员 ({{realMembers.length}})</text>
+
+      <view class="real-member-card" wx:for="{{realMembers}}" wx:key="id">
+        <view class="avatar avatar-real">
+          <text>{{item.avatar_char}}</text>
+        </view>
+        <view class="member-body">
+          <text class="member-name">{{item.nickname}}</text>
+          <view class="member-meta">
+            <text class="tag-joined">✓ 已加入</text>
+            <text class="tag-role">完整权限</text>
+          </view>
         </view>
       </view>
     </view>
-  </view>
 
-  <!-- 影子成员 -->
-  <view class="section" wx:if="{{shadowMembers.length > 0}}">
-    <view class="section-row">
-      <text class="section-title">影子成员 ({{shadowMembers.length}})</text>
-      <text class="claim-hint">{{unclaimedCount > 0 ? '待认领' : ''}}</text>
-    </view>
-
-    <!-- 影子成员说明 -->
-    <view class="shadow-tip-card" wx:if="{{showTip}}">
-      <view class="tip-icon">💡</view>
-      <view class="tip-content">
-        <text class="tip-title">什么是影子成员？</text>
-        <text class="tip-desc">旅行开始前，管理员可预先添加成员名字。分账时可直接选择该成员。后期好友加入时，可认领对应的"影子身份"，一键接掌所有历史记录。</text>
+    <!-- ======== 影子成员 ======== -->
+    <view class="section" wx:if="{{shadowMembers.length > 0}}">
+      <view class="section-header-row">
+        <text class="section-title no-margin">影子成员 ({{shadowMembers.length}})</text>
+        <text class="pending-hint" wx:if="{{unclaimedCount > 0}}">待认领</text>
       </view>
-    </view>
 
-    <view class="member-item shadow-item" wx:for="{{shadowMembers}}" wx:key="id">
-      <view class="avatar shadow">
-        <text>👤</text>
-      </view>
-      <view class="member-info">
-        <view class="name-row">
-          <text class="member-name">{{item.shadow_name}}</text>
-          <text class="shadow-tag">影子成员</text>
+      <!-- 说明卡片 -->
+      <view class="tip-card" wx:if="{{showTip}}">
+        <text class="tip-emoji">💡</text>
+        <view class="tip-body">
+          <text class="tip-heading">什么是影子成员？</text>
+          <text class="tip-text">旅行开始前，管理员可预先添加成员名字。分账时可直接选择该成员。后期好友加入时，可认领对应的"影子身份"，一键接掌所有历史记录。</text>
         </view>
-        <text class="member-status waiting">等待真实用户认领</text>
       </view>
-      
-      <view 
-        class="claim-btn"
-        wx:if="{{!item.is_claimed}}"
-        hover-class="hover-opacity"
-        data-id="{{item.id}}"
-        data-name="{{item.shadow_name}}"
-        bindtap="onClaimTap"
-      >
-        <text class="claim-icon">👤</text>
-        <text>认领</text>
-      </view>
-    </view>
-  </view>
 
-  <!-- 添加影子成员 -->
-  <view class="add-shadow-section">
-    <view class="add-shadow-btn" bindtap="onAddShadow" hover-class="hover-opacity">
-      <text class="add-icon">👤+</text>
-      <text>添加影子成员</text>
+      <!-- 影子成员卡片 -->
+      <view class="shadow-member-card" wx:for="{{shadowMembers}}" wx:key="id">
+        <view class="avatar avatar-shadow">
+          <text class="shadow-person">👤</text>
+          <view class="question-badge">?</view>
+        </view>
+        <view class="member-body">
+          <view class="name-row">
+            <text class="member-name">{{item.shadow_name}}</text>
+            <text class="tag-shadow">影子成员</text>
+          </view>
+          <text class="shadow-subtitle">等待真实用户认领</text>
+        </view>
+        <view
+          class="claim-btn"
+          wx:if="{{!item.is_claimed}}"
+          hover-class="hover-opacity"
+          data-id="{{item.id}}"
+          data-name="{{item.shadow_name}}"
+          catchtap="onClaimTap"
+        >认领</view>
+      </view>
     </view>
-  </view>
+
+    <!-- 添加影子成员按钮 -->
+    <view class="add-shadow-btn" hover-class="hover-opacity" bindtap="onAddShadow">
+      <text>👥+ 添加影子成员</text>
+    </view>
+
+  </scroll-view>
 </view>

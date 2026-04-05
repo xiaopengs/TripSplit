@@ -1,28 +1,40 @@
-/* 成员管理弹窗样式 */
+/* ============================================
+   成员管理弹窗样式
+   ============================================ */
+
+/* 遮罩层 */
 .popup-mask {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: var(--bg-mask);
   z-index: 1000;
 }
 
+/* 弹窗容器 — 大面积底部弹出 ~80vh */
 .popup-container {
   position: fixed;
-  left: 0; right: 0; bottom: 0;
-  background: white;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #FFFFFF;
   border-radius: 32rpx 32rpx 0 0;
   z-index: 1001;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   transform: translateY(100%);
-  transition: transform 250ms var(--ease-out);
+  transition: transform 300ms var(--ease-out);
+  box-shadow: var(--shadow-lg);
 }
 
 .popup-container.show {
   transform: translateY(0);
 }
 
+/* ---- 标题栏 ---- */
 .popup-header {
   display: flex;
   justify-content: space-between;
@@ -34,77 +46,85 @@
 
 .popup-title {
   font-size: 34rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .close-btn {
-  width: 56rpx; height: 56rpx;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-secondary);
-  font-size: 32rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: 36rpx;
+  border-radius: 50%;
+  background: var(--bg-primary);
 }
 
-/* 邀请区域 */
-.invite-section {
+/* ---- 可滚动内容区 ---- */
+.scroll-body {
+  flex: 1;
+  overflow: hidden;
   padding: 24rpx 32rpx;
-  flex-shrink: 0;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
 }
 
+/* ============================================
+   邀请好友卡片
+   ============================================ */
 .invite-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx;
-  background: linear-gradient(135deg, rgba(52,199,89,0.08), rgba(52,199,89,0.02));
+  padding: 28rpx 24rpx;
+  background: rgba(52, 199, 89, 0.06);
   border: 2rpx dashed var(--color-primary);
   border-radius: var(--border-radius-lg);
+  margin-bottom: 32rpx;
+}
+
+.invite-info {
+  flex: 1;
 }
 
 .invite-title {
-  font-size: 28rpx;
-  font-weight: 500;
+  font-size: 30rpx;
+  font-weight: 600;
   color: var(--text-primary);
   display: block;
 }
 
 .invite-desc {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: var(--text-secondary);
   display: block;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
 }
 
-.share-btn {
-  width: 72rpx; height: 72rpx;
+.share-circle {
+  width: 76rpx;
+  height: 76rpx;
   background: var(--color-primary);
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  margin-left: 16rpx;
+  margin-left: 20rpx;
 }
 
 .share-icon {
-  color: white;
-  font-size: 32rpx;
+  color: #FFFFFF;
+  font-size: 36rpx;
+  font-weight: 700;
 }
 
-/* 滚动区 */
-.scroll-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 32rpx 32rpx;
-}
-
-/* 区块 */
+/* ============================================
+   区块通用
+   ============================================ */
 .section {
-  margin-bottom: 24rpx;
-}
-
-.section-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-bottom: 28rpx;
 }
 
 .section-title {
@@ -112,95 +132,94 @@
   font-weight: 600;
   color: var(--text-secondary);
   display: block;
-  margin-bottom: 12rpx;
-}
-
-.claim-hint {
-  font-size: 22rpx;
-  color: #FF9500;
-}
-
-/* 影子成员说明 */
-.shadow-tip-card {
-  display: flex;
-  padding: 20rpx;
-  background: #FFF9E6;
-  border-radius: var(--border-radius-md);
   margin-bottom: 16rpx;
 }
 
-.tip-icon {
-  font-size: 36rpx;
-  margin-right: 12rpx;
-  flex-shrink: 0;
+.section-title.no-margin {
+  margin-bottom: 0;
 }
 
-.tip-content {
-  flex: 1;
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
 }
 
-.tip-title {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #8B6914;
-  display: block;
-}
-
-.tip-desc {
+.pending-hint {
   font-size: 22rpx;
-  color: #B8922A;
-  margin-top: 4rpx;
-  display: block;
-  line-height: 1.5;
+  color: #FF9500;
+  font-weight: 500;
 }
 
-/* 成员项 */
-.member-item {
+/* ============================================
+   已加入成员卡片
+   ============================================ */
+.real-member-card {
   display: flex;
   align-items: center;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--border-color);
 }
 
-.member-item:last-child {
-  border-bottom: none;
+.real-member-card + .real-member-card {
+  border-top: 1rpx solid var(--border-color);
 }
 
-.shadow-item {
-  background: #FFFBF0;
-  margin: 0 -12rpx;
-  padding: 20rpx 12rpx;
-  border-radius: var(--border-radius-md);
-  border: 1rpx solid #FFE4A0;
-  border-bottom-color: #FFE4A0;
-  margin-bottom: 8rpx;
-}
-
+/* ---- 头像 ---- */
 .avatar {
-  width: 72rpx; height: 72rpx;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: 50%;
-  background: var(--color-primary);
-  display: flex; align-items: center; justify-content: center;
-  color: white;
-  font-size: 28rpx;
-  font-weight: 600;
-  margin-right: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 700;
+  margin-right: 20rpx;
   flex-shrink: 0;
+  position: relative;
 }
 
-.avatar.shadow {
-  background: #E5E5EA;
-  color: var(--text-secondary);
-  font-size: 28rpx;
+.avatar-real {
+  background: var(--color-primary);
+  color: #FFFFFF;
 }
 
-.member-info {
+.avatar-shadow {
+  background: #F5F5F5;
+  border: 2rpx dashed #D1D1D6;
+}
+
+.shadow-person {
+  font-size: 36rpx;
+}
+
+/* "?" 小圆标 */
+.question-badge {
+  position: absolute;
+  bottom: -2rpx;
+  right: -2rpx;
+  width: 32rpx;
+  height: 32rpx;
+  background: #FF9500;
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid #FFFFFF;
+}
+
+/* ---- 成员信息 ---- */
+.member-body {
   flex: 1;
   min-width: 0;
 }
 
 .member-name {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 500;
   color: var(--text-primary);
   display: block;
@@ -209,78 +228,126 @@
 .name-row {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
-.shadow-tag {
-  font-size: 20rpx;
-  background: #FFE4A0;
-  color: #8B6914;
-  padding: 2rpx 10rpx;
-  border-radius: 10rpx;
-}
-
-.member-status {
+.member-meta {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-top: 4rpx;
+  gap: 12rpx;
+  margin-top: 6rpx;
 }
 
-.status-joined {
+.tag-joined {
   font-size: 22rpx;
-  color: var(--color-success);
+  color: var(--color-primary);
+  font-weight: 500;
 }
 
-.member-status.waiting {
-  font-size: 22rpx;
-  color: #FF9500;
-}
-
-.role-tag {
+.tag-role {
   font-size: 20rpx;
   color: var(--text-tertiary);
 }
 
-.claim-btn {
+/* 影子成员标签 — 黄底深色 */
+.tag-shadow {
+  font-size: 20rpx;
+  background: #FFF3D0;
+  color: #8B6914;
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.shadow-subtitle {
+  font-size: 22rpx;
+  color: #FF9500;
+  display: block;
+  margin-top: 4rpx;
+}
+
+/* ============================================
+   影子成员说明卡片
+   ============================================ */
+.tip-card {
+  display: flex;
+  padding: 24rpx;
+  background: #FFF9E6;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 20rpx;
+}
+
+.tip-emoji {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.tip-body {
+  flex: 1;
+}
+
+.tip-heading {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #8B6914;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.tip-text {
+  font-size: 22rpx;
+  color: #B8922A;
+  display: block;
+  line-height: 1.6;
+}
+
+/* ============================================
+   影子成员卡片
+   ============================================ */
+.shadow-member-card {
   display: flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 10rpx 20rpx;
-  background: var(--color-primary);
-  color: white;
-  border-radius: 24rpx;
-  font-size: 22rpx;
+  padding: 24rpx 20rpx;
+  background: #FFFCF0;
+  border: 2rpx dashed #FFD966;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 12rpx;
+}
+
+/* ---- 认领按钮 — 珊瑚粉色 ---- */
+.claim-btn {
+  padding: 12rpx 28rpx;
+  background: #FF6B6B;
+  color: #FFFFFF;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  font-weight: 600;
   flex-shrink: 0;
+  margin-left: 12rpx;
 }
 
-.claim-icon {
-  font-size: 22rpx;
-}
-
-/* 添加影子成员 */
-.add-shadow-section {
-  padding: 16rpx 32rpx 40rpx;
-  flex-shrink: 0;
-}
-
+/* ============================================
+   添加影子成员按钮
+   ============================================ */
 .add-shadow-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  padding: 20rpx;
+  padding: 24rpx;
   border: 2rpx dashed var(--border-color);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   color: var(--text-secondary);
-  font-size: 26rpx;
-}
-
-.add-icon {
   font-size: 28rpx;
+  margin-top: 8rpx;
+  margin-bottom: 16rpx;
 }
 
-/* Hover */
+/* ============================================
+   通用
+   ============================================ */
 .hover-opacity {
   opacity: 0.7;
 }

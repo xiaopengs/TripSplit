@@ -66,7 +66,7 @@ Component({
           perPersonAmount: formatAmount(perPerson, this.data.currencySymbol)
         })
       } else {
-        this.setData({ perPersonAmount: `¥${this.data.currencySymbol === '$' ? '0' : '0.00'}` })
+        this.setData({ perPersonAmount: `${this.data.currencySymbol}0.00` })
       }
     }
   },
@@ -88,7 +88,7 @@ Component({
 
     // === 键盘输入 ===
     onKeyboardInput(e) {
-      const val = e.detail
+      const val = e.detail.key
       let raw = this.data.rawValue
 
       // 输入限制：最多2位小数
@@ -270,7 +270,7 @@ Component({
         submitData.payerName = realMember.nickname || '我'
       }
 
-      this.triggerEvent('onsubmit', { detail: submitData })
+      this.triggerEvent('onsubmit', submitData)
       
       // 提交后重置
       setTimeout(() => this._resetForm(), 300)

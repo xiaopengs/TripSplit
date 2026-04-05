@@ -129,7 +129,7 @@ Page({
   // === FAB 操作 ===
 
   onFabSelect(e) {
-    const key = e.detail
+    const key = e.detail.key
     this.setData({ fabVisible: false })
 
     switch (key) {
@@ -256,9 +256,41 @@ Page({
 
   onConfirmInbox(e) {
     const id = e.currentTarget.dataset.id
-    aiService.confirmInboxItem(id)
-    wx.showToast({ title: '已入账', icon: 'success' })
-    this._loadInbox()
+    const inboxItem = aiService.getInboxItemById(id)
+
+    if (!inboxItem || !inboxItem.ai_result) {
+      wx.showToast({ title: '识别结果为空', icon: 'none' })
+      return
+    }
+
+    const aiData = inboxItem.ai_result
+    const catInfo = getCategoryByKey(aiData.category)
+
+    // Create bill from AI result
+    try {
+      billService.createBill({
+        bookId: this.data.currentBook.id,
+        amount: aiData.amount,
+        category: catInfo || { key: aiData.category || 'other', name: aiData.category_name || '其他' },
+        note: aiData.note || '',
+        images: inboxItem.image_url ? [inboxItem.image_url] : [],
+        payerId: inboxItem.payer_id || (this.data.members[0] && this.data.members[0].id),
+        payerName: (this.data.members.find(m => m.id === inboxItem.payer_id) || this.data.members[0] || {}).nickname || '我',
+        memberIds: this.data.members.map(m => m.id),
+        members: this.data.members,
+        splitType: 'equal',
+        paidAt: inboxItem.created_at || new Date().toISOString(),
+        source: 'ai_confirmed',
+        aiConfidence: aiData.confidence
+      })
+
+      aiService.confirmInboxItem(id)
+      this.refreshData()
+      wx.showToast({ title: '已入账', icon: 'success' })
+    } catch (err) {
+      console.error('Confirm inbox error:', err)
+      wx.showToast({ title: '入账失败', icon: 'none' })
+    }
   },
 
   onRejectInbox(e) {
@@ -324,6 +356,21 @@ Page({
 
   closeDetailPopup() {
     this.setData({ detailVisible: false, selectedBill: null })
+  },
+
+  onDeleteBill(e) {
+    const id = e.detail && e.detail.id
+    if (!id) return
+
+    try {
+      billService.deleteBill(id)
+      this.setData({ detailVisible: false, selectedBill: null })
+      this.refreshData()
+      wx.showToast({ title: '已删除', icon: 'success' })
+    } catch (err) {
+      console.error('Delete bill error:', err)
+      wx.showToast({ title: '删除失败', icon: 'none' })
+    }
   },
 
   // === 结算操作 ===

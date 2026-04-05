@@ -1,51 +1,51 @@
-<!-- 拼途记账 - 首页 / 流水列表 -->
+<!-- TripSplit - 首页 / 流水·待整理·结算 -->
 <view class="page-container">
-  <!-- 顶部账本信息卡 -->
+  <!-- ======== 顶部账本信息卡 ======== -->
   <view class="book-header" style="background: linear-gradient(135deg, {{bookColor}} 0%, {{bookColorLight}} 100%); padding-top: {{navPaddingTop}}px;">
     <view class="header-content" style="padding-top: {{navPaddingBottom}}px;">
       <view class="header-left">
-        <image class="book-icon" src="/images/icons/book.png" mode="aspectFit" wx:if="{{currentBook}}" />
+        <text class="book-emoji" wx:if="{{currentBook}}">🏔</text>
         <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
         <text class="member-count">· {{memberCount}}人</text>
       </view>
       <view class="header-right" bindtap="onMemberTap" hover-class="hover-opacity">
-        <image class="member-icon" src="/images/icons/members.png" mode="aspectFit" />
-        <view class="badge" wx:if="{{pendingClaimCount > 0}}">{{pendingClaimCount}}</view>
+        <text class="member-emoji">👥</text>
+        <view class="badge" wx:if="{{pendingClaimCount > 0}}">!</view>
       </view>
     </view>
     <view class="date-range" wx:if="{{currentBook}}">
       {{currentBook.start_date}} - 至今
     </view>
 
-    <!-- Tab 栏 -->
+    <!-- Tab 栏：圆角药丸 -->
     <view class="tab-bar">
       <view class="tab-item {{activeTab === 'flow' ? 'active' : ''}}" bindtap="switchTab" data-tab="flow">
-        <image class="tab-icon" src="/images/icons/flow_{{activeTab === 'flow' ? 'active' : 'normal'}}.png" mode="aspectFit" />
-        <text>流水</text>
+        <text class="tab-icon-emoji">☰</text>
+        <text class="tab-label">流水</text>
       </view>
       <view class="tab-item {{activeTab === 'inbox' ? 'active' : ''}}" bindtap="switchTab" data-tab="inbox">
-        <image class="tab-icon" src="/images/icons/inbox_{{activeTab === 'inbox' ? 'active' : 'normal'}}.png" mode="aspectFit" />
-        <text>待整理</text>
+        <text class="tab-icon-emoji">📮</text>
+        <text class="tab-label">待整理</text>
         <view class="red-dot" wx:if="{{inboxUnread > 0}}">{{inboxUnread > 99 ? '99+' : inboxUnread}}</view>
       </view>
       <view class="tab-item {{activeTab === 'settle' ? 'active' : ''}}" bindtap="switchTab" data-tab="settle">
-        <image class="tab-icon" src="/images/icons/settle_{{activeTab === 'settle' ? 'active' : 'normal'}}.png" mode="aspectFit" />
-        <text>结算</text>
+        <text class="tab-icon-emoji">📊</text>
+        <text class="tab-label">结算</text>
       </view>
     </view>
   </view>
 
-  <!-- 流水 Tab 内容 -->
-  <scroll-view 
-    class="content-area safe-bottom" 
-    scroll-y 
-    enhanced 
+  <!-- ======== 流水 Tab ======== -->
+  <scroll-view
+    class="content-area safe-bottom"
+    scroll-y
+    enhanced
     show-scrollbar="{{false}}"
     wx:if="{{activeTab === 'flow'}}"
   >
     <!-- 空状态：无账本 -->
     <view class="empty-state" wx:if="{{!currentBook}}">
-      <image class="empty-logo" src="/images/logo.png" mode="aspectFit" />
+      <text class="empty-emoji large">🏔</text>
       <text class="empty-title">开启你的旅行记账之旅</text>
       <text class="empty-desc">创建或加入一个账本开始记录</text>
       <button class="btn-primary" bindtap="onCreateBook">+ 新建账本</button>
@@ -53,7 +53,7 @@
 
     <!-- 空状态：有账本但无流水 -->
     <view class="empty-state" wx:elif="{{groupedBills.length === 0}}">
-      <image class="empty-icon" src="/images/icons/empty_bill.png" mode="aspectFit" />
+      <text class="empty-emoji">📝</text>
       <text class="empty-title">还没有记录</text>
       <text class="empty-desc">点击右下角的 + 开始记一笔</text>
     </view>
@@ -66,19 +66,19 @@
           <view class="date-info">
             <view class="date-dot"></view>
             <text class="date-text">{{item.dateLabel}}</text>
-            <text class="location-text" wx:if="{{item.location}}">📍 {{item.location}}</text>
+            <text class="location-text" wx:if="{{item.location}}">📍{{item.location}}</text>
             <text class="count-text">· {{item.items.length}}笔</text>
           </view>
           <view class="day-summary">
             <text class="day-total">{{item.totalDisplay}}</text>
-            <text class="day-label">支出</text>
+            <text class="day-label"> 支出</text>
           </view>
         </view>
 
         <!-- 账单卡片 -->
-        <view 
-          class="bill-card" 
-          wx:for="{{item.items}}" 
+        <view
+          class="bill-card"
+          wx:for="{{item.items}}"
           wx:for-item="bill"
           wx:key="id"
           bindtap="onBillTap"
@@ -110,24 +110,30 @@
     </view>
   </scroll-view>
 
-  <!-- 待整理 Tab 内容 -->
-  <scroll-view 
-    class="content-area safe-bottom" 
+  <!-- ======== 待整理 Tab ======== -->
+  <scroll-view
+    class="content-area safe-bottom"
     scroll-y
     enhanced
     show-scrollbar="{{false}}"
     wx:if="{{activeTab === 'inbox'}}"
   >
+    <!-- 空状态 -->
     <view class="empty-state" wx:if="{{inboxItems.length === 0}}">
-      <image class="empty-icon" src="/images/icons/check_circle.png" mode="aspectFit" />
+      <view class="empty-check-circle">
+        <text class="empty-check-mark">✓</text>
+      </view>
       <text class="empty-title">待整理列表为空</text>
       <text class="empty-desc">拍照后的识别结果会出现在这里</text>
     </view>
 
+    <!-- 待整理列表 -->
     <view class="inbox-list" wx:else>
       <view class="inbox-card" wx:for="{{inboxItems}}" wx:key="id">
-        <image class="inbox-thumb" src="{{item.image_url || item.image_local}}" mode="aspectFill" />
-        
+        <view class="inbox-thumb-placeholder">
+          <text class="inbox-thumb-emoji">📷</text>
+        </view>
+
         <view class="inbox-info" wx:if="{{item.status === 'processing'}}">
           <text class="inbox-status processing">识别中...</text>
         </view>
@@ -137,7 +143,7 @@
             {{item.ai_result.confidence >= 0.6 ? item.ai_result.amountDisplay : '?'}}
           </text>
           <text class="inbox-category">{{item.ai_result.category_name}}</text>
-          
+
           <!-- 操作按钮 -->
           <view class="inbox-actions" wx:if="{{item.status === 'pending'}}">
             <view class="action-btn confirm" bindtap="onConfirmInbox" data-id="{{item.id}}">✓ 确认</view>
@@ -155,8 +161,8 @@
     </view>
   </scroll-view>
 
-  <!-- 结算 Tab 内容 -->
-  <scroll-view 
+  <!-- ======== 结算 Tab ======== -->
+  <scroll-view
     class="content-area safe-bottom"
     scroll-y
     enhanced
@@ -166,7 +172,7 @@
     <view class="settle-container">
       <!-- 空状态 -->
       <view class="empty-state" wx:if="{{!settlementResult || settlementResult.transfers.length === 0}}">
-        <image class="empty-icon" src="/images/icons/calc.png" mode="aspectFit" />
+        <text class="empty-emoji">📊</text>
         <text class="empty-title">暂无数据可结算</text>
         <text class="empty-desc">记录更多开销后即可查看结算方案</text>
       </view>
@@ -182,11 +188,11 @@
               <text class="person-label">付款人</text>
               <text class="person-name">{{item.from_name}}</text>
             </view>
-            
+
             <view class="transfer-arrow">
-              <text>→</text>
+              <text class="arrow-text">→</text>
             </view>
-            
+
             <view class="transfer-person to">
               <text class="person-label">收款人</text>
               <text class="person-name">{{item.to_name}}</text>
@@ -198,7 +204,7 @@
           <view class="transfer-actions">
             <button class="btn-mark-paid" wx:if="{{item.status !== 'paid'}}" bindtap="onMarkPaid" data-id="{{item.id}}">标记已付</button>
             <text class="paid-tag" wx:else>✓ 已付款</text>
-            
+
             <button class="btn-forgive" wx:if="{{item.status !== 'forgiven' && item.status !== 'paid'}}" bindtap="onForgive" data-id="{{item.id}}">下顿他请</button>
           </view>
         </view>
@@ -206,15 +212,17 @@
     </view>
   </scroll-view>
 
-  <!-- FAB 扇形菜单 -->
-  <fab-menu 
+  <!-- ======== 组件挂载 ======== -->
+
+  <!-- FAB 浮动菜单 -->
+  <fab-menu
     visible="{{fabVisible}}"
-    bind:onselect="onFabSelect"
+    bind:select="onFabSelect"
     bind:toggle="toggleFab"
   />
 
   <!-- 成员管理弹窗 -->
-  <member-popup 
+  <member-popup
     visible="{{memberPopupVisible}}"
     members="{{members}}"
     bind:onclose="closeMemberPopup"
@@ -223,7 +231,7 @@
   />
 
   <!-- 手动记账面板 -->
-  <add-bill-panel 
+  <add-bill-panel
     visible="{{addPanelVisible}}"
     members="{{members}}"
     bind:onclose="closeAddPanel"
@@ -231,10 +239,11 @@
   />
 
   <!-- 账单详情弹窗 -->
-  <bill-detail-popup 
+  <bill-detail-popup
     visible="{{detailVisible}}"
     bill="{{selectedBill}}"
     currencySymbol="{{currencySymbol}}"
     bind:onclose="closeDetailPopup"
+    bind:ondelete="onDeleteBill"
   />
 </view>

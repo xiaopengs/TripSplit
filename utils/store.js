@@ -1,5 +1,6 @@
 /**
- * 全局状态管理 - 发布订阅模式
+ * 全局状态管理 - 纯内存发布订阅模式
+ * 持久化统一由 cache.js 负责，此处仅管理运行时状态
  */
 class TripStore {
   constructor() {
@@ -14,7 +15,6 @@ class TripStore {
       offlineQueue: []
     }
     this._listeners = {}
-    this._persistKeys = ['currentBook', 'members', 'bills', 'inbox', 'inboxUnread', 'userInfo']
   }
 
   getState(key) {
@@ -26,14 +26,6 @@ class TripStore {
     const oldValue = this._state[key]
     this._state[key] = value
     this._emit(key, value, oldValue)
-    
-    if (this._persistKeys.includes(key)) {
-      try {
-        wx.setStorageSync(`store_${key}`, JSON.stringify(value))
-      } catch (e) {
-        console.warn('Store persist error:', key, e)
-      }
-    }
   }
 
   subscribe(key, callback) {
@@ -52,17 +44,6 @@ class TripStore {
     if (!listeners || listeners.length === 0) return
     listeners.forEach(cb => {
       try { cb(newValue, oldValue) } catch (e) { console.error('Store listener error:', e) }
-    })
-  }
-
-  restore() {
-    this._persistKeys.forEach(key => {
-      try {
-        const raw = wx.getStorageSync(`store_${key}`)
-        if (raw) {
-          this._state[key] = JSON.parse(raw)
-        }
-      } catch (e) { /* ignore */ }
     })
   }
 

@@ -183,6 +183,11 @@ function updateInboxField(id, field, value) {
   }
 }
 
+function getInboxItemById(id) {
+  const items = cache.get(INBOX_KEY) || []
+  return items.find(i => i.id === id) || null
+}
+
 function confirmInboxItem(id) {
   updateInboxField(id, 'status', 'confirmed')
 }
@@ -197,6 +202,7 @@ module.exports = {
   recognizeReceipt,
   captureAndProcess,
   getInboxItems,
+  getInboxItemById,
   getUnreadCount,
   confirmInboxItem,
   rejectInboxItem
