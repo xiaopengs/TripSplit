@@ -1,12 +1,17 @@
 /**
  * 数据同步服务
  * 管理离线队列和网络恢复后的自动同步
+ * 
+ * 注意：当前 API 服务未部署，sync 相关操作均为本地队列管理
+ * TODO: API 服务就绪后移除 _isApiReady 标记
  */
 const cache = require('../utils/cache')
-const { request } = require('../utils/request')
 
 const OFFLINE_QUEUE_KEY = 'offline_queue'
 const SYNC_PENDING_KEY = 'sync_pending'
+
+// API 是否就绪（后端服务部署后改为 true）
+const _isApiReady = false
 
 /**
  * 将操作加入离线队列
@@ -27,16 +32,19 @@ function enqueue(action, data) {
  * 同步离线队列（FIFO）
  */
 async function syncOfflineQueue() {
+  if (!_isApiReady) return
+
   const queue = cache.get(OFFLINE_QUEUE_KEY) || []
   if (queue.length === 0) return
 
   console.log(`[Sync] Starting sync, ${queue.length} items in queue`)
 
+  const { request } = require('../utils/request')
   const failed = []
   
   for (const item of queue) {
     try {
-      await _syncItem(item)
+      await _syncItem(item, request)
       console.log(`[Sync] ✅ ${item.action} synced`)
     } catch (err) {
       item.retries++
@@ -59,7 +67,7 @@ async function syncOfflineQueue() {
   }
 }
 
-async function _syncItem(item) {
+async function _syncItem(item, request) {
   switch (item.action) {
     case 'create_bill':
       return request({
@@ -82,7 +90,10 @@ async function _syncItem(item) {
  * 增量同步账单数据（基于时间戳 diff）
  */
 async function incrementalSync(bookId, lastSyncTime) {
+  if (!_isApiReady) return null
+
   try {
+    const { request } = require('../utils/request')
     const result = await request({
       url: `/books/${bookId}/bills`,
       method: 'GET',

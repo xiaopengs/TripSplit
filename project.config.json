@@ -1,1 +1,28 @@
-{"miniprogramRoot": "./", "projectname": "TripSplit", "description": "拼途记账 - 旅行多人协作记账", "appid": "wx86331a99c51be758", "setting": {"urlCheck": false, "es6": true, "enhance": true, "postcss": true, "preloadBackgroundData": false, "minified": true, "newFeature": true, "autoAudits": false, "coverView": true, "showShadowRootInWxmlPanel": true, "scopeDataCheck": false", "checkInvalidKey": true, "checkSiteMap": true, "uploadWithSourceMap": true, "babelSetting": {"ignore": [], "disablePlugins": [], "outputPath": ""}, "useCompilerModule": false, "userConfirmedUseCompilerModuleSwitch": false}, "compileType": "miniprogram", "condition": {}}
+{
+  "appid": "wx86331a99c51be758",
+  "compileType": "miniprogram",
+  "libVersion": "3.15.1",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true,
+    "showShadowRootInWxmlPanel": true,
+    "packNpmRelationList": [],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
+}

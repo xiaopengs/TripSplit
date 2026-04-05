@@ -17,9 +17,8 @@ App({
   onLaunch() {
     console.log('🧩 拼途记账 TripSplit launched')
 
-    // 获取系统信息
-    const systemInfo = wx.getSystemInfoSync()
-    this.globalData.systemInfo = systemInfo
+    // 获取系统信息（兼容新旧 API）
+    this.globalData.systemInfo = this._getSystemInfo()
 
     // 初始化本地缓存
     cache.init()
@@ -32,6 +31,37 @@ App({
 
     // 监听网络状态
     this.watchNetwork()
+  },
+
+  /**
+   * 获取系统信息（兼容新旧基础库）
+   * 新版 API: getWindowInfo + getDeviceInfo
+   * 旧版回退: getSystemInfoSync
+   */
+  _getSystemInfo() {
+    try {
+      const info = {}
+      // 新版分拆 API（基础库 2.20.1+）
+      if (wx.getWindowInfo) {
+        Object.assign(info, wx.getWindowInfo())
+      }
+      if (wx.getDeviceInfo) {
+        Object.assign(info, wx.getDeviceInfo())
+      }
+      if (wx.getAppBaseInfo) {
+        Object.assign(info, wx.getAppBaseInfo())
+      }
+      // 如果新 API 都拿到了数据就直接返回
+      if (info.pixelRatio) return info
+    } catch (e) {
+      // 新 API 不可用时静默降级
+    }
+    // 回退到旧版 API
+    try {
+      return wx.getSystemInfoSync()
+    } catch (e) {
+      return {}
+    }
   },
 
   /**
