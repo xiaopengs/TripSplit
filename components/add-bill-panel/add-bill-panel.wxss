@@ -22,8 +22,8 @@
 /* 面板容器：近全屏底部弹出 */
 .panel {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 24rpx;
+  right: 24rpx;
   bottom: 0;
   height: 88vh;
   background: var(--bg-card);
@@ -31,6 +31,8 @@
   z-index: 1001;
   display: flex;
   flex-direction: column;
+  width: auto;
+  max-width: calc(100vw - 48rpx);
   transform: translateY(100%);
   transition: transform 280ms var(--ease-out);
   overflow: hidden;
@@ -302,13 +304,17 @@
   border-bottom: 1rpx solid var(--border-color);
 }
 
-.custom-row:last-child {
-  border-bottom: none;
-}
-
 .cs-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 28rpx;
   color: var(--text-primary);
+}
+
+.custom-row:last-child {
+  border-bottom: none;
 }
 
 .cs-input {

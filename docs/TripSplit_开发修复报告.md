@@ -51,6 +51,10 @@
 - **成员管理弹窗**：邀请卡片与成员名称在窄屏/长文案下不再挤出右侧，右侧圆形分享按钮可完整显示。
 - **新建账本页**：影子成员“输入 + 添加”行不再出现右侧裁切，“+ 添加”按钮完整可见。
 
+补充：针对截图中“成员管理弹窗整体向左、右侧被裁剪”的场景，已在 [member-popup.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/member-popup/member-popup.wxss) 将弹窗容器由 `left/right: 0` 改为 `left/right: 24rpx`，让弹窗在屏幕中间留出左右安全边距，避免视觉上贴边或被系统裁切。
+
+补充：手动记账面板同类问题已在 [add-bill-panel.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/add-bill-panel/add-bill-panel.wxss) 修复：将 `.panel` 由 `left/right: 0` 调整为 `left/right: 24rpx` 并加上 `max-width: calc(100vw - 48rpx)`，同时为 `.cs-name` 增加省略与 `min-width: 0`，避免在“自定义分摊”行被输入框挤压导致溢出。
+
 #### 3.2 分享功能结果
 
 - 成员管理弹窗与成员管理页面的“邀请好友加入账本”已可直接触发系统分享面板。

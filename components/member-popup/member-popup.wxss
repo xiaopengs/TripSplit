@@ -16,8 +16,8 @@
 /* 弹窗容器 — 大面积底部弹出 ~80vh */
 .popup-container {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 24rpx;
+  right: 24rpx;
   bottom: 0;
   background: #FFFFFF;
   border-radius: 32rpx 32rpx 0 0;
@@ -25,6 +25,8 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  width: auto;
+  max-width: calc(100vw - 48rpx);
   transform: translateY(100%);
   transition: transform 300ms var(--ease-out);
   box-shadow: var(--shadow-lg);
