@@ -45,7 +45,8 @@
 /* Logo */
 .logo-section {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 40rpx 0 32rpx;
 }
 
@@ -61,12 +62,19 @@
   font-size: 56rpx;
 }
 
+.logo-hint {
+  font-size: 20rpx;
+  color: var(--text-tertiary);
+  margin-top: 12rpx;
+}
+
 /* 表单项 */
 .form-item {
   background: white;
   border-radius: var(--border-radius-lg);
   padding: 24rpx;
   margin-bottom: 20rpx;
+  overflow: hidden;
 }
 
 .form-label {
@@ -89,21 +97,30 @@
   color: var(--text-tertiary);
 }
 
+/* 输入框行（input + 字数统计） */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
 .form-input {
-  width: 100%;
-  padding: 16rpx 20rpx;
+  flex: 1;
+  min-width: 0;
+  padding: 20rpx 24rpx;
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
   font-size: 30rpx;
   box-sizing: border-box;
+  height: 80rpx;
+  line-height: 44rpx;
 }
 
 .char-count {
   font-size: 22rpx;
   color: var(--text-tertiary);
-  text-align: right;
-  display: block;
-  margin-top: 8rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Picker */

@@ -31,11 +31,11 @@ Page({
   _loadData() {
     const grouped = billService.getBillsGroupedByDate(this.data.bookId)
     let total = 0
+    const self = this
 
-    const formatted = grouped.map(group => {
+    const formatted = grouped.map(function(group) {
       total += group.total
-      return {
-      var self = this
+      
       var items = group.items.map(function(bill) {
         var catInfo = getCategoryByKey(bill.category)
         return Object.assign({}, bill, {
@@ -44,12 +44,12 @@ Page({
           timeDisplay: formatDateTimeCN(bill.paid_at)
         })
       })
+      
       return Object.assign({}, group, {
         dateLabel: formatChineseDate(group.date),
         totalDisplay: formatAmount(group.total, self.data.currencySymbol),
         items: items
       })
-      }
     })
 
     this.setData({

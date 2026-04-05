@@ -82,7 +82,7 @@ function generateRequestId() {
 function getToken() {
   try {
     return wx.getStorageSync('token') || ''
-  } catch { return '' }
+  } catch (e) { return '' }
 }
 
 function handleAuthError() {

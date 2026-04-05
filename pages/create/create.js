@@ -17,7 +17,9 @@ Page({
     selectedSkinColor: SKIN_COLORS[0].value,
     shadowMembers: [],
     newShadowName: '',
-    canCreate: false
+    canCreate: false,
+    logoIcons: ['🧩', '🏔️', '🏖️', '🎒', '✈️', '🚗', '🏨', '🍜'],
+    logoIndex: 0
   },
 
   onLoad() {
@@ -111,7 +113,20 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack()
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      wx.navigateBack()
+    } else {
+      // 没有上一页时跳转到首页
+      wx.reLaunch({ url: '/pages/index/index' })
+    }
+  },
+
+  onLogoTap() {
+    // 切换图标
+    const nextIndex = (this.data.logoIndex + 1) % this.data.logoIcons.length
+    this.setData({ logoIndex: nextIndex })
+    wx.vibrateShort({ type: 'light' })
   },
 
   onCreate() {
@@ -137,7 +152,8 @@ Page({
       wx.showToast({ title: '创建成功', icon: 'success' })
 
       setTimeout(() => {
-        wx.switchTab({ url: '/pages/index/index' })
+        // 创建成功后返回首页
+        wx.reLaunch({ url: '/pages/index/index' })
       }, 500)
     } catch (err) {
       wx.hideLoading()

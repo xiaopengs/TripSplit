@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * TripSplit 一键发布脚本
+ * TripSplit 一键发布脚本（使用 .cjs 后缀避免微信小程序扫描）
  * 
  * 功能:
  *   1. 运行全部测试
@@ -8,18 +8,18 @@
  *   3. 上传到微信后台 / 生成预览二维码
  * 
  * 用法:
- *   node scripts/publish.js test       仅运行测试
- *   node scripts/publish.js preview    生成预览二维码
- *   node scripts/publish.js upload     上传到微信后台
- *   node scripts/publish.js all        测试 + 上传（默认）
- *   node scripts/publish.js            同 all
+ *   node publish.cjs test       仅运行测试
+ *   node publish.cjs preview    生成预览二维码
+ *   node publish.cjs upload     上传到微信后台
+ *   node publish.cjs all        测试 + 上传（默认）
+ *   node publish.cjs            同 all
  */
 
-const { execSync, exec } = require('child_process')
+const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 
-const PROJECT_DIR = path.resolve(__dirname, '..')
+const PROJECT_DIR = path.resolve(__dirname)
 const APPID = 'wx86331a99c51be758'
 
 // 颜色
@@ -80,20 +80,17 @@ function runTests() {
 function checkCliTool() {
   logStep('2/3', '检查微信开发者工具 CLI...')
 
-  // macOS 默认路径
-  const macPaths = [
-    '/Applications/wechatwebdevtools.app/Contents/MACOS/cli',
-    '/Applications/wechatwebdevtools.app/Contents/MacOS/cli'
-  ]
-  
   // Windows 默认路径
   const winPaths = [
     'C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat',
     process.env.LOCALAPPDATA + '\\Programs\\Tencent\\微信web开发者工具\\cli.bat'
   ]
-
+  
   const isWin = process.platform === 'win32'
-  const paths = isWin ? winPaths : macPaths
+  const paths = isWin ? winPaths : [
+    '/Applications/wechatwebdevtools.app/Contents/MACOS/cli',
+    '/Applications/wechatwebdevtools.app/Contents/MacOS/cli'
+  ]
   
   for (const p of paths) {
     if (fs.existsSync(p)) {
@@ -155,9 +152,9 @@ function ensurePackageJson() {
         test: 'node tests/run.js',
         'test:unit': 'node tests/run.js unit',
         'test:integration': 'node tests/run.js integration',
-        preview: 'node scripts/publish.js preview',
-        upload: 'node scripts/publish.js upload',
-        publish: 'node scripts/publish.js all'
+        preview: 'node publish.cjs preview',
+        upload: 'node publish.cjs upload',
+        publish: 'node publish.cjs all'
       }
     }
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf-8')

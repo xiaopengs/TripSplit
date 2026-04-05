@@ -1,8 +1,8 @@
 <!-- 拼途记账 - 首页 / 流水列表 -->
 <view class="page-container">
   <!-- 顶部账本信息卡 -->
-  <view class="book-header" style="background: linear-gradient(135deg, {{bookColor}} 0%, {{bookColorLight}} 100%);">
-    <view class="header-content">
+  <view class="book-header" style="background: linear-gradient(135deg, {{bookColor}} 0%, {{bookColorLight}} 100%); padding-top: {{navPaddingTop}}px;">
+    <view class="header-content" style="padding-top: {{navPaddingBottom}}px;">
       <view class="header-left">
         <image class="book-icon" src="/images/icons/book.png" mode="aspectFit" wx:if="{{currentBook}}" />
         <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
@@ -69,8 +69,10 @@
             <text class="location-text" wx:if="{{item.location}}">📍 {{item.location}}</text>
             <text class="count-text">· {{item.items.length}}笔</text>
           </view>
-          <text class="day-total">{{item.totalDisplay}}</text>
-          <text class="day-label">支出</text>
+          <view class="day-summary">
+            <text class="day-total">{{item.totalDisplay}}</text>
+            <text class="day-label">支出</text>
+          </view>
         </view>
 
         <!-- 账单卡片 -->
@@ -208,6 +210,7 @@
   <fab-menu 
     visible="{{fabVisible}}"
     bind:onselect="onFabSelect"
+    bind:toggle="toggleFab"
   />
 
   <!-- 成员管理弹窗 -->

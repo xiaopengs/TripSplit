@@ -44,10 +44,15 @@ Page({
     memberPopupVisible: false,
     addPanelVisible: false,
     detailVisible: false,
-    selectedBill: null
+    selectedBill: null,
+
+    // 导航栏高度（动态计算）
+    navPaddingTop: 0,
+    navPaddingBottom: 0
   },
 
   onLoad() {
+    this._calcNavHeight()
     this.loadBookData()
     this._setupStoreSubscriptions()
   },
@@ -354,6 +359,33 @@ Page({
   },
 
   // === 私有方法 ===
+
+  /**
+   * 计算自定义导航栏高度
+   * 需要避开状态栏和微信胶囊按钮
+   */
+  _calcNavHeight() {
+    try {
+      const menuBtn = wx.getMenuButtonBoundingClientRect()
+      // 导航栏顶部padding = 胶囊按钮距顶部的距离
+      // 导航栏底部padding = 胶囊按钮底部 + 额外间距 - header-content 的 padding-top
+      const paddingTop = menuBtn.top
+      // 让 header-content 的上边缘对齐到胶囊按钮中心
+      // menuBtn.top + menuBtn.height/2 是胶囊中心 Y
+      // header-content padding-top 为 24rpx ≈ 12px
+      // 所以 navPaddingTop 应让整个区域从胶囊顶部开始
+      this.setData({
+        navPaddingTop: paddingTop,
+        navPaddingBottom: menuBtn.top + menuBtn.height - paddingTop
+      })
+    } catch (e) {
+      // 回退：使用安全区
+      this.setData({
+        navPaddingTop: 20,
+        navPaddingBottom: 24
+      })
+    }
+  },
 
   _formatGroupedBills(grouped) {
     var self = this
