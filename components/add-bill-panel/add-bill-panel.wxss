@@ -81,8 +81,12 @@
 /* === 滚动内容区 === */
 .panel-body {
   flex: 1;
-  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 0 32rpx;
+  box-sizing: border-box;
 }
 
 /* === 金额显示 === */
@@ -111,6 +115,8 @@
 /* === 区块通用 === */
 .section {
   margin-bottom: 28rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .section-label {
@@ -294,6 +300,8 @@
   background: var(--bg-primary);
   border-radius: var(--border-radius-md);
   padding: 16rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .custom-row {
@@ -302,6 +310,8 @@
   justify-content: space-between;
   padding: 14rpx 0;
   border-bottom: 1rpx solid var(--border-color);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .cs-name {
@@ -311,6 +321,8 @@
   white-space: nowrap;
   font-size: 28rpx;
   color: var(--text-primary);
+  flex: 1;
+  box-sizing: border-box;
 }
 
 .custom-row:last-child {
@@ -325,6 +337,9 @@
   background: #FFFFFF;
   border-radius: var(--border-radius-sm);
   border: 1rpx solid var(--border-color);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 /* === 备注输入 === */
@@ -335,6 +350,8 @@
   border-radius: var(--border-radius-md);
   font-size: 28rpx;
   box-sizing: border-box;
+  height: 80rpx;
+  line-height: 1.4;
 }
 
 /* === 图片上传 === */

@@ -38,8 +38,11 @@
 /* 表单区域 */
 .form-area {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   padding: 0 32rpx;
   padding-bottom: 200rpx;
+  box-sizing: border-box;
 }
 
 /* Logo */
@@ -75,6 +78,8 @@
   padding: 24rpx;
   margin-bottom: 20rpx;
   overflow: hidden;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .form-label {
@@ -90,6 +95,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .form-hint {
@@ -102,6 +109,8 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .form-input {
@@ -132,6 +141,8 @@
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
   font-size: 28rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .picker-arrow {
@@ -152,6 +163,8 @@
   gap: 20rpx;
   flex-wrap: wrap;
   margin-bottom: 8rpx;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .skin-item {
@@ -214,6 +227,8 @@
   gap: 12rpx;
   align-items: center;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .shadow-input {
@@ -223,6 +238,8 @@
   border-radius: var(--border-radius-sm);
   font-size: 28rpx;
   min-width: 0;
+  height: 80rpx;
+  box-sizing: border-box;
 }
 
 .add-shadow-btn {

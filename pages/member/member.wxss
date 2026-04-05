@@ -1,26 +1,64 @@
 /* 成员管理页样式 */
-.page { min-height: 100vh; background: var(--bg-primary); }
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
 .header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16rpx 24rpx; padding-top: calc(16rpx + env(safe-area-inset-top));
-  background: white; margin-bottom: 20rpx;
+  background: white; flex-shrink: 0; position: relative; z-index: 10;
+  box-shadow: 0 1rpx 0 var(--border-color);
 }
 .back-btn { width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; }
 .back-icon { font-size: 36rpx; color: var(--text-primary); }
 .header-title { font-size: 34rpx; font-weight: 600; }
 .header-placeholder { width: 64rpx; }
-.content { padding: 0 24rpx; }
+.content {
+  flex: 1; height: 0;
+  padding: 0 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
 
 .invite-card {
   display: flex; align-items: center; justify-content: space-between;
-  background: white; border-radius: var(--border-radius-lg); padding: 28rpx;
+  background: white; border-radius: var(--border-radius-lg); 
+  padding: 28rpx 24rpx 28rpx 28rpx; /* 左侧28rpx，右侧24rpx给箭头留空间 */
   margin-bottom: 24rpx; border: 2rpx dashed var(--color-primary);
+  box-sizing: border-box; width: 100%; overflow: hidden;
+  line-height: 1.5; font-size: 28rpx; /* 重置button默认样式 */
 }
-.invite-left { display: flex; align-items: center; gap: 16rpx; flex: 1; min-width: 0; }
-.invite-icon { font-size: 40rpx; }
-.invite-title { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.invite-desc { font-size: 22rpx; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.invite-arrow { font-size: 40rpx; color: var(--color-primary); }
+/* 覆盖小程序button可能的默认样式 */
+.invite-card::after { border: none !important; }
+.invite-left {
+  display: flex; align-items: center; gap: 16rpx; 
+  flex: 1; min-width: 0; overflow: hidden;
+  max-width: calc(100% - 44rpx); /* 确保有空间给箭头 */
+}
+.invite-icon { 
+  font-size: 40rpx; flex-shrink: 0; 
+  width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
+}
+.invite-text-wrap { 
+  flex: 1; min-width: 0; overflow: hidden; 
+  max-width: 100%;
+}
+.invite-title {
+  font-size: 28rpx; font-weight: 600; color: var(--text-primary);
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  line-height: 1.4;
+}
+.invite-desc {
+  font-size: 22rpx; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  line-height: 1.4; margin-top: 4rpx;
+}
+.invite-arrow { 
+  font-size: 40rpx; color: var(--color-primary); flex-shrink: 0; 
+  margin-left: auto; padding-left: 8rpx;
+}
 
 .section { margin-bottom: 24rpx; }
 .section-title { font-size: 28rpx; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 12rpx; }
@@ -33,10 +71,14 @@
 .tip-icon { font-size: 28rpx; }
 .tip-text { font-size: 22rpx; color: #8B6914; }
 
-.member-list { background: white; border-radius: var(--border-radius-lg); padding: 8rpx 24rpx; }
+.member-list {
+  background: white; border-radius: var(--border-radius-lg);
+  padding: 0 24rpx; overflow: hidden;
+}
 .member-item {
-  display: flex; align-items: center; padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--border-color);
+  display: flex; align-items: center; padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--border-color); overflow: hidden;
+  min-height: 96rpx;
 }
 .member-item:last-child { border-bottom: none; }
 .member-item.shadow {
@@ -51,20 +93,60 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 26rpx; font-weight: 600; margin-right: 16rpx; flex-shrink: 0;
 }
+/* 小屏适配：头像缩小 */
+@media (max-width: 375px) {
+  .avatar { width: 56rpx; height: 56rpx; font-size: 22rpx; margin-right: 12rpx; }
+  .member-item { padding: 20rpx 0; }
+  .name { font-size: 26rpx; }
+  .tag { font-size: 16rpx; padding: 2rpx 8rpx; }
+  .invite-card { padding: 24rpx 20rpx 24rpx 24rpx; }
+  .invite-left { gap: 12rpx; }
+  .invite-icon { font-size: 36rpx; width: 36rpx; height: 36rpx; }
+  .invite-arrow { font-size: 36rpx; }
+}
+/* 极端小屏适配（如 iPhone SE 等） */
+@media (max-width: 320px) {
+  .content { padding: 0 16rpx; }
+  .invite-card { padding: 20rpx 16rpx 20rpx 20rpx; }
+  .member-list { padding: 0 16rpx; }
+  .member-item.shadow { margin: 0 -8rpx; padding: 16rpx 8rpx; }
+  .avatar { width: 48rpx; height: 48rpx; font-size: 20rpx; margin-right: 10rpx; }
+  .name { font-size: 24rpx; }
+  .sub { font-size: 20rpx; }
+  .invite-title { font-size: 26rpx; }
+  .invite-desc { font-size: 20rpx; }
+  .invite-icon { font-size: 32rpx; width: 32rpx; height: 32rpx; }
+  .invite-arrow { font-size: 32rpx; }
+}
 .avatar.shadow-avatar { background: #E5E5EA; color: var(--text-secondary); font-size: 24rpx; }
 
-.member-info { flex: 1; min-width: 0; }
-.name { font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
-.name-row { display: flex; align-items: center; gap: 8rpx; }
-.tag { font-size: 18rpx; padding: 2rpx 10rpx; border-radius: 10rpx; background: #FFF0E0; color: #FF9500; }
+.member-info { flex: 1; min-width: 0; overflow: hidden; }
+.name {
+  font-size: 28rpx; font-weight: 500; color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.name-row {
+  display: flex; align-items: center; gap: 8rpx;
+  overflow: hidden; max-width: 100%;
+}
+.name-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag {
+  font-size: 18rpx; padding: 2rpx 10rpx; border-radius: 10rpx;
+  background: #FFF0E0; color: #FF9500; flex-shrink: 0;
+}
 .tag.claimed { background: rgba(52,199,89,0.1); color: var(--color-success); }
-.sub { font-size: 22rpx; color: var(--text-secondary); display: block; margin-top: 2rpx; }
+.sub {
+  font-size: 22rpx; color: var(--text-secondary);
+  display: block; margin-top: 2rpx;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
-.add-section { margin-top: 16rpx; }
+.add-section { margin-top: 16rpx; margin-bottom: env(safe-area-inset-bottom); }
 .btn-add {
-  width: 100%; padding: 24rpx 0;
+  width: 100%; padding: 24rpx 0; box-sizing: border-box;
   background: white !important; color: var(--color-primary) !important;
   font-size: 28rpx; font-weight: 500; border-radius: var(--border-radius-lg);
   border: 2rpx dashed var(--border-color) !important;
+  overflow: hidden;
 }
 .hover-opacity { opacity: 0.7; }
