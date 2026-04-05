@@ -12,10 +12,16 @@ function init() {
 function get(key) {
   try {
     const value = wx.getStorageSync(PREFIX + key)
-    if (value) {
-      return typeof value === 'string' ? JSON.parse(value) : value
+    if (value === undefined || value === '' || value === null) return null
+    if (typeof value === 'string') {
+      // 尝试 JSON 解析，失败则返回原始字符串
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return value
+      }
     }
-    return null
+    return value
   } catch (e) {
     console.error('Cache get error:', key, e)
     return null

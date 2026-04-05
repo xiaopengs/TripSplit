@@ -1,0 +1,14 @@
+{
+  "name": "tripsplit",
+  "version": "1.0.0",
+  "description": "拼途记账 - 微信原生小程序旅行分账工具",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run.js",
+    "test:unit": "node tests/run.js unit",
+    "test:integration": "node tests/run.js integration",
+    "preview": "node scripts/publish.js preview",
+    "upload": "node scripts/publish.js upload",
+    "publish": "node scripts/publish.js all"
+  }
+}

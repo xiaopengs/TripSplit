@@ -20,5 +20,9 @@ Thumbs.db
 .env.local
 *.local.js
 
+# Test output
+test_output.txt
+coverage/
+
 # WeChat DevTools
 project.config.json.backup
