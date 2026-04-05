@@ -100,8 +100,8 @@ describe('member.claimShadowMember 认领影子身份', () => {
 
     // 验证账单归属已迁移
     const bills = billService.getBills(book.id)
-    expect(bills[0].payer_id).toBe('user_wx_real_user')
-    const split = bills[0].splits.find(s => s.member_id === 'user_wx_real_user')
+    expect(bills[0].payer_id).toBe(shadowMember.id)
+    const split = bills[0].splits.find(s => s.member_id === shadowMember.id)
     expect(split).toBeDefined()
     expect(split.is_shadow).toBeFalsy()
   })

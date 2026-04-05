@@ -7,6 +7,14 @@ Component({
       type: Boolean,
       value: false
     },
+    bookId: {
+      type: String,
+      value: ''
+    },
+    bookName: {
+      type: String,
+      value: ''
+    },
     members: {
       type: Array,
       value: []
@@ -44,10 +52,6 @@ Component({
     },
 
     preventMove() {},
-
-    onShare() {
-      wx.showToast({ title: '分享功能开发中', icon: 'none' })
-    },
 
     onClaimTap(e) {
       const id = e.currentTarget.dataset.id

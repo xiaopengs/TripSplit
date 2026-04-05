@@ -7,6 +7,7 @@ const memberService = require('../../services/member.service')
 Page({
   data: {
     bookId: '',
+    bookName: '',
     realMembers: [],
     shadowMembers: []
   },
@@ -14,7 +15,7 @@ Page({
   onLoad() {
     const book = bookService.getCurrentBook()
     if (!book) return
-    this.setData({ bookId: book.id })
+    this.setData({ bookId: book.id, bookName: book.name || '' })
     this._loadMembers()
   },
 
@@ -46,8 +47,18 @@ Page({
     })
   },
 
-  onShare() {
-    wx.showToast({ title: '分享功能开发中', icon: 'none' })
+  onShareAppMessage(res) {
+    const data = (res && res.target && res.target.dataset) || {}
+    const bookId = data.bookId || this.data.bookId
+    const bookName = data.bookName || this.data.bookName
+
+    if (!bookId) {
+      return { title: '拼途记账', path: '/pages/index/index' }
+    }
+
+    const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'
+    const path = `/pages/index/index?bookId=${encodeURIComponent(bookId)}&from=share`
+    return { title, path }
   },
 
   goBack() { wx.navigateBack() }

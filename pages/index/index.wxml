@@ -224,6 +224,8 @@
   <!-- 成员管理弹窗 -->
   <member-popup
     visible="{{memberPopupVisible}}"
+    bookId="{{currentBook && currentBook.id}}"
+    bookName="{{currentBook && currentBook.name}}"
     members="{{members}}"
     bind:onclose="closeMemberPopup"
     bind:onaddshadow="onAddShadowMember"

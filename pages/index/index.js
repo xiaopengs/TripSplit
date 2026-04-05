@@ -51,8 +51,9 @@ Page({
     navPaddingBottom: 0
   },
 
-  onLoad() {
+  onLoad(options) {
     this._calcNavHeight()
+    this._handleEntryOptions(options)
     this.loadBookData()
     this._setupStoreSubscriptions()
   },
@@ -63,6 +64,37 @@ Page({
 
   onPullDownRefresh() {
     this.refreshData(() => wx.stopPullDownRefresh())
+  },
+
+  _handleEntryOptions(options) {
+    const bookId = options && options.bookId
+    const from = options && options.from
+    if (!bookId) return
+
+    const switched = bookService.setCurrentBook(bookId)
+    if (!switched && from === 'share') {
+      wx.showModal({
+        title: '邀请已收到',
+        content: '你收到一个账本邀请，但当前版本仅支持本地账本数据，暂不支持跨设备加入/同步。',
+        showCancel: false,
+        confirmText: '我知道了'
+      })
+    }
+  },
+
+  onShareAppMessage(res) {
+    const data = (res && res.target && res.target.dataset) || {}
+    const book = this.data.currentBook
+    const bookId = data.bookId || (book && book.id) || ''
+    const bookName = data.bookName || (book && book.name) || ''
+
+    if (!bookId) {
+      return { title: '拼途记账', path: '/pages/index/index' }
+    }
+
+    const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'
+    const path = `/pages/index/index?bookId=${encodeURIComponent(bookId)}&from=share`
+    return { title, path }
   },
 
   /**

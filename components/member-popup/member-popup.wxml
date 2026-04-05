@@ -12,7 +12,13 @@
   <scroll-view class="scroll-body" scroll-y enhanced show-scrollbar="{{false}}">
 
     <!-- 邀请好友卡片 -->
-    <view class="invite-card" hover-class="hover-opacity" bindtap="onShare">
+    <button
+      class="invite-card"
+      hover-class="hover-opacity"
+      open-type="share"
+      data-book-id="{{bookId}}"
+      data-book-name="{{bookName}}"
+    >
       <view class="invite-info">
         <text class="invite-title">邀请好友加入账本</text>
         <text class="invite-desc">生成分享卡片，好友可认领影子身份</text>
@@ -20,7 +26,7 @@
       <view class="share-circle">
         <text class="share-icon">↗</text>
       </view>
-    </view>
+    </button>
 
     <!-- ======== 已加入成员 ======== -->
     <view class="section" wx:if="{{realMembers.length > 0}}">

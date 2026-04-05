@@ -6,6 +6,77 @@
 
 ---
 
+## 本次需求：UI 右侧截断修复 + 分享功能补齐（2026-04-05）
+
+### 1) 项目整体分析（微信原生小程序）
+
+- **分层结构**：页面（pages）负责交互与渲染；组件（components）沉淀可复用 UI；服务层（services）承载业务逻辑与本地数据读写；工具层（utils）提供缓存、计算、日期、ID 等基础能力；全局样式与变量在 [app.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/app.wxss)。
+- **数据存储方式**：当前实现以本地缓存为主（[utils/cache.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/utils/cache.js)），账本/账单/成员等数据主要落在 `ts_books`、`ts_bills` 等键上；架构文档预留了云开发方向，但本仓库代码路径仍以本地为准。
+- **关键页面**：
+  - 首页/流水/结算/待整理聚合在 [index](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/index/index.js)。
+  - 新建账本在 [create](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/create/create.wxml)。
+  - 成员管理既有独立页 [member](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/member/member.wxml)，也有首页弹窗组件 [member-popup](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/member-popup/member-popup.wxml)。
+- **本次问题关联模块**：
+  - “成员管理界面右侧截断”：主要出现在 `flex` 布局下文本容器未允许收缩，导致右侧按钮/图标被挤出容器并被 `overflow: hidden` 裁剪。
+  - “新建账本界面右侧截断”：同类问题，`input + 按钮` 的 `flex` 行在父容器 `overflow: hidden` 时更容易出现右侧裁切。
+  - “分享功能待开发”：代码中存在占位 toast（“分享功能开发中”），需要补齐为可实际触发系统分享面板，并生成可回跳的分享路径。
+
+### 2) 下一步修复方案（针对 3 个问题）
+
+#### 2.1 成员管理弹窗（member-popup）右侧截断
+
+- **根因假设**：邀请卡片为 `display:flex`，左侧文本容器默认 `min-width:auto`，在长文案/字体缩放/窄屏时无法收缩，导致右侧圆形分享按钮被挤出并被裁剪。
+- **方案**：
+  - 给左侧文案容器添加 `min-width: 0`，并对标题/描述做省略与行数限制，保证右侧按钮永远可见。
+  - 对成员名称做单行省略，避免“姓名过长”把按钮挤出卡片。
+
+#### 2.2 新建账本页（create）右侧截断
+
+- **根因假设**：影子成员“输入框 + 添加按钮”同为 `flex` 子项，`input` 默认最小宽度导致按钮溢出；同时父容器 `.form-item` 设置了 `overflow: hidden`，溢出内容会被直接裁剪。
+- **方案**：
+  - 给 `input` 增加 `min-width: 0`，并确保按钮 `flex-shrink: 0`，行容器补齐 `width: 100%` 与 `align-items:center`，消除右侧溢出。
+
+#### 2.3 分享功能补齐
+
+- **目标**：从成员管理入口能调起微信系统分享面板，并携带 `bookId` 回跳到首页；首页收到参数后尝试切换到对应账本。
+- **方案**：
+  - 把“邀请卡片”入口改为 `<button open-type="share">`（组件内触发分享的正确方式）。
+  - 在页面实现 `onShareAppMessage`，统一生成 `title/path`。
+  - 首页 `onLoad(options)` 识别 `bookId`，尝试切换当前账本；若本地无该账本则提示“当前版本暂不支持跨设备加入/同步”（为后续云同步留接口）。
+
+### 3) 按方案实施与结果（已完成）
+
+#### 3.1 UI 修复结果
+
+- **成员管理弹窗**：邀请卡片与成员名称在窄屏/长文案下不再挤出右侧，右侧圆形分享按钮可完整显示。
+- **新建账本页**：影子成员“输入 + 添加”行不再出现右侧裁切，“+ 添加”按钮完整可见。
+
+#### 3.2 分享功能结果
+
+- 成员管理弹窗与成员管理页面的“邀请好友加入账本”已可直接触发系统分享面板。
+- 分享消息会携带 `bookId` 回跳到首页；首页收到 `bookId` 会尝试切换当前账本。
+
+#### 3.3 关键改动文件
+
+- UI：  
+  - [member-popup.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/member-popup/member-popup.wxss)（`min-width:0` + 文案省略/行数限制）  
+  - [create.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/create/create.wxss)（影子成员行 `min-width:0` 等）  
+  - [member.wxml](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/member/member.wxml) / [member.wxss](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/member/member.wxss)
+- 分享：  
+  - [member-popup.wxml](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/member-popup/member-popup.wxml) / [member-popup.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/components/member-popup/member-popup.js)  
+  - [index.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/index/index.js) / [index.wxml](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/index/index.wxml)  
+  - [index.json](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/index/index.json) / [member.json](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/member/member.json)（开启 `enableShareAppMessage`）  
+  - [member.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/pages/member/member.js)  
+  - [book.service.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/services/book.service.js)（新增 `setCurrentBook`，支持通过分享参数切换账本）
+- 测试更新：  
+  - [member.test.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/tests/member.test.js) / [integration.test.js](file:///f:/CreateAI/ClawBuddy/workMain/TripSplit/tests/integration.test.js)（与“认领不改 member_id，仅改 is_shadow”逻辑保持一致）
+
+#### 3.4 验证方式
+
+- 由于 PowerShell 执行策略限制，`npm test` 在本环境下无法直接运行；已使用 `node tests/run.js` 跑通全部测试：**174/174 通过**。
+
+---
+
 ### Phase 1: 关键 Bug 修复
 
 **1.1 统一存储系统**

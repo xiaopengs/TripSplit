@@ -6,6 +6,7 @@ const { generateBookId, generateMemberId } = require('../utils/id')
 const { SKIN_COLORS } = require('../utils/constants')
 
 const CACHE_KEY = 'books'
+const ACTIVE_BOOK_ID_KEY = 'active_book_id'
 
 /**
  * 获取账本列表（本地优先）
@@ -19,7 +20,24 @@ function getBookList() {
  */
 function getCurrentBook() {
   const books = getBookList()
+  const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
+  if (activeId) {
+    const activeBook = books.find(b => b.id === activeId)
+    if (activeBook && activeBook.status !== 'archived') return activeBook
+  }
   return books.find(b => b.status === 'active') || null
+}
+
+/**
+ * 切换当前账本
+ */
+function setCurrentBook(bookId) {
+  if (!bookId) return false
+  const books = getBookList()
+  const book = books.find(b => b.id === bookId)
+  if (!book || book.status === 'archived') return false
+  cache.set(ACTIVE_BOOK_ID_KEY, bookId)
+  return true
 }
 
 /**
@@ -77,6 +95,7 @@ function createBook(data) {
   const books = getBookList()
   books.push(book)
   cache.set(CACHE_KEY, books)
+  cache.set(ACTIVE_BOOK_ID_KEY, book.id)
 
   return book
 }
@@ -98,7 +117,12 @@ function updateBook(bookId, updates) {
  * 归档账本
  */
 function archiveBook(bookId) {
-  return updateBook(bookId, { status: 'archived', end_date: new Date().toISOString().split('T')[0] })
+  const archived = updateBook(bookId, { status: 'archived', end_date: new Date().toISOString().split('T')[0] })
+  const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
+  if (archived && activeId === bookId) {
+    cache.remove(ACTIVE_BOOK_ID_KEY)
+  }
+  return archived
 }
 
 /**
@@ -108,12 +132,17 @@ function deleteBook(bookId) {
   const books = getBookList()
   const filtered = books.filter(b => b.id !== bookId)
   cache.set(CACHE_KEY, filtered)
+  const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
+  if (activeId === bookId) {
+    cache.remove(ACTIVE_BOOK_ID_KEY)
+  }
   return true
 }
 
 module.exports = {
   getBookList,
   getCurrentBook,
+  setCurrentBook,
   createBook,
   updateBook,
   archiveBook,

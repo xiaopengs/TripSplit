@@ -10,7 +10,13 @@
 
   <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}">
     <!-- 邀请卡片 -->
-    <view class="invite-card" bindtap="onShare" hover-class="hover-opacity">
+    <button
+      class="invite-card"
+      hover-class="hover-opacity"
+      open-type="share"
+      data-book-id="{{bookId}}"
+      data-book-name="{{bookName}}"
+    >
       <view class="invite-left">
         <text class="invite-icon">🔗</text>
         <view>
@@ -19,7 +25,7 @@
         </view>
       </view>
       <text class="invite-arrow">›</text>
-    </view>
+    </button>
 
     <!-- 已加入成员 -->
     <view class="section" wx:if="{{realMembers.length > 0}}">

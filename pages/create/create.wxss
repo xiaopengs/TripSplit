@@ -212,6 +212,8 @@
 .add-shadow-row {
   display: flex;
   gap: 12rpx;
+  align-items: center;
+  width: 100%;
 }
 
 .shadow-input {
@@ -220,6 +222,7 @@
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
   font-size: 28rpx;
+  min-width: 0;
 }
 
 .add-shadow-btn {
@@ -231,6 +234,7 @@
   font-weight: 500;
   display: flex; align-items: center; justify-content: center;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* 底部按钮 */

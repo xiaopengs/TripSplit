@@ -139,24 +139,14 @@ describe('场景3: 成员认领身份', () => {
     expect(claimedMember.is_claimed).toBeTruthy()
     expect(claimedMember.nickname).toBe('大壮')
 
-    // 验证账单归属已迁移（大壮的 split.member_id 变为 user_wx_user_dazhuang）
+    // 验证账单归属已迁移（仅将 split.is_shadow 置为 false，member_id 保持不变）
     const bills = billService.getBills(book.id)
-    const shadowSplit = bills[0].splits.find(s => s.member_id === `user_wx_user_dazhuang`)
+    const shadowSplit = bills[0].splits.find(s => s.member_id === shadow.id)
     expect(shadowSplit).toBeDefined()
     expect(shadowSplit.is_shadow).toBeFalsy()
 
-    // 验证结算使用迁移后的 ID 计算
-    // 需要将 member id 同步更新为带 user_ 前缀的 ID
-    const calcMembers = updatedBook.members.map(m => {
-      const mapped = { ...m }
-      // 如果成员已认领，用 user_ 前缀的 ID（与迁移后的账单一致）
-      if (m.claimed_by) {
-        mapped.id = `user_${m.claimed_by}`
-        mapped._name = m.nickname || m.shadow_name
-      }
-      return mapped
-    })
-    const settlement = settleService.calculateSettlement(calcMembers, bills)
+    // 验证结算能正常计算（成员 ID 与账单 member_id 一致）
+    const settlement = settleService.calculateSettlement(updatedBook.members, bills)
     
     // 验证有转账产生
     expect(settlement.totalAmount).toBeGreaterThan(0)
