@@ -1,9 +1,10 @@
 /**
  * 手动记账面板组件
  */
-const { fenToYuan, parseInputToFen, splitEqual } = require('../../utils/currency')
-const { CATEGORIES, SPLIT_TYPE, getSkinColor } = require('../../utils/constants')
+const { fenToYuan, parseInputToFen, splitEqual, yuanToFen } = require('../../utils/currency')
+const { CATEGORIES, CATEGORY_TAGS, SPLIT_TYPE, getSkinColor } = require('../../utils/constants')
 const { formatAmount } = require('../../utils/currency')
+const { formatDate } = require('../../utils/date')
 
 Component({
   properties: {
@@ -23,7 +24,8 @@ Component({
 
   data: {
     categories: CATEGORIES,
-    
+    quickTags: [],
+
     // 金额
     rawValue: '',
     displayValue: '0.00',
@@ -32,14 +34,28 @@ Component({
     // 类目
     selectedCategory: '',
 
+    // 时间
+    billDate: '',
+    billTime: '',
+
+    // 位置
+    location: '',
+    locationLoading: false,
+    nearbyLocations: [],
+
     // 分摊
-    splitMode: SPLIT_TYPE.EQUAL, // equal / custom
+    splitMode: SPLIT_TYPE.EQUAL,
     selectedMembers: [],
     customSplitValues: {},
     perPersonAmount: '¥0.00',
+    lastMemberAutoAmount: '',
+
+    // 付款人
+    selectedPayerId: '',
 
     // 备注
     note: '',
+    selectedQuickTag: '',
     images: []
   },
 
@@ -47,16 +63,14 @@ Component({
     'visible': function(val) {
       if (val) {
         this._resetForm()
-        this._selectAllMembers()
       }
     },
     'members': function(members) {
-      // 预处理头像首字（WXML 不支持 expr[0]）
-      const enriched = (members || []).map(m => ({
-        ...m,
-        avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?'
-      }))
-      this.setData({ _enrichedMembers: enriched })
+      // 默认付款人：第一个真实成员
+      if (!this.data.selectedPayerId || !(members || []).find(m => m.id === this.data.selectedPayerId)) {
+        const realMember = (members || []).find(m => m.type === 'real') || (members || [])[0]
+        this.setData({ selectedPayerId: realMember ? realMember.id : '' })
+      }
       this._selectAllMembers()
     },
     'amount, selectedMembers.length': function(amount, count) {
@@ -68,6 +82,10 @@ Component({
       } else {
         this.setData({ perPersonAmount: `${this.data.currencySymbol}0.00` })
       }
+    },
+    'selectedCategory': function(cat) {
+      const tags = CATEGORY_TAGS[cat] || []
+      this.setData({ quickTags: tags, selectedQuickTag: '' })
     }
   },
 
@@ -86,21 +104,71 @@ Component({
       this.setData({ selectedCategory: key })
     },
 
+    // === 快捷标签 ===
+    onQuickTag(e) {
+      const tag = e.currentTarget.dataset.tag
+      this.setData({ selectedQuickTag: tag, note: tag })
+    },
+
+    // === 时间选择 ===
+    _initDateTime() {
+      const now = new Date()
+      this.setData({
+        billDate: formatDate(now, 'YYYY-MM-DD'),
+        billTime: formatDate(now, 'HH:mm')
+      })
+    },
+
+    onDateChange(e) {
+      this.setData({ billDate: e.detail.value })
+    },
+
+    onTimeChange(e) {
+      this.setData({ billTime: e.detail.value })
+    },
+
+    // === 位置 ===
+    onLocationTap() {
+      if (this.data.location) return
+      this.setData({ locationLoading: true })
+      const location = require('../../utils/location')
+      location.getLocation().then(loc => {
+        const text = loc.city || loc.district || ''
+        // 构建附近位置列表
+        const nearby = []
+        if (loc.street) nearby.push(loc.street)
+        if (loc.district && loc.district !== text) nearby.push(loc.district)
+        if (loc.city && loc.city !== text) nearby.push(loc.city)
+        this.setData({
+          location: text,
+          locationLoading: false,
+          nearbyLocations: nearby.slice(0, 5)
+        })
+      }).catch(() => {
+        this.setData({ locationLoading: false })
+      })
+    },
+
+    onSelectNearby(e) {
+      const name = e.currentTarget.dataset.name
+      this.setData({ location: name })
+    },
+
+    onClearLocation() {
+      this.setData({ location: '', nearbyLocations: [] })
+    },
+
     // === 键盘输入 ===
     onKeyboardInput(e) {
       const val = e.detail.key
       let raw = this.data.rawValue
 
-      // 输入限制：最多2位小数
       if (val === '.') {
         if (raw.includes('.')) return
       }
 
       raw += val
-
-      // 最大长度保护
       if (raw.replace('.', '').length > 9) return
-
       this._updateAmount(raw)
     },
 
@@ -116,19 +184,43 @@ Component({
         displayValue: fenToYuan(amount),
         amount: amount
       })
+      this._updateLastMemberAutoAmount()
     },
 
     // === 分摊操作 ===
-    toggleSplitMode() {
-      const newMode = this.data.splitMode === SPLIT_TYPE.EQUAL ? SPLIT_TYPE.CUSTOM : SPLIT_TYPE.EQUAL
-      this.setData({ splitMode: newMode })
+    onSplitModeTap(e) {
+      const mode = e.currentTarget.dataset.mode
+      if (this.data.splitMode === mode) return
+      this.setData({ splitMode: mode })
       wx.vibrateShort({ type: 'light' })
     },
 
+    // === 付款人选择 ===
+    onPayerTap(e) {
+      const id = e.currentTarget.dataset.id
+      wx.vibrateShort({ type: 'light' })
+      this.setData({ selectedPayerId: id })
+      this._rebuildEnrichedMembers()
+    },
+
+    _rebuildEnrichedMembers() {
+      const members = this.data.members || []
+      const selected = this.data.selectedMembers || []
+      const payerId = this.data.selectedPayerId
+      const enriched = members.map(m => ({
+        ...m,
+        avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?',
+        _selected: selected.indexOf(m.id) > -1,
+        _isPayer: m.id === payerId
+      }))
+      this.setData({ _enrichedMembers: enriched })
+    },
+
     _selectAllMembers() {
-      const list = this.data._enrichedMembers || this.data.members || []
+      const list = this.data.members || []
       const ids = list.map(m => m.id)
       this.setData({ selectedMembers: ids })
+      this._rebuildEnrichedMembers()
     },
 
     toggleMember(e) {
@@ -139,25 +231,73 @@ Component({
       const index = selected.indexOf(id)
 
       if (index > -1) {
-        // 至少保留一个人
         if (selected.length <= 1) {
           wx.showToast({ title: '至少保留一个分摊人', icon: 'none' })
           return
         }
         selected.splice(index, 1)
+        // 清除该成员的自定义分摊金额
+        const values = { ...this.data.customSplitValues }
+        delete values[id]
+        this.setData({ selectedMembers: selected, customSplitValues: values })
       } else {
         selected.push(id)
+        this.setData({ selectedMembers: selected })
       }
 
-      this.setData({ selectedMembers: selected })
+      // 同步选中状态到 _enrichedMembers
+      this._rebuildEnrichedMembers()
+
+      // 自定义模式下重新计算最后一位
+      if (this.data.splitMode !== SPLIT_TYPE.EQUAL) {
+        this._updateLastMemberAutoAmount()
+      }
     },
 
     // 自定义分摊输入
     onCustomInput(e) {
       const id = e.currentTarget.dataset.id
-      const value = e.detail.value
+      let value = e.detail.value
+
+      // 实时限制：输入金额不能超过总消费金额
+      if (value && this.data.amount > 0) {
+        const inputFen = Math.round(parseFloat(value) * 100)
+        if (inputFen > this.data.amount) {
+          // 截断到总金额
+          value = fenToYuan(this.data.amount)
+        }
+      }
+
       this.setData({
         [`customSplitValues.${id}`]: value
+      })
+      this._updateLastMemberAutoAmount()
+    },
+
+    // 自动计算最后一位成员的分摊金额
+    _updateLastMemberAutoAmount() {
+      const selected = this.data.selectedMembers
+      if (selected.length < 2 || this.data.splitMode !== SPLIT_TYPE.CUSTOM || this.data.amount <= 0) {
+        this.setData({ lastMemberAutoAmount: '', _lastMemberId: '' })
+        return
+      }
+
+      const lastId = selected[selected.length - 1]
+      let otherTotal = 0
+
+      selected.slice(0, -1).forEach(mid => {
+        const val = this.data.customSplitValues[mid]
+        if (val) {
+          otherTotal += Math.round(parseFloat(val) * 100)
+        }
+      })
+
+      const remaining = this.data.amount - otherTotal
+      const display = fenToYuan(Math.max(0, remaining))
+      this.setData({
+        lastMemberAutoAmount: display,
+        _lastMemberId: lastId,
+        [`customSplitValues.${lastId}`]: display
       })
     },
 
@@ -190,6 +330,13 @@ Component({
       })
     },
 
+    removeImage(e) {
+      const idx = e.currentTarget.dataset.index
+      const images = [...this.data.images]
+      images.splice(idx, 1)
+      this.setData({ images })
+    },
+
     // === 提交 ===
     onSubmit() {
       if (!this.data.amount || this.data.amount <= 0) {
@@ -209,28 +356,25 @@ Component({
 
       // 构建提交数据
       let splits = []
-
       const memberList = this.data._enrichedMembers || this.data.members || []
 
       if (this.data.splitMode === SPLIT_TYPE.CUSTOM) {
-        // 自定义模式：验证总额
-        let customTotal = 0
-        memberList.forEach(m => {
-          const val = this.data.customSplitValues[m.id]
+        this.data.selectedMembers.forEach(mid => {
+          const val = this.data.customSplitValues[mid]
           if (val) {
-            customTotal += parseFloat(val) * 100
+            const shareFen = Math.round(parseFloat(val) * 100)
+            const member = memberList.find(m => m.id === mid)
             splits.push({
-              member_id: m.id,
-              name: m.nickname || m.shadow_name || '?',
-              share: Math.round(parseFloat(val) * 100),
-              is_shadow: m.type === 'shadow'
+              member_id: mid,
+              name: member ? (member.nickname || member.shadow_name || '?') : '?',
+              share: shareFen,
+              is_shadow: member && member.type === 'shadow'
             })
           }
         })
 
-        // 验证自定义总额是否匹配
-        if (Math.abs(customTotal - this.data.amount) > 1) {
-          wx.showToast({ title: `分摊总额不匹配（差${Math.abs(customTotal - this.data.amount)/100}元）`, icon: 'none' })
+        if (splits.length === 0) {
+          wx.showToast({ title: '请填写分摊金额', icon: 'none' })
           return
         }
       } else {
@@ -246,11 +390,29 @@ Component({
         })
       }
 
+      // 构建类目信息
+      let catKey = this.data.selectedCategory
+      let catName = ''
+      const catInfo = CATEGORIES.find(c => c.key === catKey)
+      if (catInfo) {
+        catName = catInfo.name
+      }
+
+      // 构建时间
+      let paidAt = new Date().toISOString()
+      if (this.data.billDate) {
+        const dateStr = this.data.billDate
+        const timeStr = this.data.billTime || new Date().toTimeString().slice(0, 5)
+        paidAt = `${dateStr}T${timeStr}:00.000Z`
+      }
+
       const submitData = {
         amount: this.data.amount,
-        category: { key: this.data.selectedCategory, name: '' },
+        category: { key: catKey, name: catName },
         note: this.data.note,
         images: this.data.images,
+        location: this.data.location,
+        paidAt: paidAt,
         payerId: null,
         payerName: '',
         memberIds: this.data.selectedMembers,
@@ -259,24 +421,23 @@ Component({
         customSplits: splits.length > 0 ? splits : undefined
       }
 
-      // 填充类目名称
-      const catInfo = CATEGORIES.find(c => c.key === this.data.selectedCategory)
-      if (catInfo) submitData.category.name = catInfo.name
-
-      // 默认支付人为第一个真实成员
-      const realMember = memberList.find(m => m.type === 'real') || memberList[0]
-      if (realMember) {
-        submitData.payerId = realMember.id
-        submitData.payerName = realMember.nickname || '我'
+      // 使用选中的付款人
+      const payer = memberList.find(m => m.id === this.data.selectedPayerId)
+      if (payer) {
+        submitData.payerId = payer.id
+        submitData.payerName = payer.nickname || payer.shadow_name || '我'
       }
 
       this.triggerEvent('onsubmit', submitData)
-      
-      // 提交后重置
+
       setTimeout(() => this._resetForm(), 300)
     },
 
     _resetForm() {
+      // 先确定默认付款人
+      const members = this.data.members || []
+      const realMember = members.find(m => m.type === 'real') || members[0]
+
       this.setData({
         rawValue: '',
         displayValue: '0.00',
@@ -285,10 +446,16 @@ Component({
         splitMode: SPLIT_TYPE.EQUAL,
         selectedMembers: [],
         customSplitValues: {},
+        lastMemberAutoAmount: '',
+        selectedPayerId: realMember ? realMember.id : '',
         note: '',
-        images: []
+        images: [],
+        location: '',
+        nearbyLocations: [],
+        quickTags: []
       })
       this._selectAllMembers()
+      this._initDateTime()
     }
   }
 })

@@ -1,7 +1,7 @@
 /**
  * 数据同步服务
  * 管理离线队列和网络恢复后的自动同步
- * 
+ *
  * 注意：当前 API 服务未部署，sync 相关操作均为本地队列管理
  * TODO: API 服务就绪后移除 _isApiReady 标记
  */
@@ -9,6 +9,7 @@ const cache = require('../utils/cache')
 
 const OFFLINE_QUEUE_KEY = 'offline_queue'
 const SYNC_PENDING_KEY = 'sync_pending'
+const DEAD_LETTER_KEY = 'dead_letter_queue'
 
 // API 是否就绪（后端服务部署后改为 true）
 const _isApiReady = false
@@ -41,7 +42,8 @@ async function syncOfflineQueue() {
 
   const { request } = require('../utils/request')
   const failed = []
-  
+  const deadLetters = []
+
   for (const item of queue) {
     try {
       await _syncItem(item, request)
@@ -52,15 +54,24 @@ async function syncOfflineQueue() {
         failed.push(item)
         console.warn(`[Sync] ⚠️ ${item.action} retry ${item.retries}`)
       } else {
-        console.error(`[Sync] ❌ ${item.action} failed after 3 retries`)
+        console.error(`[Sync] ❌ ${item.action} failed after 3 retries, moving to dead letter queue`)
+        deadLetters.push(item)
       }
     }
   }
 
-  // 更新队列（保留失败的）
+  // 更新队列（保留可重试的）
   cache.set(OFFLINE_QUEUE_KEY, failed)
 
-  if (failed.length === 0) {
+  // 将永久失败的条目存入死信队列，防止静默丢失
+  if (deadLetters.length > 0) {
+    const existingDead = cache.get(DEAD_LETTER_KEY) || []
+    cache.set(DEAD_LETTER_KEY, [...existingDead, ...deadLetters])
+  }
+
+  if (deadLetters.length > 0) {
+    wx.showToast({ title: `${deadLetters.length}条同步失败，请检查网络`, icon: 'none' })
+  } else if (failed.length === 0) {
     wx.showToast({ title: '数据已同步', icon: 'success' })
   } else if (failed.length < queue.length) {
     wx.showToast({ title: `${failed.length}条待同步`, icon: 'none' })

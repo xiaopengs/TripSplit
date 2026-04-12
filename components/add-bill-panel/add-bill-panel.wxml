@@ -25,20 +25,145 @@
       <text class="amount-value">{{displayValue || '0.00'}}</text>
     </view>
 
-    <!-- 类目选择（3x2 网格） -->
+    <!-- 类目选择（紧凑横向滚动 chip） -->
     <view class="section">
       <text class="section-label">选择类目</text>
-      <view class="category-grid">
+      <scroll-view class="category-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="category-chips">
+          <view
+            class="cat-chip {{selectedCategory === item.key ? 'active' : ''}}"
+            wx:for="{{categories}}"
+            wx:key="key"
+            bindtap="onCategoryTap"
+            data-key="{{item.key}}"
+            hover-class="chip-hover"
+          >
+            <text class="chip-icon">{{item.icon}}</text>
+            <text class="chip-text">{{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 快捷标签 -->
+    <view class="section" wx:if="{{quickTags.length > 0}}">
+      <scroll-view class="tags-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="quick-tags">
+          <view
+            class="qtag {{selectedQuickTag === item ? 'active' : ''}}"
+            wx:for="{{quickTags}}"
+            wx:key="*this"
+            bindtap="onQuickTag"
+            data-tag="{{item}}"
+            hover-class="qtag-hover"
+          >
+            <text class="qtag-text">{{item}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 时间 -->
+    <view class="section">
+      <view class="meta-row">
+        <view class="meta-item datetime-item">
+          <text class="meta-icon">🕐</text>
+          <picker mode="date" value="{{billDate}}" bindchange="onDateChange">
+            <text class="meta-value">{{billDate}}</text>
+          </picker>
+          <text class="meta-datetime-sep"></text>
+          <picker mode="time" value="{{billTime}}" bindchange="onTimeChange">
+            <text class="meta-value meta-time-value">{{billTime}}</text>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="section">
+      <view class="note-row">
+        <input
+          class="note-input"
+          placeholder="添加备注..."
+          value="{{note}}"
+          bindinput="onNoteInput"
+          maxlength="50"
+        />
+        <view class="note-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}" hover-class="note-image-btn-hover">
+          <text class="note-image-icon">📷</text>
+        </view>
+      </view>
+      <!-- 已上传图片 -->
+      <view class="note-thumbs" wx:if="{{images.length > 0}}">
+        <image
+          class="note-thumb"
+          wx:for="{{images}}"
+          wx:key="*this"
+          src="{{item}}"
+          mode="aspectFill"
+          bindtap="previewImage"
+          data-url="{{item}}"
+        />
+        <view class="note-thumb-remove" wx:for="{{images}}" wx:key="*this" catchtap="removeImage" data-index="{{index}}">
+          <text class="note-thumb-remove-icon">✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 位置（标签式） -->
+    <view class="section">
+      <!-- 未添加位置：点击定位入口 -->
+      <view class="loc-trigger" wx:if="{{!location && !locationLoading}}" bindtap="onLocationTap" hover-class="loc-trigger-hover">
+        <text class="loc-trigger-icon">📍</text>
+        <text class="loc-trigger-text">标记地点</text>
+        <text class="loc-trigger-arrow">›</text>
+      </view>
+      <!-- 定位中 -->
+      <view class="loc-trigger" wx:elif="{{locationLoading}}">
+        <text class="loc-trigger-icon">📍</text>
+        <text class="loc-trigger-text loading">定位中...</text>
+      </view>
+      <!-- 已有位置：标签样式 -->
+      <view class="loc-tag-row" wx:else>
+        <view class="loc-tag active">
+          <text class="loc-tag-icon">📍</text>
+          <text class="loc-tag-text">{{location}}</text>
+          <text class="loc-tag-clear" catchtap="onClearLocation">✕</text>
+        </view>
+      </view>
+      <!-- 附近位置标签（未添加位置时不显示） -->
+      <scroll-view class="loc-tags-scroll" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{!location && nearbyLocations.length > 0}}">
+        <view class="loc-tags-row">
+          <view
+            class="loc-tag"
+            wx:for="{{nearbyLocations}}"
+            wx:key="*this"
+            bindtap="onSelectNearby"
+            data-name="{{item}}"
+            hover-class="loc-tag-hover"
+          >
+            <text class="loc-tag-text">{{item}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 付款人 -->
+    <view class="section">
+      <text class="section-label">谁付的</text>
+      <view class="payer-avatars">
         <view
-          class="category-tile {{selectedCategory === item.key ? 'active' : ''}}"
-          wx:for="{{categories}}"
-          wx:key="key"
-          bindtap="onCategoryTap"
-          data-key="{{item.key}}"
-          hover-class="tile-hover"
+          class="payer-avatar"
+          wx:for="{{_enrichedMembers}}"
+          wx:key="id"
+          bindtap="onPayerTap"
+          data-id="{{item.id}}"
+          hover-class="payer-hover"
         >
-          <text class="cat-icon">{{item.icon}}</text>
-          <text class="cat-name">{{item.name}}</text>
+          <view class="payer-circle {{item._isPayer ? 'payer-active' : ''}}">
+            <text class="payer-char">{{item.avatar_char}}</text>
+          </view>
+          <text class="payer-name {{item._isPayer ? 'selected' : ''}}">{{item.nickname || item.shadow_name || '?'}}</text>
         </view>
       </view>
     </view>
@@ -47,27 +172,29 @@
     <view class="section">
       <view class="section-header">
         <text class="section-label">分摊给</text>
-        <view class="split-mode-tag" bindtap="toggleSplitMode" hover-class="tag-hover">
-          <text class="split-mode-text">{{splitMode === 'equal' ? '均分' : '自定义'}}</text>
+        <view class="split-mode-tabs">
+          <text class="mode-tab {{splitMode === 'equal' ? 'active' : ''}}" bindtap="onSplitModeTap" data-mode="equal">均分</text>
+          <text class="mode-tab {{splitMode !== 'equal' ? 'active' : ''}}" bindtap="onSplitModeTap" data-mode="custom">自定义</text>
         </view>
       </view>
 
       <!-- 均分模式：头像列表 -->
       <view class="member-avatars" wx:if="{{splitMode === 'equal'}}">
         <view
-          class="member-avatar {{selectedMembers.indexOf(item.id) > -1 ? 'selected' : ''}} {{item.type === 'shadow' ? 'shadow' : ''}}"
+          class="member-avatar {{item.type === 'shadow' ? 'shadow' : ''}}"
           wx:for="{{_enrichedMembers}}"
           wx:key="id"
           bindtap="toggleMember"
           data-id="{{item.id}}"
           hover-class="avatar-hover"
         >
-          <text class="avatar-char">{{item.avatar_char}}</text>
-          <!-- 选中绿色勾 -->
-          <view class="check-badge" wx:if="{{selectedMembers.indexOf(item.id) > -1}}">
-            <text class="check-icon">✓</text>
+          <view class="avatar-circle {{item._selected ? 'selected' : ''}}">
+            <text class="avatar-char">{{item.avatar_char}}</text>
+            <view class="check-badge" wx:if="{{item._selected}}">
+              <text class="check-icon">✓</text>
+            </view>
           </view>
-          <!-- 影子成员标记 -->
+          <text class="avatar-name {{item._selected ? 'selected' : ''}}">{{item.nickname || item.shadow_name || '?'}}</text>
           <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">
             <text class="shadow-text">影</text>
           </view>
@@ -83,7 +210,12 @@
       <view class="custom-splits" wx:if="{{splitMode !== 'equal'}}">
         <view class="custom-row" wx:for="{{_enrichedMembers}}" wx:key="id">
           <text class="cs-name">{{item.nickname || item.shadow_name || '?'}}</text>
+          <!-- 最后一位成员自动计算 -->
+          <view class="cs-auto" wx:if="{{_lastMemberId === item.id && lastMemberAutoAmount}}">
+            <text class="cs-auto-value">{{lastMemberAutoAmount}}</text>
+          </view>
           <input
+            wx:else
             class="cs-input"
             type="digit"
             placeholder="金额"
@@ -94,40 +226,10 @@
         </view>
       </view>
     </view>
-
-    <!-- 备注 + 图片 -->
-    <view class="section">
-      <text class="section-label">备注</text>
-      <input
-        class="note-input"
-        placeholder="添加备注..."
-        value="{{note}}"
-        bindinput="onNoteInput"
-        maxlength="50"
-      />
-      <!-- 图片上传区 -->
-      <view class="image-area">
-        <view class="image-list">
-          <image
-            class="upload-thumb"
-            wx:for="{{images}}"
-            wx:key="*this"
-            src="{{item}}"
-            mode="aspectFill"
-            bindtap="previewImage"
-            data-url="{{item}}"
-          />
-        </view>
-        <view class="add-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}" hover-class="add-image-hover">
-          <text class="add-image-icon">+</text>
-        </view>
-      </view>
-    </view>
   </scroll-view>
 
   <!-- 底部：提交按钮 + 键盘 -->
   <view class="panel-footer">
-    <!-- 提交按钮 -->
     <view class="submit-row">
       <view
         class="submit-btn {{amount > 0 && selectedCategory ? '' : 'disabled'}}"
@@ -138,7 +240,6 @@
       </view>
     </view>
 
-    <!-- 金额键盘 -->
     <amount-keyboard
       value="{{rawValue}}"
       bind:oninput="onKeyboardInput"

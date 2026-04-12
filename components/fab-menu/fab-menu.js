@@ -1,44 +1,44 @@
 /**
- * FAB 浮动菜单组件
- * 主按钮始终可见，展开后显示遮罩 + 两个垂直排列的子按钮
- * 事件：toggle（切换展开/收起）、select（选择子项 { key }）
- */
+ * FAB 浮动按钮组件
+ * 圆形 + 号，点击直接触发手动录入
+ * 事件：select（{ key: 'manual' }）
+ *
+ * MVP 暂只保留手动录入，后续恢复文字/语音/拍照时：
+ * - 恢复 options 数据、展开面板 WXML 和对应样式
+ * - 将 onTap 改回 onToggle 展开面板
+ *
 Component({
-  properties: {
-    visible: {
-      type: Boolean,
-      value: false
-    }
+  data: {
+    expanded: false,
+    options: [
+      { key: 'manual', icon: '✏️', label: '手动录入', desc: '逐项填写金额和类目', active: true },
+      { key: 'text', icon: '📝', label: '文字输入', desc: '即将上线', active: false },
+      { key: 'voice', icon: '🎙', label: '语音记账', desc: '即将上线', active: false },
+      { key: 'camera', icon: '📷', label: '拍照识别', desc: '拍小票自动识别', active: true }
+    ]
   },
-
   methods: {
-    /**
-     * 切换展开/收起
-     */
     onToggle() {
       wx.vibrateShort({ type: 'light' })
-      this.triggerEvent('toggle')
+      this.setData({ expanded: !this.data.expanded })
     },
-
-    /**
-     * 点击遮罩关闭
-     */
     onOverlayTap() {
-      this.triggerEvent('toggle')
+      this.setData({ expanded: false })
     },
-
-    /**
-     * 选择子按钮
-     */
     onSelect(e) {
       const key = e.currentTarget.dataset.key
+      this.setData({ expanded: false })
       wx.vibrateShort({ type: 'medium' })
       this.triggerEvent('select', { key })
-    },
-
-    /**
-     * 阻止遮罩层滚动穿透
-     */
-    preventMove() {}
+    }
+  }
+})
+*/
+Component({
+  methods: {
+    onTap() {
+      wx.vibrateShort({ type: 'light' })
+      this.triggerEvent('select', { key: 'manual' })
+    }
   }
 })

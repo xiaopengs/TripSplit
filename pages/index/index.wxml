@@ -4,13 +4,32 @@
   <view class="book-header" style="background: linear-gradient(135deg, {{bookColor}} 0%, {{bookColorLight}} 100%); padding-top: {{navPaddingTop}}px;">
     <view class="header-content" style="padding-top: {{navPaddingBottom}}px;">
       <view class="header-left">
-        <text class="book-emoji" wx:if="{{currentBook}}">🏔</text>
-        <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
-        <text class="member-count">· {{memberCount}}人</text>
+        <!-- 多账本切换 -->
+        <picker
+          wx:if="{{bookList.length > 0}}"
+          range="{{bookList}}"
+          range-key="name"
+          value="{{currentBookIndex}}"
+          bindchange="onBookSwitch"
+        >
+          <view class="book-picker">
+            <text class="book-emoji" wx:if="{{currentBook}}">🏔</text>
+            <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
+            <text class="picker-arrow" wx:if="{{bookList.length > 1}}">▾</text>
+          </view>
+        </picker>
+        <view class="book-picker" wx:else>
+          <text class="book-emoji">🏔</text>
+          <text class="book-name">拼途记账</text>
+        </view>
+        <text class="book-manage-link" bindtap="onManageBooks">账本管理</text>
       </view>
       <view class="header-right" bindtap="onMemberTap" hover-class="hover-opacity">
-        <text class="member-emoji">👥</text>
-        <view class="badge" wx:if="{{pendingClaimCount > 0}}">!</view>
+        <view class="member-icon-wrap">
+          <text class="member-emoji">👥</text>
+          <view class="badge" wx:if="{{pendingClaimCount > 0}}">!</view>
+        </view>
+        <text class="member-badge-count">({{memberCount}})</text>
       </view>
     </view>
     <view class="date-range" wx:if="{{currentBook}}">
@@ -23,11 +42,13 @@
         <text class="tab-icon-emoji">☰</text>
         <text class="tab-label">流水</text>
       </view>
+      <!-- 待整理 Tab：MVP 暂不上线拍照识别功能
       <view class="tab-item {{activeTab === 'inbox' ? 'active' : ''}}" bindtap="switchTab" data-tab="inbox">
         <text class="tab-icon-emoji">📮</text>
         <text class="tab-label">待整理</text>
         <view class="red-dot" wx:if="{{inboxUnread > 0}}">{{inboxUnread > 99 ? '99+' : inboxUnread}}</view>
       </view>
+      -->
       <view class="tab-item {{activeTab === 'settle' ? 'active' : ''}}" bindtap="switchTab" data-tab="settle">
         <text class="tab-icon-emoji">📊</text>
         <text class="tab-label">结算</text>
@@ -58,59 +79,63 @@
       <text class="empty-desc">点击右下角的 + 开始记一笔</text>
     </view>
 
-    <!-- 流水列表 -->
-    <view class="bill-list" wx:else>
+    <!-- 流水列表（时间线风格） -->
+    <view class="bill-timeline" wx:else>
       <block wx:for="{{groupedBills}}" wx:key="date">
         <!-- 日期分组头 -->
         <view class="date-group-header">
-          <view class="date-info">
-            <view class="date-dot"></view>
+          <view class="date-badge">
+            <view class="date-badge-dot"></view>
             <text class="date-text">{{item.dateLabel}}</text>
-            <text class="location-text" wx:if="{{item.location}}">📍{{item.location}}</text>
-            <text class="count-text">· {{item.items.length}}笔</text>
+            <text class="location-text" wx:if="{{item.location}}">📍 {{item.location}}</text>
           </view>
           <view class="day-summary">
+            <text class="day-count">{{item.items.length}}笔</text>
             <text class="day-total">{{item.totalDisplay}}</text>
-            <text class="day-label"> 支出</text>
           </view>
         </view>
 
-        <!-- 账单卡片 -->
-        <view
-          class="bill-card"
-          wx:for="{{item.items}}"
-          wx:for-item="bill"
-          wx:key="id"
-          bindtap="onBillTap"
-          data-id="{{bill.id}}"
-          hover-class="hover-card"
-        >
-          <view class="card-left">
-            <view class="category-icon-wrap">
-              <text class="category-icon">{{bill.category_icon}}</text>
+        <!-- 时间线 + 账单项 -->
+        <view class="timeline-group">
+          <view class="tl-track">
+            <view
+              class="timeline-item"
+              wx:for="{{item.items}}"
+              wx:for-item="bill"
+              wx:key="id"
+              bindtap="onBillTap"
+              data-id="{{bill.id}}"
+              hover-class="hover-card"
+            >
+              <!-- 左侧时间线 -->
+              <view class="tl-rail">
+                <view class="tl-dot"></view>
+                <view class="tl-line"></view>
+              </view>
+              <!-- 时间 -->
+              <text class="tl-time">{{bill.timeDisplay}}</text>
+              <!-- 内容 -->
+              <view class="tl-content">
+                <view class="tl-row">
+                  <view class="tl-cat">
+                    <text class="tl-cat-icon">{{bill.category_icon}}</text>
+                    <text class="tl-cat-name">{{bill.category_name}}</text>
+                  </view>
+                  <text class="tl-amount">-{{bill.amountDisplay}}</text>
+                </view>
+                <text class="tl-note" wx:if="{{bill.note}}">{{bill.note}}</text>
+                <view class="tl-meta">
+                  <text class="tl-payer">{{bill.payer_name}} 支付</text>
+                </view>
+              </view>
             </view>
-          </view>
-          <view class="card-middle">
-            <text class="bill-title">{{bill.note || bill.category_name}}</text>
-            <view class="bill-meta">
-              <text class="payer">{{bill.payer_name}} 支付</text>
-              <text class="time-separator">·</text>
-              <text class="time">{{bill.timeDisplay}}</text>
-            </view>
-            <view class="split-preview" wx:if="{{bill.splits && bill.splits.length > 0}}">
-              <text class="split-label">分摊:</text>
-              <text class="split-names" wx:for="{{bill.splits}}" wx:for-item="s" wx:key="member_id">{{s.name}}</text>
-            </view>
-          </view>
-          <view class="card-right">
-            <text class="bill-amount">{{bill.amountDisplay}}</text>
           </view>
         </view>
       </block>
     </view>
   </scroll-view>
 
-  <!-- ======== 待整理 Tab ======== -->
+  <!-- ======== 待整理 Tab（MVP 暂不上线） ========
   <scroll-view
     class="content-area safe-bottom"
     scroll-y
@@ -118,7 +143,6 @@
     show-scrollbar="{{false}}"
     wx:if="{{activeTab === 'inbox'}}"
   >
-    <!-- 空状态 -->
     <view class="empty-state" wx:if="{{inboxItems.length === 0}}">
       <view class="empty-check-circle">
         <text class="empty-check-mark">✓</text>
@@ -127,7 +151,6 @@
       <text class="empty-desc">拍照后的识别结果会出现在这里</text>
     </view>
 
-    <!-- 待整理列表 -->
     <view class="inbox-list" wx:else>
       <view class="inbox-card" wx:for="{{inboxItems}}" wx:key="id">
         <view class="inbox-thumb-placeholder">
@@ -144,7 +167,6 @@
           </text>
           <text class="inbox-category">{{item.ai_result.category_name}}</text>
 
-          <!-- 操作按钮 -->
           <view class="inbox-actions" wx:if="{{item.status === 'pending'}}">
             <view class="action-btn confirm" bindtap="onConfirmInbox" data-id="{{item.id}}">✓ 确认</view>
             <view class="action-btn reject" bindtap="onRejectInbox" data-id="{{item.id}}">✕ 删除</view>
@@ -160,6 +182,7 @@
       </view>
     </view>
   </scroll-view>
+  -->
 
   <!-- ======== 结算 Tab ======== -->
   <scroll-view
@@ -216,9 +239,7 @@
 
   <!-- FAB 浮动菜单 -->
   <fab-menu
-    visible="{{fabVisible}}"
     bind:select="onFabSelect"
-    bind:toggle="toggleFab"
   />
 
   <!-- 成员管理弹窗 -->

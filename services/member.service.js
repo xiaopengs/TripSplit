@@ -99,6 +99,7 @@ function migrateBillOwnership(bookId, shadowMemberId, userId) {
 
 /**
  * 移除成员
+ * 同时级联更新：移除该成员在账单分账中的记录，并将该成员份额均摊给剩余成员
  */
 function removeMember(bookId, memberId) {
   const books = bookService.getBookList()
@@ -112,8 +113,63 @@ function removeMember(bookId, memberId) {
   book.member_count--
   book.updated_at = Date.now()
 
+  // 级联更新账单：移除该成员的分账记录并重新均摊
+  _redistributeBillsForMember(bookId, memberId, book.members || [])
+
   cache.set('books', books)
   return true
+}
+
+/**
+ * 将被移除成员的账单份额重新均摊给剩余成员
+ * 同时处理被移除成员作为支付者的情况
+ */
+function _redistributeBillsForMember(bookId, removedMemberId, remainingMembers) {
+  const bills = cache.get('bills') || []
+  let updated = false
+
+  const remainingIds = new Set(remainingMembers.map(m => m.id))
+
+  bills.forEach(bill => {
+    if (bill.book_id !== bookId) return
+
+    let billUpdated = false
+    const splits = bill.splits || []
+
+    // 检查是否包含被移除的成员的分账
+    const removedSplit = splits.find(s => s.member_id === removedMemberId)
+    if (removedSplit) {
+      // 移除该成员的分账
+      const newSplits = splits.filter(s => s.member_id !== removedMemberId)
+      const remainingCount = newSplits.length
+
+      if (remainingCount > 0) {
+        // 将被移除成员的份额均摊给剩余成员
+        const sharePerPerson = Math.floor(removedSplit.share / remainingCount)
+        const remainder = removedSplit.share - sharePerPerson * remainingCount
+        for (let i = 0; i < remainingCount; i++) {
+          newSplits[i].share += sharePerPerson + (i < remainder ? 1 : 0)
+        }
+      }
+
+      bill.splits = newSplits
+      billUpdated = true
+    }
+
+    // 处理被移除成员是支付者的情况：将支付者转移给剩余成员中的第一个
+    if (bill.payer_id === removedMemberId && remainingMembers.length > 0) {
+      const newPayer = remainingMembers[0]
+      bill.payer_id = newPayer.id
+      bill.payer_name = newPayer.nickname || newPayer.shadow_name || '未知'
+      billUpdated = true
+    }
+
+    if (billUpdated) updated = true
+  })
+
+  if (updated) {
+    cache.set('bills', bills)
+  }
 }
 
 module.exports = {

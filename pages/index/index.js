@@ -11,7 +11,7 @@ const settleService = require('../../services/settle.service')
 const memberService = require('../../services/member.service')
 const { formatAmount, fenToYuan } = require('../../utils/currency')
 const { SKIN_COLORS, getSkinColor, CATEGORIES, getCategoryByKey } = require('../../utils/constants')
-const { formatChineseDate, formatDateTimeCN } = require('../../utils/date')
+const { formatChineseDate, formatDateTimeCN, formatDate } = require('../../utils/date')
 
 Page({
   data: {
@@ -21,17 +21,21 @@ Page({
     bookColorLight: '#5ED47A',
     memberCount: 0,
     currencySymbol: '¥',
-    
+
+    // 多账本管理
+    bookList: [],
+    currentBookIndex: 0,
+
     // Tab 状态
     activeTab: 'flow',
-    
+
     // 流水数据
     groupedBills: [],
-    
+
     // 待整理数据
     inboxItems: [],
     inboxUnread: 0,
-    
+
     // 结算数据
     settlementResult: null,
 
@@ -40,13 +44,12 @@ Page({
     pendingClaimCount: 0,
 
     // 弹窗状态
-    fabVisible: false,
     memberPopupVisible: false,
     addPanelVisible: false,
     detailVisible: false,
     selectedBill: null,
 
-    // 导航栏高度（动态计算）
+    // 导航栏高度
     navPaddingTop: 0,
     navPaddingBottom: 0
   },
@@ -102,11 +105,20 @@ Page({
    */
   loadBookData() {
     const book = bookService.getCurrentBook()
-    if (!book) return
+    if (!book) {
+      // 没有账本时也要加载账本列表
+      const allBooks = bookService.getBookList()
+      this.setData({ bookList: allBooks, currentBookIndex: 0 })
+      return
+    }
 
-    const skin = book.cover_color ? 
-      SKIN_COLORS.find(s => s.value === book.cover_color) || getSkinColor(0) : 
+    const skin = book.cover_color ?
+      SKIN_COLORS.find(s => s.value === book.cover_color) || getSkinColor(0) :
       getSkinColor(0)
+
+    // 加载所有账本用于切换
+    const allBooks = bookService.getBookList()
+    const currentIdx = allBooks.findIndex(b => b.id === book.id)
 
     this.setData({
       currentBook: book,
@@ -114,7 +126,9 @@ Page({
       bookColorLight: skin.light,
       memberCount: book.member_count || (book.members || []).length,
       currencySymbol: book.currency_symbol || '¥',
-      members: book.members || []
+      members: book.members || [],
+      bookList: allBooks,
+      currentBookIndex: currentIdx >= 0 ? currentIdx : 0
     })
 
     this._updatePendingCount(book.members || [])
@@ -129,14 +143,17 @@ Page({
       return
     }
 
+    // 重新加载账本数据（包括成员列表），确保结算不会使用过期数据
+    this.loadBookData()
+
     const bookId = this.data.currentBook.id
 
     // 加载流水
     const grouped = billService.getBillsGroupedByDate(bookId)
     this._formatGroupedBills(grouped)
 
-    // 加载待整理
-    this._loadInbox()
+    // MVP: 暂不加载待整理
+    // this._loadInbox()
 
     // 计算结算
     this._calculateSettlement()
@@ -150,10 +167,8 @@ Page({
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab
     this.setData({ activeTab: tab })
-    
-    if (tab === 'inbox') {
-      this._loadInbox()
-    } else if (tab === 'settle') {
+
+    if (tab === 'settle') {
       this._calculateSettlement()
     }
   },
@@ -162,8 +177,6 @@ Page({
 
   onFabSelect(e) {
     const key = e.detail.key
-    this.setData({ fabVisible: false })
-
     switch (key) {
       case 'manual':
         this.openAddPanel()
@@ -174,20 +187,17 @@ Page({
     }
   },
 
-  showFab() {
-    wx.vibrateShort({ type: 'light' })
-    this.setData({ fabVisible: true })
-  },
-
-  hideFab() {
-    this.setData({ fabVisible: false })
-  },
-
-  toggleFab() {
-    this.setData({ fabVisible: !this.data.fabVisible })
-  },
-
   // === 手动记账 ===
+
+  // 多账本切换
+  onBookSwitch(e) {
+    const idx = e.detail.value
+    const books = this.data.bookList
+    if (!books[idx] || (this.data.currentBook && books[idx].id === this.data.currentBook.id)) return
+    bookService.setCurrentBook(books[idx].id)
+    this.loadBookData()
+    this.refreshData()
+  },
 
   openAddPanel() {
     if (!this.data.currentBook) {
@@ -213,13 +223,14 @@ Page({
         category: formData.category,
         note: formData.note,
         images: formData.images || [],
+        location: formData.location || '',
         payerId: formData.payerId || (this.data.members[0] && this.data.members[0].id),
         payerName: formData.payerName || (this.data.members[0] && (this.data.members[0].nickname || '我')),
         memberIds: formData.memberIds || this.data.members.map(m => m.id),
         members: this.data.members,
         splitType: formData.splitType || 'equal',
         customSplits: formData.customSplits,
-        paidAt: new Date().toISOString(),
+        paidAt: formData.paidAt || new Date().toISOString(),
         source: 'manual'
       })
 
@@ -266,8 +277,8 @@ Page({
     }
   },
 
-  // === 待整理操作 ===
-
+  // === 待整理操作（MVP 暂不上线） ===
+  /*
   _loadInbox() {
     if (!this.data.currentBook) return
     
@@ -345,6 +356,7 @@ Page({
     wx.showToast({ title: '重新识别中...', icon: 'loading' })
     // TODO: 重新触发 AI 识别
   },
+  */
 
   // === 成员管理 ===
 
@@ -437,6 +449,12 @@ Page({
     wx.navigateTo({ url: '/pages/create/create' })
   },
 
+  // === 账本管理跳转 ===
+
+  onManageBooks() {
+    wx.navigateTo({ url: '/pages/books/books' })
+  },
+
   // === 私有方法 ===
 
   /**
@@ -473,8 +491,9 @@ Page({
         var catInfo = getCategoryByKey(bill.category)
         return Object.assign({}, bill, {
           category_icon: (catInfo && catInfo.icon) || '📦',
+          category_name: (catInfo && catInfo.name) || bill.category_name || '其他',
           amountDisplay: formatAmount(bill.amount, self.data.currencySymbol),
-          timeDisplay: formatDateTimeCN(bill.paid_at)
+          timeDisplay: formatDate(bill.paid_at, 'HH:mm')
         })
       })
       return Object.assign({}, group, {

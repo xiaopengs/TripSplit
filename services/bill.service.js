@@ -5,6 +5,7 @@ const cache = require('../utils/cache')
 const { generateBillId, generateRequestId } = require('../utils/id')
 const { splitEqual } = require('../utils/currency')
 const { SPLIT_TYPE } = require('../utils/constants')
+const { sum } = require('../utils/calc')
 
 const CACHE_KEY = 'bills'
 
@@ -37,7 +38,7 @@ function getBillsGroupedByDate(bookId) {
       }
     }
     groups[dateKey].items.push(bill)
-    groups[dateKey].total += (bill.amount || 0)
+    groups[dateKey].total = groups[dateKey].total + (bill.amount || 0)
   })
 
   // 转为数组并按日期倒序
@@ -81,6 +82,7 @@ function createBill(data) {
     category_name: category ? category.name : '',
     note: note || '',
     images: images || [],
+    location: data.location || '',
     payer_id: payerId,
     payer_name: payerName,
     splits: splits,
@@ -138,7 +140,7 @@ function deleteBill(billId) {
  */
 function getTotalExpense(bookId) {
   const bills = getBills(bookId)
-  return bills.reduce((sum, b) => sum + (b.amount || 0), 0)
+  return sum(bills.map(b => b.amount || 0))
 }
 
 function formatAmountDisplay(fen) {

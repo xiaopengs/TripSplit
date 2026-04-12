@@ -6,7 +6,7 @@
  * - 离线检测
  */
 
-const app = getApp()
+const { generateRequestId } = require('./id')
 
 const BASE_URL = 'https://api.tripsplit.com/v1' // TODO: 替换为实际 API 地址
 
@@ -16,11 +16,11 @@ let pendingRequests = []
 function request(options) {
   const { url, method = 'GET', data = {}, header = {}, showLoading: showLoad = false, skipOfflineCheck = false } = options
 
-  if (showLoading) wx.showLoading({ title: '加载中...', mask: true })
+  if (showLoad) wx.showLoading({ title: '加载中...', mask: true })
 
   // 生成幂等 ID
   const requestId = generateRequestId()
-  
+
   const reqHeader = Object.assign({
     'Content-Type': 'application/json',
     'X-Request-ID': requestId,
@@ -30,8 +30,11 @@ function request(options) {
   const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`
 
   return new Promise((resolve, reject) => {
+    // 延迟获取 app 实例，避免模块加载时 App 未创建
+    const app = getApp()
+
     // 离线检查
-    if (!app.globalData.online && !skipOfflineCheck) {
+    if (app && !app.globalData.online && !skipOfflineCheck) {
       if (showLoad) wx.hideLoading()
       // 将请求加入离线队列
       pendingRequests.push({ url, method, data, header: reqHeader, requestId })
@@ -47,7 +50,7 @@ function request(options) {
       success(res) {
         if (showLoad) wx.hideLoading()
         const { statusCode, data: resData } = res
-        
+
         if (statusCode >= 200 && statusCode < 300) {
           resolve(resData)
         } else if (statusCode === 401) {
@@ -72,13 +75,6 @@ function request(options) {
 
 // === Helper Functions ===
 
-function generateRequestId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
-  })
-}
-
 function getToken() {
   try {
     return wx.getStorageSync('token') || ''
@@ -86,9 +82,10 @@ function getToken() {
 }
 
 function handleAuthError() {
+  const app = getApp()
   wx.removeStorageSync('token')
   wx.removeStorageSync('userInfo')
-  app.globalData.userInfo = null
+  if (app) app.globalData.userInfo = null
   // 跳转到重新登录页
 }
 

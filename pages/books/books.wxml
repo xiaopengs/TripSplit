@@ -1,0 +1,134 @@
+<!-- TripSplit - 账本管理页 -->
+<view class="page-container">
+
+  <!-- ======== 自定义导航栏 ======== -->
+  <view class="page-header" style="padding-top: {{navPaddingTop}}px;">
+    <view class="header-row" style="padding-top: {{navPaddingBottom}}px;">
+      <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="header-title">我的账本</text>
+      <view class="header-right" bindtap="onSortTap" hover-class="hover-opacity">
+        <text class="sort-text">{{sortBy === 'updated' ? '最近活跃' : '创建时间'}}</text>
+        <text class="sort-arrow">▾</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ======== 内容区域 ======== -->
+  <scroll-view
+    class="content-area safe-bottom"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredBooks.length === 0}}">
+      <text class="empty-emoji">🏔</text>
+      <text class="empty-title">还没有账本</text>
+      <text class="empty-desc">创建一个账本，开启旅行记账</text>
+      <button class="btn-primary" bindtap="onCreateBook">+ 新建账本</button>
+    </view>
+
+    <!-- 账本卡片列表 -->
+    <view class="book-list" wx:else>
+      <view
+        class="book-card"
+        wx:for="{{filteredBooks}}"
+        wx:key="id"
+        bindtap="onBookTap"
+        data-id="{{item.id}}"
+        hover-class="hover-card"
+      >
+        <!-- 左侧颜色条 -->
+        <view class="card-accent" style="background: {{item.skinColor}};"></view>
+
+        <view class="card-body">
+          <!-- 名称 + 当前标记 -->
+          <view class="card-top">
+            <text class="card-name">{{item.name}}</text>
+            <view class="current-badge" wx:if="{{item.isCurrentBook}}">当前</view>
+          </view>
+
+          <!-- 成员头像行 -->
+          <view class="avatar-row">
+            <view
+              class="mini-avatar"
+              wx:for="{{item.memberAvatars}}"
+              wx:for-item="m"
+              wx:key="id"
+              style="background: {{m.color}};"
+            >
+              <text class="avatar-char">{{m.char}}</text>
+            </view>
+            <text class="more-count" wx:if="{{item.member_count > 5}}">+{{item.member_count - 5}}</text>
+            <view class="member-add-btn" catchtap="onMemberManage" data-id="{{item.id}}" hover-class="hover-opacity">
+              <text class="add-member-icon">+</text>
+            </view>
+          </view>
+
+          <!-- 统计行 -->
+          <view class="card-stats">
+            <view class="stat">
+              <text class="stat-label">总支出</text>
+              <text class="stat-value expense">{{item.totalExpenseDisplay}}</text>
+            </view>
+            <view class="stat-divider"></view>
+            <view class="stat">
+              <text class="stat-label">记录</text>
+              <text class="stat-value">{{item.billCount}}笔</text>
+            </view>
+            <view class="stat-divider"></view>
+            <view class="stat">
+              <text class="stat-label">成员</text>
+              <text class="stat-value">{{item.member_count}}人</text>
+            </view>
+          </view>
+
+          <!-- 底部：日期 + 操作 -->
+          <view class="card-footer">
+            <text class="card-date">{{item.createdDateDisplay}} 创建</text>
+            <view class="card-actions" catchtap="preventBubble">
+              <view
+                class="action-btn enter"
+                catchtap="onBookTap"
+                data-id="{{item.id}}"
+                hover-class="hover-opacity"
+              >
+                进入
+              </view>
+              <view
+                class="action-btn danger"
+                catchtap="onDeleteBook"
+                data-id="{{item.id}}"
+                data-name="{{item.name}}"
+                hover-class="hover-opacity"
+              >
+                删除
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- ======== FAB 新建账本按钮 ======== -->
+  <view class="fab-add" bindtap="onCreateBook" hover-class="fab-hover">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- ======== 成员管理弹窗 ======== -->
+  <member-popup
+    visible="{{memberPopupVisible}}"
+    bookId="{{memberPopupBookId}}"
+    bookName="{{memberPopupBookName}}"
+    members="{{memberPopupMembers}}"
+    bind:onclose="closeMemberPopup"
+    bind:onaddshadow="onAddShadowMember"
+    bind:onclaim="onClaimMember"
+  />
+</view>

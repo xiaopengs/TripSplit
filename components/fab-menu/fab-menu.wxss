@@ -1,6 +1,33 @@
-/* === FAB 浮动菜单样式 === */
+/* === FAB 悬浮按钮 — 圆形 + 号 === */
 
-/* 遮罩层：全屏半透明黑色 */
+.fab-btn {
+  position: fixed;
+  right: 36rpx;
+  bottom: calc(48rpx + env(safe-area-inset-bottom));
+  z-index: 999;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: #34C759;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(52, 199, 89, 0.4);
+}
+
+.fab-btn-hover {
+  opacity: 0.85;
+  transform: scale(0.94);
+}
+
+.fab-plus {
+  color: #FFFFFF;
+  font-size: 52rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* === 以下为展开面板样式（MVP 暂不使用，后续恢复用） ===
 .fab-overlay {
   position: fixed;
   top: 0;
@@ -19,119 +46,56 @@
   pointer-events: auto;
 }
 
-/* 按钮组容器：固定右下角 */
-.fab-group {
+.fab-pill {
   position: fixed;
-  right: 40rpx;
+  right: 32rpx;
   bottom: calc(40rpx + env(safe-area-inset-bottom));
   z-index: 999;
-  width: 112rpx;
-  height: 112rpx;
-}
-
-/* === 主按钮 === */
-.fab-main {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 50%;
-  background: var(--color-primary);
-  box-shadow: 0 8rpx 32rpx rgba(52, 199, 89, 0.4);
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 10;
-  transition: background-color 200ms ease, box-shadow 200ms ease;
-}
-
-/* 展开时主按钮变红 */
-.fab-main.open {
-  background: var(--color-danger);
-  box-shadow: 0 8rpx 32rpx rgba(255, 59, 48, 0.4);
-}
-
-.fab-main-hover {
-  opacity: 0.85;
-  transform: scale(0.93);
-}
-
-/* 主按钮图标：白色 "+" */
-.fab-icon {
-  color: #FFFFFF;
-  font-size: 56rpx;
-  font-weight: 300;
-  line-height: 1;
-  transition: transform 200ms var(--spring-curve);
-}
-
-/* 展开时旋转 45° 变为 "×" */
-.fab-icon.rotated {
-  transform: rotate(45deg);
-}
-
-/* === 子按钮（通用） === */
-.fab-sub {
-  position: absolute;
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 初始位置：与主按钮中心重叠 */
-  left: 12rpx;
-  bottom: 12rpx;
-  opacity: 0;
-  transform: scale(0.3);
-  transition: all 200ms var(--spring-curve);
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* 手动记账：白底 + 绿色边框 */
-.sub-manual {
   background: #FFFFFF;
-  border: 3rpx solid var(--color-primary);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+  border-radius: 60rpx;
+  padding: 16rpx 28rpx 16rpx 16rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15), 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  transition: all 250ms var(--spring-curve);
 }
 
-/* 拍照记账：绿色填充 */
-.sub-camera {
-  background: var(--color-primary);
-  box-shadow: 0 4rpx 16rpx rgba(52, 199, 89, 0.35);
+.fab-pill.expanded {
+  background: var(--color-danger);
+  box-shadow: 0 8rpx 32rpx rgba(255, 59, 48, 0.35);
+  padding-right: 20rpx;
 }
 
-/* 展开动画：垂直向上弹出 */
-/* 拍照按钮（较近）：主按钮高度112 + 间距24 = 136rpx 偏移 → 减去初始12rpx = -124rpx */
-.sub-camera.show {
-  transform: translateY(-124rpx) scale(1);
+.fab-options {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(140rpx + env(safe-area-inset-bottom));
+  z-index: 999;
+  width: 480rpx;
+  background: #FFFFFF;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(20rpx) scale(0.95);
+  pointer-events: none;
+  transition: all 250ms var(--spring-curve);
+  overflow: hidden;
+}
+
+.fab-options.show {
   opacity: 1;
+  transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
-/* 手动按钮（较远）：136 + 子按钮88 + 间距20 = 244rpx 偏移 → 减去初始12rpx = -232rpx */
-.sub-manual.show {
-  transform: translateY(-232rpx) scale(1);
-  opacity: 1;
-  pointer-events: auto;
-  transition-delay: 30ms;
+.fab-option-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 28rpx;
+  border-bottom: 1rpx solid var(--border-color);
 }
 
-.fab-sub-hover {
-  opacity: 0.8 !important;
-  transform: translateY(var(--sub-y, 0)) scale(0.92) !important;
+.fab-option-item:last-child {
+  border-bottom: none;
 }
-
-/* 子按钮图标 */
-.sub-icon {
-  font-size: 36rpx;
-  line-height: 1;
-}
-
-.sub-manual .sub-icon {
-  color: var(--color-primary);
-}
-
-.sub-camera .sub-icon {
-  color: #FFFFFF;
-}
+*/

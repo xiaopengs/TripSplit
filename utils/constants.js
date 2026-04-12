@@ -7,13 +7,23 @@ const CATEGORIES = [
   { key: 'dining', name: '餐饮', icon: '🍴' },
   { key: 'traffic', name: '交通', icon: '🚗' },
   { key: 'hotel', name: '住宿', icon: '🏨' },
-  { key: 'ticket', name: '门票', icon: '🎫' },
   { key: 'shopping', name: '购物', icon: '🛍️' },
+  { key: 'ticket', name: '门票', icon: '🎫' },
   { key: 'other', name: '其他', icon: '📦' }
 ]
 
+// 类目对应的快捷备注标签
+const CATEGORY_TAGS = {
+  dining: ['早餐', '午餐', '晚餐', '夜宵'],
+  traffic: ['火车', '飞机', '巴士', '打车', '停车费', '油费', '高速费'],
+  hotel: ['酒店', '民宿'],
+  shopping: ['零食', '装备', '日用品'],
+  ticket: ['景区'],
+  other: []
+}
+
 function getCategoryByKey(key) {
-  return CATEGORIES.find(c => c.key === key) || CATEGORIES[CATEGORIES.length - 1]
+  return CATEGORIES.find(c => c.key === key)
 }
 
 // === 账本皮肤颜色 ===
@@ -59,12 +69,6 @@ const MEMBER_TYPE = {
   SHADOW: 'shadow'
 }
 
-// === 账本状态 ===
-const BOOK_STATUS = {
-  ACTIVE: 'active',
-  ARCHIVED: 'archived'
-}
-
 // === 分摊方式 ===
 const SPLIT_TYPE = {
   EQUAL: 'equal',
@@ -73,6 +77,7 @@ const SPLIT_TYPE = {
 
 module.exports = {
   CATEGORIES,
+  CATEGORY_TAGS,
   getCategoryByKey,
   SKIN_COLORS,
   getSkinColor,
@@ -80,6 +85,5 @@ module.exports = {
   getCurrencyByCode,
   BILL_SOURCE,
   MEMBER_TYPE,
-  BOOK_STATUS,
   SPLIT_TYPE
 }

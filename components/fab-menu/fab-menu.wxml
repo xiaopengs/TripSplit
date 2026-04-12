@@ -1,40 +1,8 @@
-<!-- FAB 浮动菜单组件 -->
-
-<!-- 遮罩层：半透明黑色覆盖 -->
+<!-- FAB 浮动按钮 — 圆形 + 号，点击直接手动录入 -->
 <view
-  class="fab-overlay {{visible ? 'show' : ''}}"
-  bindtap="onOverlayTap"
-  catchtouchmove="preventMove"
-></view>
-
-<!-- FAB 按钮组（固定右下角） -->
-<view class="fab-group">
-  <!-- 子按钮：手动记账（上方，白底绿边圆形） -->
-  <view
-    class="fab-sub sub-manual {{visible ? 'show' : ''}}"
-    catchtap="onSelect"
-    data-key="manual"
-    hover-class="fab-sub-hover"
-  >
-    <text class="sub-icon">✏</text>
-  </view>
-
-  <!-- 子按钮：拍照记账（中间，绿底白字圆形） -->
-  <view
-    class="fab-sub sub-camera {{visible ? 'show' : ''}}"
-    catchtap="onSelect"
-    data-key="camera"
-    hover-class="fab-sub-hover"
-  >
-    <text class="sub-icon">📷</text>
-  </view>
-
-  <!-- 主按钮（始终可见） -->
-  <view
-    class="fab-main {{visible ? 'open' : ''}}"
-    catchtap="onToggle"
-    hover-class="fab-main-hover"
-  >
-    <text class="fab-icon {{visible ? 'rotated' : ''}}">+</text>
-  </view>
+  class="fab-btn"
+  catchtap="onTap"
+  hover-class="fab-btn-hover"
+>
+  <text class="fab-plus">+</text>
 </view>

@@ -22,10 +22,9 @@ function getCurrentBook() {
   const books = getBookList()
   const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
   if (activeId) {
-    const activeBook = books.find(b => b.id === activeId)
-    if (activeBook && activeBook.status !== 'archived') return activeBook
+    return books.find(b => b.id === activeId) || null
   }
-  return books.find(b => b.status === 'active') || null
+  return books.length > 0 ? books[0] : null
 }
 
 /**
@@ -35,7 +34,7 @@ function setCurrentBook(bookId) {
   if (!bookId) return false
   const books = getBookList()
   const book = books.find(b => b.id === bookId)
-  if (!book || book.status === 'archived') return false
+  if (!book) return false
   cache.set(ACTIVE_BOOK_ID_KEY, bookId)
   return true
 }
@@ -114,18 +113,6 @@ function updateBook(bookId, updates) {
 }
 
 /**
- * 归档账本
- */
-function archiveBook(bookId) {
-  const archived = updateBook(bookId, { status: 'archived', end_date: new Date().toISOString().split('T')[0] })
-  const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
-  if (archived && activeId === bookId) {
-    cache.remove(ACTIVE_BOOK_ID_KEY)
-  }
-  return archived
-}
-
-/**
  * 删除账本（软删除）
  */
 function deleteBook(bookId) {
@@ -145,6 +132,5 @@ module.exports = {
   setCurrentBook,
   createBook,
   updateBook,
-  archiveBook,
   deleteBook
 }

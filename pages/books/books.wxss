@@ -1,0 +1,394 @@
+/* ============================================
+   TripSplit - 账本管理页样式
+   ============================================ */
+
+.page-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+/* ============================================
+   自定义导航栏
+   ============================================ */
+
+.page-header {
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  padding: 0 32rpx 24rpx;
+}
+
+.back-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-icon {
+  font-size: 44rpx;
+  color: var(--text-primary);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.header-title {
+  flex: 1;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: 8rpx;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+}
+
+.sort-text {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.sort-arrow {
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  margin-left: 4rpx;
+}
+
+/* ============================================
+   筛选 Tab
+   ============================================ */
+
+.filter-tabs {
+  display: flex;
+  padding: 16rpx 32rpx 20rpx;
+  gap: 24rpx;
+}
+
+.filter-tab {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  padding: 8rpx 0;
+  position: relative;
+}
+
+.filter-tab.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.filter-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: var(--color-primary);
+}
+
+/* ============================================
+   内容区域
+   ============================================ */
+
+.content-area {
+  flex: 1;
+  height: 0;
+}
+
+/* ============================================
+   空状态
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx 48rpx 120rpx;
+}
+
+.empty-emoji {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.55;
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-bottom: 40rpx;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.btn-primary {
+  background: var(--color-primary) !important;
+  color: white !important;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 20rpx 60rpx;
+  border-radius: 48rpx;
+  box-shadow: 0 8rpx 24rpx rgba(52, 199, 89, 0.35);
+}
+
+/* ============================================
+   账本卡片列表
+   ============================================ */
+
+.book-list {
+  padding: 0 24rpx 180rpx;
+}
+
+.book-card {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 20rpx;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: opacity 150ms ease;
+}
+
+.book-card:active {
+  opacity: 0.85;
+}
+
+.hover-card {
+  opacity: 0.85;
+}
+
+/* 左侧颜色条 */
+.card-accent {
+  width: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 卡片主体 */
+.card-body {
+  flex: 1;
+  padding: 28rpx 28rpx 24rpx;
+  min-width: 0;
+}
+
+/* 名称 + 当前标记 */
+.card-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.card-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current-badge {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: white;
+  background: var(--color-primary);
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   成员头像行
+   ============================================ */
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.mini-avatar {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: -8rpx;
+  border: 3rpx solid white;
+  position: relative;
+  z-index: 1;
+}
+
+.mini-avatar:last-of-type {
+  margin-right: 0;
+}
+
+.avatar-char {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: white;
+}
+
+.more-count {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  margin-left: 12rpx;
+  font-weight: 500;
+}
+
+.member-add-btn {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  border: 2rpx dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8rpx;
+}
+
+.add-member-icon {
+  font-size: 28rpx;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+/* ============================================
+   统计行
+   ============================================ */
+
+.card-stats {
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  padding: 16rpx 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 20rpx;
+  color: var(--text-tertiary);
+  margin-bottom: 4rpx;
+}
+
+.stat-value {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-value.expense {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.stat-divider {
+  width: 1rpx;
+  height: 40rpx;
+  background: var(--border-color);
+}
+
+/* ============================================
+   底部日期 + 操作按钮
+   ============================================ */
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-date {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+}
+
+.card-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-weight: 500;
+}
+
+.action-btn.enter {
+  background: var(--color-primary);
+  color: white;
+}
+
+.action-btn.danger {
+  color: var(--color-danger);
+  background: #FFF0F0;
+}
+
+/* ============================================
+   FAB 新建按钮
+   ============================================ */
+
+.fab-add {
+  position: fixed;
+  right: 40rpx;
+  bottom: 80rpx;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(52, 199, 89, 0.4);
+  z-index: 100;
+}
+
+.fab-hover {
+  opacity: 0.85;
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 56rpx;
+  color: white;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ============================================
+   通用交互
+   ============================================ */
+
+.hover-opacity {
+  opacity: 0.7;
+}

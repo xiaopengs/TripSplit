@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "member-popup": "/components/member-popup/member-popup"
+  },
+  "navigationBarTitleText": "",
+  "navigationStyle": "custom"
+}

@@ -47,12 +47,6 @@ Page({
       })
     }
 
-    if (result.transfers.length > 0) {
-      result.transfers.forEach(t => {
-        t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)
-      })
-    }
-
     result.totalAmountDisplay = formatAmount(result.totalAmount, this.data.currencySymbol)
 
     this.setData({ result })

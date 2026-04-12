@@ -79,12 +79,6 @@ describe('book.getCurrentBook 获取当前账本', () => {
     const book = bookService.createBook({ name: '活跃' })
     expect(bookService.getCurrentBook().id).toBe(book.id)
   })
-
-  it('归档后无活跃账本', () => {
-    const book = bookService.createBook({ name: '待归档' })
-    bookService.archiveBook(book.id)
-    expect(bookService.getCurrentBook()).toBe(null)
-  })
 })
 
 describe('book.updateBook 更新账本', () => {
@@ -99,17 +93,6 @@ describe('book.updateBook 更新账本', () => {
 
   it('更新不存在的账本返回 null', () => {
     expect(bookService.updateBook('nonexistent', { name: 'x' })).toBe(null)
-  })
-})
-
-describe('book.archiveBook 归档账本', () => {
-  beforeEach(() => clearMockStorage())
-
-  it('归档成功', () => {
-    const book = bookService.createBook({ name: '归档测试' })
-    const archived = bookService.archiveBook(book.id)
-    expect(archived.status).toBe('archived')
-    expect(archived.end_date).toBeTruthy()
   })
 })
 

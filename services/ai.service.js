@@ -121,7 +121,10 @@ async function captureAndProcess(bookId, payerId, memberIds) {
     saveToInbox(inboxItem)
 
     // Step 3 & 4: 上传 + AI 识别（异步，不阻塞）
-    processAsync(inboxItem.id, photoResult.localPath, bookId)
+    processAsync(inboxItem.id, photoResult.localPath, bookId).catch(err => {
+      console.error('processAsync unhandled error:', err)
+      updateInboxField(inboxItem.id, 'status', 'error')
+    })
 
     return inboxItem
   } catch (err) {

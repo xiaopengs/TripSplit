@@ -78,8 +78,11 @@ function calculateSettlement(members, bills, options = {}) {
 
     const transferAmount = Math.min(debtor.amount, creditor.amount)
 
+    // 使用 from_id + to_id 生成确定性 ID，避免增删账单后状态错乱
+    const transferId = `t_${debtor.id}_${creditor.id}`
+
     transfers.push({
-      id: `transfer_${transfers.length}`,
+      id: transferId,
       from_id: debtor.id,
       from_name: debtor.name,
       to_id: creditor.id,

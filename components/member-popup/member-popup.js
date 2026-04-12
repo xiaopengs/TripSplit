@@ -72,6 +72,13 @@ Component({
           }
         }
       })
+    },
+
+    onManageBooks() {
+      this.triggerEvent('onclose')
+      setTimeout(() => {
+        wx.navigateTo({ url: '/pages/books/books' })
+      }, 300)
     }
   }
 })
