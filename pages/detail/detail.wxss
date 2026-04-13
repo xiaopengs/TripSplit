@@ -6,8 +6,8 @@
   background: white; margin-bottom: 20rpx;
 }
 .back-btn { width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; }
-.back-icon { font-size: 36rpx; color: var(--text-primary); }
-.header-title { font-size: 34rpx; font-weight: 600; }
+.back-icon { font-size: var(--font-lg); color: var(--text-primary); }
+.header-title { font-size: var(--font-lg); font-weight: 600; }
 .header-placeholder { width: 64rpx; }
 .content { padding: 0 24rpx; }
 
@@ -16,9 +16,9 @@
   display: flex; flex-direction: column; align-items: center; margin-bottom: 20rpx;
 }
 .cat-icon-lg { font-size: 80rpx; margin-bottom: 16rpx; }
-.amount { font-size: 56rpx; font-weight: 700; color: var(--color-primary); }
-.cat-name { font-size: 28rpx; color: var(--text-secondary); margin-top: 8rpx; }
-.note { font-size: 26rpx; color: var(--text-secondary); margin-top: 8rpx; }
+.amount { font-size: var(--font-xxl); font-weight: 700; color: var(--color-primary); }
+.cat-name { font-size: var(--font-base); color: var(--text-secondary); margin-top: 8rpx; }
+.note { font-size: var(--font-base); color: var(--text-secondary); margin-top: 8rpx; }
 
 .info-card {
   background: white; border-radius: var(--border-radius-lg); padding: 8rpx 28rpx; margin-bottom: 20rpx;
@@ -28,27 +28,27 @@
   border-bottom: 1rpx solid var(--border-color);
 }
 .info-row:last-child { border-bottom: none; }
-.label { font-size: 26rpx; color: var(--text-secondary); }
-.value { font-size: 26rpx; color: var(--text-primary); }
+.label { font-size: var(--font-base); color: var(--text-secondary); }
+.value { font-size: var(--font-base); color: var(--text-primary); }
 
 .split-card {
   background: white; border-radius: var(--border-radius-lg); padding: 24rpx 28rpx; margin-bottom: 20rpx;
 }
-.card-title { font-size: 28rpx; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 16rpx; }
+.card-title { font-size: var(--font-base); font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 16rpx; }
 .split-item {
   display: flex; justify-content: space-between; align-items: center; padding: 14rpx 0;
   border-bottom: 1rpx solid var(--border-color);
 }
 .split-item:last-of-type { border-bottom: none; }
 .split-left { display: flex; align-items: center; gap: 8rpx; }
-.split-name { font-size: 28rpx; color: var(--text-primary); }
+.split-name { font-size: var(--font-base); color: var(--text-primary); }
 .shadow-tag { font-size: 18rpx; background: #FFE4A0; color: #8B6914; padding: 2rpx 8rpx; border-radius: 8rpx; }
-.split-amount { font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
+.split-amount { font-size: var(--font-base); font-weight: 500; color: var(--text-primary); }
 .split-total {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16rpx 0 4rpx; margin-top: 8rpx; font-size: 26rpx; color: var(--text-secondary);
+  padding: 16rpx 0 4rpx; margin-top: 8rpx; font-size: var(--font-base); color: var(--text-secondary);
 }
-.total-amount { font-size: 30rpx; font-weight: 600; color: var(--color-primary); }
+.total-amount { font-size: var(--font-md); font-weight: 600; color: var(--color-primary); }
 
 .images-card {
   background: white; border-radius: var(--border-radius-lg); padding: 24rpx 28rpx; margin-bottom: 20rpx;
@@ -59,10 +59,9 @@
 .actions { display: flex; gap: 16rpx; margin-bottom: 40rpx; }
 .btn-edit {
   flex: 1; padding: 22rpx 0; background: white; color: var(--text-primary);
-  border-radius: 48rpx; font-size: 28rpx;
+  border-radius: 48rpx; font-size: var(--font-base);
 }
 .btn-delete {
   flex: 1; padding: 22rpx 0; background: #FFF0F0; color: var(--color-danger);
-  border-radius: 48rpx; font-size: 28rpx;
+  border-radius: 48rpx; font-size: var(--font-base);
 }
-.hover-opacity { opacity: 0.7; }

@@ -22,7 +22,7 @@
 
 .fab-plus {
   color: #FFFFFF;
-  font-size: 52rpx;
+  font-size: var(--font-xxl);
   font-weight: 300;
   line-height: 1;
 }

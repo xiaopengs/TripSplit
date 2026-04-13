@@ -11,6 +11,14 @@
   bottom: 0;
   background: var(--bg-mask);
   z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) ease;
+}
+
+.popup-mask.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* 弹窗容器 — 大面积底部弹出 ~80vh */
@@ -47,7 +55,7 @@
 }
 
 .popup-title {
-  font-size: 34rpx;
+  font-size: var(--font-lg);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -59,7 +67,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   border-radius: 50%;
   background: var(--bg-primary);
 }
@@ -106,21 +114,21 @@
 }
 
 .manage-books-title {
-  font-size: 28rpx;
+  font-size: var(--font-base);
   font-weight: 600;
   color: var(--text-primary);
   display: block;
 }
 
 .manage-books-desc {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   display: block;
   margin-top: 4rpx;
 }
 
 .manage-books-arrow {
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   color: var(--text-tertiary);
   font-weight: 500;
   flex-shrink: 0;
@@ -150,7 +158,7 @@
 }
 
 .invite-title {
-  font-size: 30rpx;
+  font-size: var(--font-md);
   font-weight: 600;
   color: var(--text-primary);
   display: block;
@@ -160,7 +168,7 @@
 }
 
 .invite-desc {
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   display: block;
   margin-top: 6rpx;
@@ -185,7 +193,7 @@
 
 .share-icon {
   color: #FFFFFF;
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   font-weight: 700;
 }
 
@@ -197,7 +205,7 @@
 }
 
 .section-title {
-  font-size: 26rpx;
+  font-size: var(--font-base);
   font-weight: 600;
   color: var(--text-secondary);
   display: block;
@@ -216,7 +224,7 @@
 }
 
 .pending-hint {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: #FF9500;
   font-weight: 500;
 }
@@ -244,7 +252,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32rpx;
+  font-size: var(--font-md);
   font-weight: 700;
   margin-right: 20rpx;
   flex-shrink: 0;
@@ -262,7 +270,7 @@
 }
 
 .shadow-person {
-  font-size: 36rpx;
+  font-size: var(--font-lg);
 }
 
 /* "?" 小圆标 */
@@ -274,7 +282,7 @@
   height: 32rpx;
   background: #FF9500;
   color: #FFFFFF;
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   font-weight: 700;
   border-radius: 50%;
   display: flex;
@@ -290,7 +298,7 @@
 }
 
 .member-name {
-  font-size: 30rpx;
+  font-size: var(--font-md);
   font-weight: 500;
   color: var(--text-primary);
   display: block;
@@ -313,19 +321,19 @@
 }
 
 .tag-joined {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--color-primary);
   font-weight: 500;
 }
 
 .tag-role {
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   color: var(--text-tertiary);
 }
 
 /* 影子成员标签 — 黄底深色 */
 .tag-shadow {
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   background: #FFF3D0;
   color: #8B6914;
   padding: 4rpx 12rpx;
@@ -335,7 +343,7 @@
 }
 
 .shadow-subtitle {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: #FF9500;
   display: block;
   margin-top: 4rpx;
@@ -366,7 +374,7 @@
 }
 
 .tip-heading {
-  font-size: 26rpx;
+  font-size: var(--font-base);
   font-weight: 600;
   color: #8B6914;
   display: block;
@@ -374,7 +382,7 @@
 }
 
 .tip-text {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: #B8922A;
   display: block;
   line-height: 1.6;
@@ -401,7 +409,7 @@
   background: #FF6B6B;
   color: #FFFFFF;
   border-radius: 28rpx;
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   font-weight: 600;
   flex-shrink: 0;
   margin-left: 12rpx;
@@ -418,14 +426,7 @@
   border: 2rpx dashed var(--border-color);
   border-radius: var(--border-radius-lg);
   color: var(--text-secondary);
-  font-size: 28rpx;
+  font-size: var(--font-base);
   margin-top: 8rpx;
   margin-bottom: 16rpx;
-}
-
-/* ============================================
-   通用
-   ============================================ */
-.hover-opacity {
-  opacity: 0.7;
 }

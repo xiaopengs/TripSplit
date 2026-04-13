@@ -43,25 +43,25 @@
 
 .book-name {
   color: var(--text-white);
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   font-weight: 700;
 }
 
 .picker-arrow {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   margin-left: 6rpx;
 }
 
 .member-count {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 28rpx;
+  font-size: var(--font-base);
   margin-left: 8rpx;
 }
 
 .book-manage-link {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   margin-left: 16rpx;
   padding: 6rpx 16rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.35);
@@ -90,7 +90,7 @@
 
 .member-badge-count {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   margin-left: 4rpx;
   font-weight: 500;
 }
@@ -101,7 +101,7 @@
   right: -2rpx;
   background: #FF9500;
   color: white;
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   font-weight: 700;
   min-width: 32rpx;
   height: 32rpx;
@@ -114,7 +114,7 @@
 
 .date-range {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   padding: 0 32rpx 20rpx;
 }
 
@@ -136,7 +136,7 @@
   justify-content: center;
   padding: 16rpx 0;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 26rpx;
+  font-size: var(--font-base);
   border-radius: 40rpx;
   position: relative;
   transition: all 250ms var(--spring-curve);
@@ -149,12 +149,12 @@
 }
 
 .tab-icon-emoji {
-  font-size: 26rpx;
+  font-size: var(--font-base);
   margin-right: 8rpx;
 }
 
 .tab-label {
-  font-size: 26rpx;
+  font-size: var(--font-base);
 }
 
 .tab-item.active .tab-icon-emoji,
@@ -184,69 +184,6 @@
 .content-area {
   flex: 1;
   height: 0;
-}
-
-/* ============================================
-   空状态
-   ============================================ */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 48rpx 120rpx;
-}
-
-.empty-emoji {
-  font-size: 120rpx;
-  margin-bottom: 32rpx;
-  opacity: 0.55;
-}
-
-.empty-emoji.large {
-  font-size: 160rpx;
-}
-
-.empty-check-circle {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  background: #E5E5EA;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32rpx;
-}
-
-.empty-check-mark {
-  font-size: 72rpx;
-  color: #AEAEB2;
-  font-weight: 700;
-}
-
-.empty-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12rpx;
-}
-
-.empty-desc {
-  font-size: 26rpx;
-  color: var(--text-secondary);
-  margin-bottom: 40rpx;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.btn-primary {
-  background: var(--color-primary) !important;
-  color: white !important;
-  font-size: 30rpx;
-  font-weight: 600;
-  padding: 20rpx 60rpx;
-  border-radius: 48rpx;
-  box-shadow: 0 8rpx 24rpx rgba(52, 199, 89, 0.35);
 }
 
 /* ============================================
@@ -285,14 +222,14 @@
 }
 
 .date-text {
-  font-size: 30rpx;
+  font-size: var(--font-md);
   font-weight: 700;
   color: var(--text-primary);
   flex-shrink: 0;
 }
 
 .location-text {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   margin-left: 12rpx;
   flex-shrink: 0;
@@ -307,12 +244,12 @@
 }
 
 .day-count {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
 }
 
 .day-total {
-  font-size: 28rpx;
+  font-size: var(--font-base);
   font-weight: 700;
   color: var(--color-primary);
 }
@@ -342,9 +279,6 @@
   opacity: 0.7;
 }
 
-.hover-card {
-  opacity: 0.7;
-}
 
 /* 左侧轨道（圆点） */
 .tl-rail {
@@ -376,7 +310,7 @@
 
 /* 时间 */
 .tl-time {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
   width: 72rpx;
   flex-shrink: 0;
@@ -407,18 +341,18 @@
 }
 
 .tl-cat-icon {
-  font-size: 30rpx;
+  font-size: var(--font-md);
   margin-right: 8rpx;
 }
 
 .tl-cat-name {
-  font-size: 28rpx;
+  font-size: var(--font-base);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .tl-amount {
-  font-size: 32rpx;
+  font-size: var(--font-md);
   font-weight: 700;
   color: var(--color-primary);
   flex-shrink: 0;
@@ -426,7 +360,7 @@
 }
 
 .tl-note {
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   display: block;
   margin-top: 8rpx;
@@ -440,7 +374,7 @@
 }
 
 .tl-payer {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
 }
 
@@ -474,7 +408,7 @@
 }
 
 .inbox-thumb-emoji {
-  font-size: 48rpx;
+  font-size: var(--font-xl);
   opacity: 0.5;
 }
 
@@ -485,7 +419,7 @@
 }
 
 .inbox-status {
-  font-size: 26rpx;
+  font-size: var(--font-base);
   color: var(--text-secondary);
 }
 
@@ -498,7 +432,7 @@
 }
 
 .inbox-amount {
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   font-weight: 700;
   color: var(--color-primary);
 }
@@ -508,7 +442,7 @@
 }
 
 .inbox-category {
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   margin-top: 4rpx;
 }
@@ -522,7 +456,7 @@
 .action-btn {
   padding: 10rpx 28rpx;
   border-radius: 32rpx;
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   text-align: center;
 }
 
@@ -560,7 +494,7 @@
 .settle-subtitle {
   display: block;
   text-align: center;
-  font-size: 26rpx;
+  font-size: var(--font-base);
   color: var(--text-secondary);
   margin-bottom: 40rpx;
 }
@@ -588,13 +522,13 @@
 }
 
 .person-label {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   margin-bottom: 8rpx;
 }
 
 .person-name {
-  font-size: 32rpx;
+  font-size: var(--font-md);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -613,14 +547,14 @@
 
 .arrow-text {
   color: white;
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   font-weight: 700;
 }
 
 .transfer-amount {
   display: block;
   text-align: center;
-  font-size: 52rpx;
+  font-size: var(--font-xxl);
   font-weight: 700;
   color: var(--color-primary);
   margin: 24rpx 0;
@@ -638,7 +572,7 @@
   flex: 1;
   padding: 18rpx 0;
   border-radius: 40rpx;
-  font-size: 26rpx;
+  font-size: var(--font-base);
   text-align: center;
   line-height: 1.4;
 }
@@ -658,14 +592,8 @@
   flex: 1;
   text-align: center;
   padding: 18rpx 0;
-  font-size: 26rpx;
+  font-size: var(--font-base);
   color: var(--color-success);
   font-weight: 500;
 }
 
-/* ============================================
-   通用交互效果
-   ============================================ */
-.hover-opacity {
-  opacity: 0.7;
-}

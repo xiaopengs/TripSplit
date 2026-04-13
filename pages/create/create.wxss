@@ -22,12 +22,12 @@
 }
 
 .back-icon {
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   color: var(--text-primary);
 }
 
 .header-title {
-  font-size: 34rpx;
+  font-size: var(--font-lg);
   font-weight: 600;
 }
 
@@ -62,11 +62,11 @@
 }
 
 .logo-text {
-  font-size: 56rpx;
+  font-size: var(--font-xxl);
 }
 
 .logo-hint {
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   color: var(--text-tertiary);
   margin-top: 12rpx;
 }
@@ -83,7 +83,7 @@
 }
 
 .form-label {
-  font-size: 26rpx;
+  font-size: var(--font-base);
   font-weight: 600;
   color: var(--text-primary);
   display: block;
@@ -100,7 +100,7 @@
 }
 
 .form-hint {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
 }
 
@@ -119,14 +119,14 @@
   padding: 20rpx 24rpx;
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
-  font-size: 30rpx;
+  font-size: var(--font-md);
   box-sizing: border-box;
   height: 80rpx;
   line-height: 44rpx;
 }
 
 .char-count {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -140,19 +140,19 @@
   padding: 16rpx 20rpx;
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
-  font-size: 28rpx;
+  font-size: var(--font-base);
   min-width: 0;
   box-sizing: border-box;
 }
 
 .picker-arrow {
-  font-size: 36rpx;
+  font-size: var(--font-lg);
   color: var(--text-tertiary);
 }
 
 .auto-detect {
   margin-top: 12rpx;
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   color: var(--color-info);
   text-align: right;
 }
@@ -183,12 +183,12 @@
 
 .skin-check {
   color: white;
-  font-size: 32rpx;
+  font-size: var(--font-md);
   font-weight: bold;
 }
 
 .skin-name {
-  font-size: 22rpx;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
   display: block;
   text-align: center;
@@ -211,13 +211,13 @@
   background: #FFF9E6;
   border: 1rpx solid #FFE4A0;
   border-radius: 24rpx;
-  font-size: 26rpx;
+  font-size: var(--font-base);
   color: #8B6914;
 }
 
 .shadow-remove {
   color: #B8922A;
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   width: 32rpx; height: 32rpx;
   display: flex; align-items: center; justify-content: center;
 }
@@ -236,7 +236,7 @@
   padding: 16rpx 20rpx;
   background: var(--bg-primary);
   border-radius: var(--border-radius-sm);
-  font-size: 28rpx;
+  font-size: var(--font-base);
   min-width: 0;
   height: 80rpx;
   box-sizing: border-box;
@@ -247,7 +247,7 @@
   background: var(--color-primary);
   color: white;
   border-radius: var(--border-radius-sm);
-  font-size: 26rpx;
+  font-size: var(--font-base);
   font-weight: 500;
   display: flex; align-items: center; justify-content: center;
   white-space: nowrap;
@@ -270,15 +270,11 @@
   background: var(--color-primary);
   color: white;
   border-radius: 48rpx;
-  font-size: 32rpx;
+  font-size: var(--font-md);
   font-weight: 600;
   box-shadow: 0 8rpx 24rpx rgba(52,199,89,0.35);
 }
 
 .btn-create.disabled {
   opacity: 0.5;
-}
-
-.hover-opacity {
-  opacity: 0.7;
 }

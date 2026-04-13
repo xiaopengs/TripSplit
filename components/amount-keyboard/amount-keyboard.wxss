@@ -4,7 +4,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #F2F2F7;
+  background: var(--bg-primary);
   padding: 12rpx 16rpx;
   padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
 }
@@ -24,7 +24,7 @@
   flex: 1;
   height: 100rpx;
   border-radius: 12rpx;
-  background: #FFFFFF;
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,18 +34,18 @@
 
 /* 退格键 */
 .key-backspace {
-  background: #E5E5EA;
+  background: var(--border-color);
   box-shadow: none;
 }
 
 /* 按下态 */
 .key-active {
-  background: #D1D1D6 !important;
+  background: var(--text-tertiary) !important;
 }
 
 /* 按键文字 */
 .key-text {
-  font-size: 36px;
+  font-size: var(--font-xxl);
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1;
@@ -54,6 +54,6 @@
 
 /* 退格键文字稍小、灰色 */
 .key-backspace .key-text {
-  font-size: 32px;
+  font-size: var(--font-xxl);
   color: var(--text-secondary);
 }

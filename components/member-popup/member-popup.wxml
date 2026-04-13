@@ -1,5 +1,5 @@
 <!-- 成员管理弹窗 -->
-<view class="popup-mask" wx:if="{{visible}}" bindtap="onClose" catchtouchmove="preventMove"></view>
+<view class="popup-mask {{visible ? 'show' : ''}}" bindtap="onClose" catchtouchmove="preventMove"></view>
 
 <view class="popup-container {{visible ? 'show' : ''}}">
   <!-- 标题栏 -->
