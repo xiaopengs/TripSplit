@@ -1,5 +1,6 @@
 /**
  * 账本服务 - CRUD 操作
+ * 云开发优先，本地降级
  */
 const cache = require('../utils/cache')
 const { generateBookId, generateMemberId } = require('../utils/id')
@@ -7,6 +8,31 @@ const { SKIN_COLORS } = require('../utils/constants')
 
 const CACHE_KEY = 'books'
 const ACTIVE_BOOK_ID_KEY = 'active_book_id'
+
+/**
+ * 检查云是否可用
+ */
+function _isCloudReady() {
+  try {
+    const app = getApp()
+    return app && app.globalData && app.globalData.cloudReady && !!app.globalData.openid
+  } catch (e) {
+    return false
+  }
+}
+
+function _getCloudApi() {
+  return require('../utils/cloud')
+}
+
+function _getOpenid() {
+  try {
+    const app = getApp()
+    return app && app.globalData ? app.globalData.openid : ''
+  } catch (e) {
+    return ''
+  }
+}
 
 /**
  * 获取账本列表（本地优先）
@@ -40,9 +66,46 @@ function setCurrentBook(bookId) {
 }
 
 /**
- * 创建新账本
+ * 创建新账本（本地优先，后台同步云端）
  */
 function createBook(data) {
+  const creatorId = _getOpenid() || data.creatorId || ''
+
+  // 先创建本地版本
+  const book = _createBookLocal(data, creatorId)
+
+  // 后台同步到云端
+  if (_isCloudReady()) {
+    _syncBookToCloud(book, data).catch(err => {
+      console.error('Background cloud createBook failed:', err)
+    })
+  }
+
+  return book
+}
+
+async function _syncBookToCloud(book, data) {
+  const cloudApi = _getCloudApi()
+  const result = await cloudApi.call('createBook', {
+    name: data.name,
+    cover_color: book.cover_color,
+    currency: book.currency,
+    currency_symbol: book.currency_symbol,
+    start_date: book.start_date,
+    end_date: null,
+    shadowMembers: data.shadowMembers || []
+  })
+
+  // 更新本地缓存的 cloud_id
+  const books = getBookList()
+  const idx = books.findIndex(b => b.id === book.id)
+  if (idx !== -1) {
+    books[idx].cloud_id = result.cloud_id
+    cache.set(CACHE_KEY, books)
+  }
+}
+
+function _createBookLocal(data, creatorId) {
   const book = {
     id: generateBookId(),
     name: data.name,
@@ -52,18 +115,17 @@ function createBook(data) {
     start_date: data.startDate || new Date().toISOString().split('T')[0],
     end_date: null,
     status: 'active',
-    creator_id: data.creatorId || '',
+    creator_id: creatorId,
     member_count: 1,
     created_at: Date.now(),
     updated_at: Date.now()
   }
 
-  // 添加创建者为第一个成员
   const creator = {
     id: generateMemberId(),
     book_id: book.id,
     type: 'real',
-    user_id: data.creatorId || '',
+    user_id: creatorId,
     nickname: data.creatorName || '我',
     avatar_url: '',
     role: 'admin',
@@ -71,8 +133,7 @@ function createBook(data) {
   }
 
   book.members = [creator]
-  
-  // 添加影子成员
+
   if (data.shadowMembers && data.shadowMembers.length > 0) {
     data.shadowMembers.forEach(name => {
       book.members.push({
@@ -90,7 +151,6 @@ function createBook(data) {
     })
   }
 
-  // 保存
   const books = getBookList()
   books.push(book)
   cache.set(CACHE_KEY, books)
@@ -113,9 +173,10 @@ function updateBook(bookId, updates) {
 }
 
 /**
- * 删除账本（软删除）
+ * 删除账本（本地优先，后台同步云端）
  */
 function deleteBook(bookId) {
+  // 本地删除
   const books = getBookList()
   const filtered = books.filter(b => b.id !== bookId)
   cache.set(CACHE_KEY, filtered)
@@ -123,7 +184,30 @@ function deleteBook(bookId) {
   if (activeId === bookId) {
     cache.remove(ACTIVE_BOOK_ID_KEY)
   }
+
+  // 后台同步到云端
+  if (_isCloudReady()) {
+    const cloudApi = _getCloudApi()
+    cloudApi.call('deleteBook', { bookId }).catch(err => {
+      console.error('Cloud deleteBook failed:', err)
+    })
+  }
+
   return true
+}
+
+/**
+ * 通过 cloud_id 获取账本信息（用于邀请页）
+ */
+async function getBookByCloudId(cloudId) {
+  if (!_isCloudReady()) return null
+  try {
+    const cloudApi = _getCloudApi()
+    return await cloudApi.call('getBook', { cloudId })
+  } catch (err) {
+    console.error('getBookByCloudId error:', err)
+    return null
+  }
 }
 
 module.exports = {
@@ -132,5 +216,6 @@ module.exports = {
   setCurrentBook,
   createBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  getBookByCloudId
 }

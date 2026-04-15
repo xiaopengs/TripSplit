@@ -136,14 +136,16 @@ Page({
 
     try {
       const currency = this.data.currencies[this.data.currencyIndex]
-      
+      const app = getApp()
+      const openid = app && app.globalData ? app.globalData.openid : ''
+
       const book = bookService.createBook({
         name: this.data.bookName.trim(),
         currency: currency.code,
         currencySymbol: currency.symbol,
         coverColor: this.data.skinColors[this.data.selectedSkinIndex].value,
         startDate: this.data.startDate,
-        creatorId: '', // TODO: 获取用户 openid
+        creatorId: openid,
         creatorName: '我',
         shadowMembers: this.data.shadowMembers
       })

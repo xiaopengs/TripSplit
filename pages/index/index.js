@@ -75,12 +75,12 @@ Page({
     if (!bookId) return
 
     const switched = bookService.setCurrentBook(bookId)
-    if (!switched && from === 'share') {
-      wx.showModal({
-        title: '邀请已收到',
-        content: '你收到一个账本邀请，但当前版本仅支持本地账本数据，暂不支持跨设备加入/同步。',
-        showCancel: false,
-        confirmText: '我知道了'
+    if (switched) return
+
+    if (from === 'share') {
+      // 非本机账本 → 跳转邀请页面
+      wx.redirectTo({
+        url: `/pages/invite/invite?bookId=${encodeURIComponent(bookId)}&from=share`
       })
     }
   },
@@ -90,12 +90,23 @@ Page({
     const book = this.data.currentBook
     const bookId = data.bookId || (book && book.id) || ''
     const bookName = data.bookName || (book && book.name) || ''
+    const cloudId = book && book.cloud_id
 
     if (!bookId) {
       return { title: '拼途记账', path: '/pages/index/index' }
     }
 
     const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'
+
+    // 如果有 cloud_id，使用 cloud_id 分享（支持跨设备邀请）
+    if (cloudId) {
+      return {
+        title,
+        path: `/pages/invite/invite?cloudId=${encodeURIComponent(cloudId)}&from=share`
+      }
+    }
+
+    // 降级：使用本地 ID
     const path = `/pages/index/index?bookId=${encodeURIComponent(bookId)}&from=share`
     return { title, path }
   },

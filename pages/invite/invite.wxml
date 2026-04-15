@@ -1,0 +1,74 @@
+<!-- 邀请加入页面 -->
+<view class="page">
+
+  <!-- 加载中 -->
+  <view class="state-wrap" wx:if="{{loading}}">
+    <view class="spinner">⏳</view>
+    <text class="state-text">加载中...</text>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="state-wrap" wx:elif="{{error}}">
+    <view class="error-icon">😔</view>
+    <text class="state-title">无法加入</text>
+    <text class="state-desc">{{error}}</text>
+    <view class="btn-home" bindtap="onGoHome" hover-class="hover-opacity">
+      <text>返回首页</text>
+    </view>
+  </view>
+
+  <!-- 已加入 -->
+  <view class="state-wrap" wx:elif="{{joined}}">
+    <view class="success-icon">✅</view>
+    <text class="state-title">已加入「{{bookName}}」</text>
+    <text class="state-desc">快去和朋友们一起记账吧</text>
+    <view class="btn-home" bindtap="onGoHome" hover-class="hover-opacity">
+      <text>进入账本</text>
+    </view>
+  </view>
+
+  <!-- 邀请内容 (share 模式) -->
+  <view class="invite-content" wx:elif="{{mode === 'share'}}">
+    <!-- 账本信息 -->
+    <view class="book-card">
+      <view class="book-icon">📒</view>
+      <view class="book-info">
+        <text class="book-name">{{bookName}}</text>
+        <text class="book-meta">{{memberCount}} 位成员</text>
+      </view>
+    </view>
+
+    <!-- 选择影子身份 -->
+    <view class="section" wx:if="{{unclaimedShadows.length > 0}}">
+      <text class="section-label">选择你的身份</text>
+      <view class="shadow-list">
+        <view
+          class="shadow-item {{selectedShadowId === item._id ? 'selected' : ''}}"
+          wx:for="{{unclaimedShadows}}"
+          wx:key="_id"
+          bindtap="onSelectShadow"
+          data-id="{{item._id}}"
+        >
+          <view class="shadow-avatar">
+            <text>👤</text>
+          </view>
+          <text class="shadow-name">{{item.shadow_name}}</text>
+          <view class="check-mark" wx:if="{{selectedShadowId === item._id}}">✓</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-area">
+      <view
+        class="btn-join"
+        wx:if="{{unclaimedShadows.length > 0}}"
+        bindtap="onClaimAndJoin"
+        hover-class="hover-opacity"
+      >
+        <text>{{joining ? '加入中...' : '认领并加入'}}</text>
+      </view>
+    </view>
+  </view>
+
+</view>
