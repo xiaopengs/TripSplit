@@ -432,13 +432,17 @@ Page({
 
   onMarkPaid(e) {
     const id = e.currentTarget.dataset.id
-    settleService.markTransferPaid(id)
+    const transfer = this.data.settlementResult.transfers.find(t => t.id === id)
+    if (!transfer) return
+    settleService.markTransferPaid(transfer)
     this._calculateSettlement()
     wx.showToast({ title: '已标记', icon: 'success' })
   },
 
   onForgive(e) {
     const id = e.currentTarget.dataset.id
+    const transfer = this.data.settlementResult.transfers.find(t => t.id === id)
+    if (!transfer) return
     wx.showModal({
       title: '确认免除',
       content: '确定让这笔账"下顿他请"吗？',
@@ -446,9 +450,26 @@ Page({
       confirmColor: '#34C759',
       success: res => {
         if (res.confirm) {
-          settleService.forgiveTransfer(id)
+          settleService.forgiveTransfer(transfer)
           this._calculateSettlement()
           wx.showToast({ title: '已免除', icon: 'success' })
+        }
+      }
+    })
+  },
+
+  onUndoSettle(e) {
+    const id = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '撤销操作',
+      content: '确定撤销此笔结算状态吗？',
+      confirmText: '撤销',
+      confirmColor: '#FF9500',
+      success: res => {
+        if (res.confirm) {
+          settleService.unmarkTransfer(id)
+          this._calculateSettlement()
+          wx.showToast({ title: '已撤销', icon: 'success' })
         }
       }
     })
@@ -518,17 +539,22 @@ Page({
 
   _calculateSettlement() {
     if (!this.data.currentBook) return
-    
+
     const result = settleService.calculateSettlement(
       this.data.members,
-      billService.getBills(this.data.currentBook.id)
+      billService.getBills(this.data.currentBook.id),
+      { bookId: this.data.currentBook.id }
     )
 
     if (result.transfers.length > 0) {
       result.transfers.forEach(t => {
-        t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)
+        t.amountDisplay = formatAmount(t.totalAmount, this.data.currencySymbol)
+        t.pendingAmountDisplay = formatAmount(t.pendingAmount, this.data.currencySymbol)
+        t.settledAmountDisplay = formatAmount(t.settledAmount, this.data.currencySymbol)
       })
     }
+
+    result.pendingAmountDisplay = formatAmount(result.pendingAmount, this.data.currencySymbol)
 
     this.setData({ settlementResult: result })
   },

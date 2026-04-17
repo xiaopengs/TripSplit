@@ -205,7 +205,7 @@
         <text class="settle-title">结算方案</text>
         <text class="settle-subtitle">已优化为最少转账次数（{{settlementResult.totalTransfers}}笔）</text>
 
-        <view class="transfer-card" wx:for="{{settlementResult.transfers}}" wx:key="id">
+        <view class="transfer-card {{item.status !== 'pending' ? 'card-done' : ''}}" wx:for="{{settlementResult.transfers}}" wx:key="id">
           <view class="transfer-row">
             <view class="transfer-person from">
               <text class="person-label">付款人</text>
@@ -222,13 +222,43 @@
             </view>
           </view>
 
-          <text class="transfer-amount">{{item.amountDisplay}}</text>
+          <!-- 金额行：总金额 + 待结算金额 -->
+          <view class="amount-row">
+            <view class="amount-info">
+              <text class="amount-total-label">结算金额</text>
+              <text class="amount-total-value">{{item.amountDisplay}}</text>
+              <text class="amount-settled-hint" wx:if="{{item.settledAmount > 0 && item.pendingAmount > 0}}">已结 {{item.settledAmountDisplay}}</text>
+            </view>
+            <view class="amount-pending" wx:if="{{item.status === 'pending'}}">
+              <text class="pending-label">待结算</text>
+              <text class="pending-value">{{item.pendingAmountDisplay}}</text>
+            </view>
+            <view class="amount-settled" wx:elif="{{item.status === 'paid'}}">
+              <text class="settled-label">已结算</text>
+              <text class="settled-value">{{item.amountDisplay}}</text>
+            </view>
+            <view class="amount-settled" wx:elif="{{item.status === 'forgiven'}}">
+              <text class="forgiven-label">已免除</text>
+              <text class="forgiven-value">{{item.amountDisplay}}</text>
+            </view>
+          </view>
 
-          <view class="transfer-actions">
-            <button class="btn-mark-paid" wx:if="{{item.status !== 'paid'}}" bindtap="onMarkPaid" data-id="{{item.id}}">标记已付</button>
-            <text class="paid-tag" wx:else>✓ 已付款</text>
+          <!-- pending：操作按钮 -->
+          <view class="transfer-actions" wx:if="{{item.status === 'pending'}}">
+            <view class="btn-mark-paid" bindtap="onMarkPaid" data-id="{{item.id}}" hover-class="hover-opacity">标记已付</view>
+            <view class="btn-forgive" bindtap="onForgive" data-id="{{item.id}}" hover-class="hover-opacity">下顿他请</view>
+          </view>
 
-            <button class="btn-forgive" wx:if="{{item.status !== 'forgiven' && item.status !== 'paid'}}" bindtap="onForgive" data-id="{{item.id}}">下顿他请</button>
+          <!-- paid -->
+          <view class="transfer-status" wx:if="{{item.status === 'paid'}}">
+            <text class="status-tag status-paid">✓ 已付款</text>
+            <view class="undo-btn" bindtap="onUndoSettle" data-id="{{item.id}}" hover-class="hover-opacity">撤销</view>
+          </view>
+
+          <!-- forgiven -->
+          <view class="transfer-status" wx:if="{{item.status === 'forgiven'}}">
+            <text class="status-tag status-forgiven">已被免除</text>
+            <view class="undo-btn" bindtap="onUndoSettle" data-id="{{item.id}}" hover-class="hover-opacity">撤销</view>
           </view>
         </view>
       </view>
