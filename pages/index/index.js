@@ -9,6 +9,7 @@ const billService = require('../../services/bill.service')
 const aiService = require('../../services/ai.service')
 const settleService = require('../../services/settle.service')
 const memberService = require('../../services/member.service')
+const cache = require('../../utils/cache')
 const { formatAmount, fenToYuan } = require('../../utils/currency')
 const { SKIN_COLORS, getSkinColor, CATEGORIES, getCategoryByKey } = require('../../utils/constants')
 const { formatChineseDate, formatDateTimeCN, formatDate } = require('../../utils/date')
@@ -392,8 +393,41 @@ Page({
 
   onClaimMember(e) {
     const shadowId = e.detail.shadowMemberId
-    // TODO: 实际认领流程（需要用户登录信息）
-    wx.showToast({ title: '认领功能开发中', icon: 'none' })
+    const name = e.detail.name || ''
+    if (!shadowId) return
+
+    const bookId = this.data.currentBook && this.data.currentBook.id
+    if (!bookId) return
+
+    wx.showModal({
+      title: '认领身份',
+      content: `确定认领「${name}」的身份吗？认领后将作为正式成员参与记账和结算。`,
+      confirmText: '确认认领',
+      confirmColor: '#34C759',
+      success: res => {
+        if (!res.confirm) return
+
+        const openid = (app.globalData && app.globalData.openid) || cache.get('openid') || ''
+        const userInfo = (app.globalData && app.globalData.userInfo) || cache.get('userInfo') || {}
+
+        const success = memberService.claimShadowMember(bookId, shadowId, openid, userInfo)
+
+        if (success) {
+          this.loadBookData()
+          wx.showToast({ title: '认领成功', icon: 'success' })
+
+          // 云端同步（fire-and-forget）
+          try {
+            const cloudApi = require('../../utils/cloud')
+            if (app.globalData && app.globalData.cloudReady) {
+              cloudApi.call('claimShadow', { bookId, shadowMemberId: shadowId }).catch(() => {})
+            }
+          } catch (err) { /* ignore */ }
+        } else {
+          wx.showToast({ title: '认领失败，可能已被认领', icon: 'none' })
+        }
+      }
+    })
   },
 
   // === 账单详情 ===

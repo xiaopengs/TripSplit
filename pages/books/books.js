@@ -204,8 +204,46 @@ Page({
     }
   },
 
-  onClaimMember: function() {
-    wx.showToast({ title: '认领功能开发中', icon: 'none' })
+  onClaimMember: function(e) {
+    var shadowId = e.detail.shadowMemberId
+    var name = e.detail.name || ''
+    if (!shadowId) return
+
+    var bookId = this.data.memberPopupBookId
+    if (!bookId) return
+
+    var self = this
+    wx.showModal({
+      title: '认领身份',
+      content: '确定认领「' + name + '」的身份吗？认领后将作为正式成员参与记账和结算。',
+      confirmText: '确认认领',
+      confirmColor: '#34C759',
+      success: function(res) {
+        if (!res.confirm) return
+
+        var app = getApp()
+        var openid = (app.globalData && app.globalData.openid) || ''
+        var userInfo = (app.globalData && app.globalData.userInfo) || {}
+
+        var success = memberService.claimShadowMember(bookId, shadowId, openid, userInfo)
+
+        if (success) {
+          self.loadBooks()
+          self.setData({ memberPopupVisible: false })
+          wx.showToast({ title: '认领成功', icon: 'success' })
+
+          // 云端同步（fire-and-forget）
+          try {
+            var cloudApi = require('../../utils/cloud')
+            if (app.globalData && app.globalData.cloudReady) {
+              cloudApi.call('claimShadow', { bookId: bookId, shadowMemberId: shadowId }).catch(function() {})
+            }
+          } catch (err) { /* ignore */ }
+        } else {
+          wx.showToast({ title: '认领失败，可能已被认领', icon: 'none' })
+        }
+      }
+    })
   },
 
   preventBubble: function() {
