@@ -4,7 +4,16 @@
   "cloudfunctionRoot": "cloudfunctions/",
   "libVersion": "3.15.1",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "file", "value": "ci.js" },
+      { "type": "file", "value": "OPTIMIZATION3.md" },
+      { "type": "file", "value": "OPTIMIZATION4.md" },
+      { "type": "glob", "value": "tests/**" },
+      { "type": "glob", "value": "node_modules/**" },
+      { "type": "file", "value": "package.json" },
+      { "type": "file", "value": "package-lock.json" },
+      { "type": "glob", "value": "tests/**" }
+    ],
     "include": []
   },
   "setting": {
