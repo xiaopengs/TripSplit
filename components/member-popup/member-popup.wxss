@@ -403,16 +403,8 @@
   box-sizing: border-box;
 }
 
-/* ---- 认领按钮 — 珊瑚粉色 ---- */
-.claim-btn {
-  padding: 12rpx 28rpx;
-  background: #FF6B6B;
-  color: #FFFFFF;
-  border-radius: 28rpx;
-  font-size: var(--font-sm);
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-left: 12rpx;
+.shadow-subtitle.claimed {
+  color: var(--color-success);
 }
 
 /* ============================================

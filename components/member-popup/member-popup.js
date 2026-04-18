@@ -53,12 +53,6 @@ Component({
 
     preventMove() {},
 
-    onClaimTap(e) {
-      const id = e.currentTarget.dataset.id
-      const name = e.currentTarget.dataset.name
-      this.triggerEvent('onclaim', { shadowMemberId: id, name })
-    },
-
     onAddShadow() {
       wx.showModal({
         title: '添加影子成员',

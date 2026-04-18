@@ -58,6 +58,32 @@ Page({
 
     this.setData({ books: enriched, currentBookId: currentBookId })
     this._applyFilterAndSort()
+
+    // 后台同步云端成员数据
+    this._syncCloudMembers()
+  },
+
+  _syncCloudMembers: function() {
+    try {
+      var app = getApp()
+      if (!app || !app.globalData || !app.globalData.cloudReady) return
+    } catch (e) { return }
+
+    var allBooks = bookService.getBookList()
+    var hasSync = false
+    var self = this
+
+    allBooks.forEach(function(book) {
+      if (book.cloud_id) {
+        hasSync = true
+        bookService.syncCloudMembers(book.id).catch(function() {})
+      }
+    })
+
+    // 如果有同步任务，延迟刷新列表
+    if (hasSync) {
+      setTimeout(function() { self.loadBooks() }, 2000)
+    }
   },
 
   _enrichBook: function(book, currentBookId) {
@@ -202,48 +228,6 @@ Page({
       this.loadBooks()
       wx.showToast({ title: '已添加 ' + name, icon: 'success' })
     }
-  },
-
-  onClaimMember: function(e) {
-    var shadowId = e.detail.shadowMemberId
-    var name = e.detail.name || ''
-    if (!shadowId) return
-
-    var bookId = this.data.memberPopupBookId
-    if (!bookId) return
-
-    var self = this
-    wx.showModal({
-      title: '认领身份',
-      content: '确定认领「' + name + '」的身份吗？认领后将作为正式成员参与记账和结算。',
-      confirmText: '确认认领',
-      confirmColor: '#34C759',
-      success: function(res) {
-        if (!res.confirm) return
-
-        var app = getApp()
-        var openid = (app.globalData && app.globalData.openid) || ''
-        var userInfo = (app.globalData && app.globalData.userInfo) || {}
-
-        var success = memberService.claimShadowMember(bookId, shadowId, openid, userInfo)
-
-        if (success) {
-          self.loadBooks()
-          self.setData({ memberPopupVisible: false })
-          wx.showToast({ title: '认领成功', icon: 'success' })
-
-          // 云端同步（fire-and-forget）
-          try {
-            var cloudApi = require('../../utils/cloud')
-            if (app.globalData && app.globalData.cloudReady) {
-              cloudApi.call('claimShadow', { bookId: bookId, shadowMemberId: shadowId }).catch(function() {})
-            }
-          } catch (err) { /* ignore */ }
-        } else {
-          wx.showToast({ title: '认领失败，可能已被认领', icon: 'none' })
-        }
-      }
-    })
   },
 
   preventBubble: function() {

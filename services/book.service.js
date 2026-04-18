@@ -96,11 +96,12 @@ async function _syncBookToCloud(book, data) {
     shadowMembers: data.shadowMembers || []
   })
 
-  // 更新本地缓存的 cloud_id
+  // 更新本地缓存的 cloud_id 和 cloud_db_id
   const books = getBookList()
   const idx = books.findIndex(b => b.id === book.id)
   if (idx !== -1) {
     books[idx].cloud_id = result.cloud_id
+    books[idx].cloud_db_id = result.bookId
     cache.set(CACHE_KEY, books)
   }
 }
@@ -174,10 +175,12 @@ function updateBook(bookId, updates) {
 
 /**
  * 删除账本（本地优先，后台同步云端）
+ * 仅创建者（admin）可删除
  */
 function deleteBook(bookId) {
   // 本地删除
   const books = getBookList()
+  const book = books.find(b => b.id === bookId)
   const filtered = books.filter(b => b.id !== bookId)
   cache.set(CACHE_KEY, filtered)
   const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
@@ -185,10 +188,15 @@ function deleteBook(bookId) {
     cache.remove(ACTIVE_BOOK_ID_KEY)
   }
 
+  // 删除本地账单
+  const billService = require('./bill.service')
+  billService.deleteBillsByBook(bookId)
+
   // 后台同步到云端
-  if (_isCloudReady()) {
+  if (_isCloudReady() && book) {
+    const cloudBookId = book.cloud_db_id || book.id
     const cloudApi = _getCloudApi()
-    cloudApi.call('deleteBook', { bookId }).catch(err => {
+    cloudApi.call('deleteBook', { bookId: cloudBookId }).catch(err => {
       console.error('Cloud deleteBook failed:', err)
     })
   }
@@ -210,6 +218,167 @@ async function getBookByCloudId(cloudId) {
   }
 }
 
+/**
+ * 将云端账本数据导入本地缓存（用于认领/邀请成功后）
+ * @param {object} cloudBook - getBook 返回的 book 对象
+ * @param {array} cloudMembers - getBook 返回的 members 数组
+ */
+function importCloudBook(cloudBook, cloudMembers) {
+  const books = getBookList()
+
+  // 防止重复导入
+  const existing = books.find(b => b.cloud_id === cloudBook.cloud_id || b.id === cloudBook._id)
+  if (existing) return existing
+
+  const book = {
+    id: cloudBook._id,
+    cloud_id: cloudBook.cloud_id,
+    cloud_db_id: cloudBook._id,
+    name: cloudBook.name,
+    cover_color: cloudBook.cover_color,
+    currency: cloudBook.currency || 'CNY',
+    currency_symbol: cloudBook.currency_symbol || '¥',
+    start_date: cloudBook.start_date,
+    end_date: cloudBook.end_date || null,
+    status: cloudBook.status || 'active',
+    creator_id: cloudBook.creator_id,
+    member_count: (cloudMembers || []).length,
+    created_at: cloudBook.created_at,
+    updated_at: cloudBook.updated_at || Date.now(),
+    members: (cloudMembers || []).map(m => ({
+      id: m._id,
+      book_id: cloudBook._id,
+      type: m.type,
+      user_id: m.user_id || '',
+      nickname: m.nickname || '',
+      avatar_url: m.avatar_url || '',
+      shadow_name: m.shadow_name || '',
+      is_claimed: m.is_claimed || false,
+      claimed_by: m.claimed_by || null,
+      claimed_at: m.claimed_at || null,
+      role: m.role || 'member',
+      joined_at: m.joined_at || Date.now()
+    }))
+  }
+
+  books.push(book)
+  cache.set(CACHE_KEY, books)
+  return book
+}
+
+/**
+ * 从云端同步成员和账单数据到本地缓存
+ * @param {string} bookId - 本地 book.id
+ * @returns {boolean|string} true=成功, false=失败, 'deleted'=云端已删除
+ */
+async function syncCloudMembers(bookId) {
+  if (!_isCloudReady()) return false
+  try {
+    const books = getBookList()
+    const book = books.find(b => b.id === bookId)
+    if (!book) return false
+
+    // A（创建者）的 book.id 是本地 ID，需要用 cloud_db_id 调用云函数
+    // B（被邀请者）的 book.id 就是云端 _id
+    const cloudBookId = book.cloud_db_id || book.id
+    if (!cloudBookId) return false
+
+    const cloudApi = _getCloudApi()
+    const result = await cloudApi.call('syncData', { bookId: cloudBookId })
+    if (!result) return false
+
+    // 检查云端账本是否已被删除
+    if (result.book && result.book.status === 'deleted') {
+      // 从本地删除该账本及其账单
+      const filtered = books.filter(b => b.id !== bookId)
+      cache.set(CACHE_KEY, filtered)
+      const billService = require('./bill.service')
+      billService.deleteBillsByBook(bookId)
+      const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
+      if (activeId === bookId) {
+        cache.remove(ACTIVE_BOOK_ID_KEY)
+      }
+      return 'deleted'
+    }
+
+    // 判断是否为创建者（本地 ID 与云端 ID 不同）
+    const isCreator = book.cloud_db_id && book.cloud_db_id !== book.id
+
+    if (isCreator) {
+      // 创建者模式：匹配云端成员到本地成员，只更新认领状态，不改变 ID
+      // 避免破坏本地账单中的 payer_id / splits.member_id 引用
+      _mergeMemberClaimStatus(book, result.members)
+    } else {
+      // 被邀请者模式：完整替换（ID 本身就是云端 _id，不会冲突）
+      if (result.members) {
+        book.members = result.members.map(m => ({
+          id: m._id,
+          book_id: bookId,
+          type: m.type,
+          user_id: m.user_id || '',
+          nickname: m.nickname || '',
+          avatar_url: m.avatar_url || '',
+          shadow_name: m.shadow_name || '',
+          is_claimed: m.is_claimed || false,
+          claimed_by: m.claimed_by || null,
+          claimed_at: m.claimed_at || null,
+          role: m.role || 'member',
+          joined_at: m.joined_at || Date.now()
+        }))
+        book.member_count = book.members.length
+      }
+    }
+    book.updated_at = Date.now()
+    cache.set(CACHE_KEY, books)
+
+    // 被邀请者模式：同步云端账单
+    if (!isCreator && result.bills && result.bills.length > 0) {
+      const billService = require('./bill.service')
+      billService.importCloudBills(bookId, result.bills)
+    }
+
+    return true
+  } catch (err) {
+    console.error('syncCloudMembers error:', err)
+    return false
+  }
+}
+
+/**
+ * 创建者模式：将云端成员的认领状态合并到本地成员
+ * 匹配规则：按 shadow_name 匹配（影子成员可能已被认领为 real），真实成员按 user_id 匹配
+ */
+function _mergeMemberClaimStatus(book, cloudMembers) {
+  if (!cloudMembers || !book.members) return
+
+  cloudMembers.forEach(cm => {
+    const local = book.members.find(lm => {
+      // 按影子名字匹配（覆盖已认领的情况：云端已变为 real 但仍有 shadow_name）
+      if (cm.shadow_name && lm.shadow_name && cm.shadow_name === lm.shadow_name) {
+        return true
+      }
+      // 按 user_id 匹配（真实成员）
+      if (cm.user_id && lm.user_id && cm.user_id === lm.user_id) {
+        return true
+      }
+      return false
+    })
+
+    if (local) {
+      // 更新认领状态
+      local.is_claimed = cm.is_claimed || false
+      local.claimed_by = cm.claimed_by || null
+      local.claimed_at = cm.claimed_at || null
+      // 如果影子成员被认领为真实成员
+      if (cm.type === 'real' && local.type === 'shadow' && cm.is_claimed) {
+        local.type = 'real'
+        local.nickname = cm.nickname || local.shadow_name
+        local.user_id = cm.user_id || ''
+      }
+    }
+  })
+}
+
 module.exports = {
   getBookList,
   getCurrentBook,
@@ -217,5 +386,7 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
-  getBookByCloudId
+  getBookByCloudId,
+  importCloudBook,
+  syncCloudMembers
 }

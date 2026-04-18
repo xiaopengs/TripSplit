@@ -118,9 +118,18 @@ Page({
   loadBookData() {
     const book = bookService.getCurrentBook()
     if (!book) {
-      // 没有账本时也要加载账本列表
+      // 没有账本时清空状态并加载账本列表
       const allBooks = bookService.getBookList()
-      this.setData({ bookList: allBooks, currentBookIndex: 0 })
+      this.setData({
+        currentBook: null,
+        bookList: allBooks,
+        currentBookIndex: 0,
+        members: [],
+        memberCount: 0,
+        groupedBills: [],
+        settlementResult: null,
+        pendingClaimCount: 0
+      })
       return
     }
 
@@ -144,19 +153,46 @@ Page({
     })
 
     this._updatePendingCount(book.members || [])
+
+    // 后台同步云端成员+账单数据（如果有云连接）
+    if (book.cloud_id || book.cloud_db_id) {
+      bookService.syncCloudMembers(book.id).then(synced => {
+        if (synced === 'deleted') {
+          // 云端已删除，重新加载
+          this.loadBookData()
+          return
+        }
+        if (synced) {
+          const updated = bookService.getCurrentBook()
+          if (updated) {
+            this.setData({
+              members: updated.members || [],
+              memberCount: updated.member_count || (updated.members || []).length
+            })
+            this._updatePendingCount(updated.members || [])
+
+            // 同步完成后刷新账单和结算
+            const bookId = updated.id
+            const grouped = billService.getBillsGroupedByDate(bookId)
+            this._formatGroupedBills(grouped)
+            this._calculateSettlement()
+          }
+        }
+      }).catch(() => {})
+    }
   },
 
   /**
    * 刷新所有数据
    */
   refreshData(callback) {
+    // 先重新加载账本数据（可能已被删除）
+    this.loadBookData()
+
     if (!this.data.currentBook) {
       callback && callback()
       return
     }
-
-    // 重新加载账本数据（包括成员列表），确保结算不会使用过期数据
-    this.loadBookData()
 
     const bookId = this.data.currentBook.id
 
@@ -389,45 +425,6 @@ Page({
       this.loadBookData()
       wx.showToast({ title: `已添加 ${name}`, icon: 'success' })
     }
-  },
-
-  onClaimMember(e) {
-    const shadowId = e.detail.shadowMemberId
-    const name = e.detail.name || ''
-    if (!shadowId) return
-
-    const bookId = this.data.currentBook && this.data.currentBook.id
-    if (!bookId) return
-
-    wx.showModal({
-      title: '认领身份',
-      content: `确定认领「${name}」的身份吗？认领后将作为正式成员参与记账和结算。`,
-      confirmText: '确认认领',
-      confirmColor: '#34C759',
-      success: res => {
-        if (!res.confirm) return
-
-        const openid = (app.globalData && app.globalData.openid) || cache.get('openid') || ''
-        const userInfo = (app.globalData && app.globalData.userInfo) || cache.get('userInfo') || {}
-
-        const success = memberService.claimShadowMember(bookId, shadowId, openid, userInfo)
-
-        if (success) {
-          this.loadBookData()
-          wx.showToast({ title: '认领成功', icon: 'success' })
-
-          // 云端同步（fire-and-forget）
-          try {
-            const cloudApi = require('../../utils/cloud')
-            if (app.globalData && app.globalData.cloudReady) {
-              cloudApi.call('claimShadow', { bookId, shadowMemberId: shadowId }).catch(() => {})
-            }
-          } catch (err) { /* ignore */ }
-        } else {
-          wx.showToast({ title: '认领失败，可能已被认领', icon: 'none' })
-        }
-      }
-    })
   },
 
   // === 账单详情 ===

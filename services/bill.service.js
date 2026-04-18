@@ -1,5 +1,6 @@
 /**
  * 账单服务 - CRUD + 分组
+ * 云开发优先，本地降级
  */
 const cache = require('../utils/cache')
 const { generateBillId, generateRequestId } = require('../utils/id')
@@ -8,6 +9,18 @@ const { SPLIT_TYPE } = require('../utils/constants')
 const { sum } = require('../utils/calc')
 
 const CACHE_KEY = 'bills'
+
+/**
+ * 检查云是否可用
+ */
+function _isCloudReady() {
+  try {
+    const app = getApp()
+    return app && app.globalData && app.globalData.cloudReady && !!app.globalData.openid
+  } catch (e) {
+    return false
+  }
+}
 
 /**
  * 获取某账本的所有账单
@@ -101,7 +114,53 @@ function createBill(data) {
   allBills.unshift(bill)
   cache.set(CACHE_KEY, allBills)
 
+  // 后台同步到云端
+  if (_isCloudReady()) {
+    _syncBillToCloud(bill, data).catch(err => {
+      console.error('Background cloud createBill failed:', err)
+    })
+  }
+
   return bill
+}
+
+/**
+ * 后台同步账单到云端
+ */
+async function _syncBillToCloud(bill, data) {
+  try {
+    const bookService = require('./book.service')
+    const books = bookService.getBookList()
+    const book = books.find(b => b.id === bill.book_id)
+    if (!book || !book.cloud_db_id) return
+
+    const cloudApi = require('../utils/cloud')
+    await cloudApi.call('createBill', {
+      bookId: book.cloud_db_id,
+      amount: bill.amount,
+      category: bill.category,
+      category_name: bill.category_name,
+      note: bill.note,
+      images: bill.images,
+      location: bill.location,
+      payer_id: bill.payer_id,
+      payer_name: bill.payer_name,
+      splits: bill.splits,
+      split_type: bill.split_type,
+      source: bill.source,
+      paid_at: bill.paid_at
+    })
+
+    // 标记为已同步
+    const allBills = cache.get(CACHE_KEY) || []
+    const idx = allBills.findIndex(b => b.id === bill.id)
+    if (idx !== -1) {
+      allBills[idx].synced = true
+      cache.set(CACHE_KEY, allBills)
+    }
+  } catch (err) {
+    console.error('_syncBillToCloud error:', err)
+  }
 }
 
 /**
@@ -130,9 +189,34 @@ function updateBill(billId, updates) {
  */
 function deleteBill(billId) {
   const allBills = cache.get(CACHE_KEY) || []
+  const bill = allBills.find(b => b.id === billId)
   const filtered = allBills.filter(b => b.id !== billId)
   cache.set(CACHE_KEY, filtered)
+
+  // 后台同步删除到云端
+  if (bill && _isCloudReady()) {
+    _deleteBillFromCloud(bill).catch(err => {
+      console.error('Background cloud deleteBill failed:', err)
+    })
+  }
+
   return true
+}
+
+/**
+ * 后台从云端删除账单
+ */
+async function _deleteBillFromCloud(bill) {
+  try {
+    // 如果是云端同步的账单，id 就是云端 _id
+    // 如果是本地创建的账单，暂时无法通过 id 匹配云端记录
+    if (!bill.synced) return
+
+    const cloudApi = require('../utils/cloud')
+    await cloudApi.call('deleteBill', { billId: bill.id })
+  } catch (err) {
+    console.error('_deleteBillFromCloud error:', err)
+  }
 }
 
 /**
@@ -141,6 +225,59 @@ function deleteBill(billId) {
 function getTotalExpense(bookId) {
   const bills = getBills(bookId)
   return sum(bills.map(b => b.amount || 0))
+}
+
+/**
+ * 导入云端账单到本地缓存（用于同步）
+ * 已存在的账单不会重复导入
+ * @param {string} localBookId - 本地 book.id
+ * @param {array} cloudBills - syncData 返回的 bills 数组
+ */
+function importCloudBills(localBookId, cloudBills) {
+  const allBills = cache.get(CACHE_KEY) || []
+  const existingIds = new Set(allBills.map(b => b.id))
+
+  let added = 0
+  cloudBills.forEach(cloudBill => {
+    if (existingIds.has(cloudBill._id)) return
+
+    allBills.push({
+      id: cloudBill._id,
+      book_id: localBookId,
+      amount: cloudBill.amount,
+      category: cloudBill.category,
+      category_name: cloudBill.category_name,
+      note: cloudBill.note || '',
+      images: cloudBill.images || [],
+      location: cloudBill.location || '',
+      payer_id: cloudBill.payer_id,
+      payer_name: cloudBill.payer_name,
+      splits: cloudBill.splits || [],
+      split_type: cloudBill.split_type || 'equal',
+      source: cloudBill.source || 'cloud',
+      paid_at: cloudBill.paid_at,
+      synced: true,
+      local_created: null,
+      server_updated: cloudBill.updated_at
+    })
+    existingIds.add(cloudBill._id)
+    added++
+  })
+
+  if (added > 0) {
+    cache.set(CACHE_KEY, allBills)
+  }
+  return added
+}
+
+/**
+ * 删除某账本的所有本地账单（用于删除账本时）
+ */
+function deleteBillsByBook(bookId) {
+  const allBills = cache.get(CACHE_KEY) || []
+  const filtered = allBills.filter(b => b.book_id !== bookId)
+  cache.set(CACHE_KEY, filtered)
+  return true
 }
 
 function formatAmountDisplay(fen) {
@@ -157,5 +294,7 @@ module.exports = {
   getBillById,
   updateBill,
   deleteBill,
-  getTotalExpense
+  getTotalExpense,
+  importCloudBills,
+  deleteBillsByBook
 }

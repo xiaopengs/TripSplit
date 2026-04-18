@@ -73,16 +73,9 @@
             <text class="member-name">{{item.shadow_name}}</text>
             <text class="tag-shadow">影子成员</text>
           </view>
-          <text class="shadow-subtitle">等待真实用户认领</text>
+          <text class="shadow-subtitle" wx:if="{{!item.is_claimed}}">分享链接给 Ta，等待认领</text>
+          <text class="shadow-subtitle claimed" wx:else>已认领</text>
         </view>
-        <view
-          class="claim-btn"
-          wx:if="{{!item.is_claimed}}"
-          hover-class="hover-opacity"
-          data-id="{{item.id}}"
-          data-name="{{item.shadow_name}}"
-          catchtap="onClaimTap"
-        >认领</view>
       </view>
     </view>
 

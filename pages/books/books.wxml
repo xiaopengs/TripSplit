@@ -131,6 +131,5 @@
     members="{{memberPopupMembers}}"
     bind:onclose="closeMemberPopup"
     bind:onaddshadow="onAddShadowMember"
-    bind:onclaim="onClaimMember"
   />
 </view>

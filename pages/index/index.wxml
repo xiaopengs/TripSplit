@@ -280,7 +280,6 @@
     members="{{members}}"
     bind:onclose="closeMemberPopup"
     bind:onaddshadow="onAddShadowMember"
-    bind:onclaim="onClaimMember"
   />
 
   <!-- 手动记账面板 -->

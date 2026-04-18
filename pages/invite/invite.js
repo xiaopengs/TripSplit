@@ -1,5 +1,6 @@
 const cloudApi = require('../../utils/cloud')
 const cache = require('../../utils/cache')
+const bookService = require('../../services/book.service')
 
 Page({
   data: {
@@ -14,6 +15,9 @@ Page({
     memberCount: 0,
     unclaimedShadows: [],
     selectedShadowId: '',
+
+    cloudBookData: null,
+    cloudMembersData: null,
 
     error: '',
     joined: false,
@@ -70,9 +74,12 @@ Page({
       const unclaimed = result.members.filter(m => m.type === 'shadow' && !m.is_claimed)
       this.setData({
         loading: false,
+        bookId: result.book._id || bookId,
         bookName: result.book.name,
         memberCount: result.book.member_count,
-        unclaimedShadows: unclaimed
+        unclaimedShadows: unclaimed,
+        cloudBookData: result.book,
+        cloudMembersData: result.members
       })
     } catch (err) {
       this.setData({ loading: false, error: err.message || '加载失败' })
@@ -85,7 +92,7 @@ Page({
   },
 
   async onClaimAndJoin() {
-    const { selectedShadowId, bookId } = this.data
+    const { selectedShadowId, bookId, cloudBookData, cloudMembersData } = this.data
     if (!selectedShadowId) {
       wx.showToast({ title: '请选择你的身份', icon: 'none' })
       return
@@ -97,6 +104,16 @@ Page({
         bookId: bookId,
         shadowMemberId: selectedShadowId
       })
+
+      // 认领成功 → 将云端账本数据写入本地缓存
+      if (cloudBookData && cloudMembersData) {
+        const book = bookService.importCloudBook(cloudBookData, cloudMembersData)
+        bookService.setCurrentBook(book.id)
+
+        // 后台同步账单（让 B 能看到 A 的流水）
+        bookService.syncCloudMembers(book.id).catch(() => {})
+      }
+
       this.setData({ joined: true, joining: false })
       wx.showToast({ title: '加入成功', icon: 'success' })
     } catch (err) {
