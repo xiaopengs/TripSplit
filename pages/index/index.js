@@ -89,7 +89,8 @@ Page({
 
   onShareAppMessage(res) {
     const data = (res && res.target && res.target.dataset) || {}
-    const book = this.data.currentBook
+    // 重新从缓存读取最新数据（cloud_id 可能已通过后台同步更新）
+    const book = bookService.getCurrentBook()
     const bookId = data.bookId || (book && book.id) || ''
     const bookName = data.bookName || (book && book.name) || ''
     const cloudId = book && book.cloud_id
@@ -100,7 +101,7 @@ Page({
 
     const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'
 
-    // 如果有 cloud_id，使用 cloud_id 分享（支持跨设备邀请）
+    // 必须使用 cloud_id 分享（本地 ID 在云端不存在，B 打开会报错）
     if (cloudId) {
       return {
         title,
@@ -108,9 +109,9 @@ Page({
       }
     }
 
-    // 降级：使用本地 ID
-    const path = `/pages/index/index?bookId=${encodeURIComponent(bookId)}&from=share`
-    return { title, path }
+    // cloud_id 尚未同步完成，提示用户稍后再分享
+    wx.showToast({ title: '正在同步云端，请稍后再分享', icon: 'none' })
+    return { title, path: '/pages/index/index' }
   },
 
   /**
