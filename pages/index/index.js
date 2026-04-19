@@ -168,13 +168,15 @@ Page({
         if (synced) {
           const updated = bookService.getCurrentBook()
           if (updated) {
+            const newMyMemberId = this._getMyMemberId(updated)
             this.setData({
               members: updated.members || [],
-              memberCount: updated.member_count || (updated.members || []).length
+              memberCount: updated.member_count || (updated.members || []).length,
+              myMemberId: newMyMemberId
             })
             this._updatePendingCount(updated.members || [])
 
-            // 同步完成后刷新账单和结算
+            // 同步完成后刷新账单和结算（使用更新后的 myMemberId）
             const bookId = updated.id
             const grouped = billService.getBillsGroupedByDate(bookId)
             this._formatGroupedBills(grouped)
@@ -581,16 +583,24 @@ Page({
 
   /**
    * 根据当前用户视角解析付款人名称
-   * 当前用户的付款 → "我"，其他人的付款 → 显示其昵称
+   * 当前用户的付款 → "我"，其他人的付款 → 显示其实际名称
+   * 注意：创建者本地昵称默认为"我"，但这个"我"不应展示给其他用户
    */
   _resolvePayerName(bill, myMemberId, members) {
-    if (bill.payer_id === myMemberId) {
+    if (bill.payer_id === myMemberId && myMemberId) {
       return '我'
     }
     // 从成员列表中查找实际名称
     var member = members.find(function(m) { return m.id === bill.payer_id })
     if (member) {
-      return member.nickname || member.shadow_name || '未知'
+      var name = member.nickname || ''
+      // "我"是视角代词，不是真实名称，对其他用户不应显示
+      if (name === '我') {
+        name = member.shadow_name || ''
+      }
+      if (!name && member.role === 'admin') name = '创建者'
+      if (!name) name = '成员'
+      return name
     }
     return bill.payer_name || '未知'
   },

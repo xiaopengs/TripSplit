@@ -364,6 +364,12 @@ async function syncCloudMembers(bookId) {
       billService.importCloudBills(bookId, result.bills, isCreator ? cloudToLocal : null)
     }
 
+    // 创建者模式：映射表构建完成后，重试上传之前因无映射而跳过的账单
+    if (isCreator && Object.keys(localToCloud).length > 0) {
+      const billService = require('./bill.service')
+      billService.retryUnsyncedBills(bookId)
+    }
+
     return true
   } catch (err) {
     console.error('syncCloudMembers error:', err)

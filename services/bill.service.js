@@ -136,12 +136,17 @@ async function _syncBillToCloud(bill, data) {
 
     // 使用 book 上存储的 local→cloud ID 映射
     const localToCloud = book._localToCloud || {}
+
+    // 如果映射表为空（syncCloudMembers 尚未完成），跳过上传
+    // 等待 syncCloudMembers 构建好映射后，通过 retryUnsyncedBills 重试
+    if (Object.keys(localToCloud).length === 0) return
+
     const remapId = function(localId) {
       return (localId && localToCloud[localId]) || localId
     }
 
     const cloudApi = require('../utils/cloud')
-    await cloudApi.call('createBill', {
+    const result = await cloudApi.call('createBill', {
       bookId: book.cloud_db_id,
       amount: bill.amount,
       category: bill.category,
@@ -164,11 +169,12 @@ async function _syncBillToCloud(bill, data) {
       paid_at: bill.paid_at
     })
 
-    // 标记为已同步
+    // 标记为已同步，并保存云端 bill _id（用于去重）
     const allBills = cache.get(CACHE_KEY) || []
     const idx = allBills.findIndex(b => b.id === bill.id)
     if (idx !== -1) {
       allBills[idx].synced = true
+      allBills[idx].cloud_id = result.billId
       cache.set(CACHE_KEY, allBills)
     }
   } catch (err) {
@@ -249,11 +255,14 @@ function getTotalExpense(bookId) {
  */
 function importCloudBills(localBookId, cloudBills, memberIdMap) {
   const allBills = cache.get(CACHE_KEY) || []
+  // 去重：同时检查本地 bill.id 和已同步的 cloud_id
   const existingIds = new Set(allBills.map(b => b.id))
+  const existingCloudIds = new Set(allBills.filter(b => b.cloud_id).map(b => b.cloud_id))
 
   let added = 0
   cloudBills.forEach(cloudBill => {
     if (existingIds.has(cloudBill._id)) return
+    if (existingCloudIds.has(cloudBill._id)) return
 
     // ID 映射：cloud_id → local_id
     const remapId = function(cloudId) {
@@ -306,6 +315,22 @@ function deleteBillsByBook(bookId) {
   return true
 }
 
+/**
+ * 重试上传未同步的账单（在 syncCloudMembers 构建好 _localToCloud 后调用）
+ * @param {string} bookId - 本地 book.id
+ */
+function retryUnsyncedBills(bookId) {
+  const allBills = cache.get(CACHE_KEY) || []
+  const unsynced = allBills.filter(b => b.book_id === bookId && !b.synced)
+  if (unsynced.length === 0) return
+
+  unsynced.forEach(bill => {
+    _syncBillToCloud(bill).catch(err => {
+      console.error('Retry sync bill failed:', err)
+    })
+  })
+}
+
 function formatAmountDisplay(fen) {
   if (fen == null || fen === '') return '0.00'
   const val = Number(fen)
@@ -322,5 +347,6 @@ module.exports = {
   deleteBill,
   getTotalExpense,
   importCloudBills,
-  deleteBillsByBook
+  deleteBillsByBook,
+  retryUnsyncedBills
 }

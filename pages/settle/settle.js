@@ -41,6 +41,26 @@ Page({
   },
 
   onShow() {
+    // 重新读取最新数据（可能已被 syncCloudMembers 更新）
+    const book = bookService.getCurrentBook()
+    if (!book) return
+
+    var myMemberId = ''
+    try {
+      var openid = getApp().globalData.openid
+      if (openid && book.members) {
+        var myMember = book.members.find(function(m) { return m.user_id === openid })
+        if (myMember) myMemberId = myMember.id
+      }
+    } catch (e) {}
+
+    this.setData({
+      bookId: book.id,
+      members: book.members || [],
+      currencySymbol: book.currency_symbol || '¥',
+      myMemberId: myMemberId
+    })
+
     this._calculate()
   },
 
@@ -48,9 +68,18 @@ Page({
    * 根据当前用户视角解析成员名称
    */
   _resolveName(memberId) {
-    if (memberId === this.data.myMemberId) return '我'
+    if (memberId === this.data.myMemberId && this.data.myMemberId) return '我'
     var member = this.data.members.find(function(m) { return m.id === memberId })
-    if (member) return member.nickname || member.shadow_name || '未知'
+    if (member) {
+      var name = member.nickname || ''
+      // "我"是视角代词，对其他用户应展示真实名称
+      if (name === '我') {
+        name = member.shadow_name || ''
+      }
+      if (!name && member.role === 'admin') name = '创建者'
+      if (!name) name = '成员'
+      return name
+    }
     return '未知'
   },
 

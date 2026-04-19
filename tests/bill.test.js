@@ -397,6 +397,39 @@ describe('bill 多人记账同步', () => {
     expect(billService.getBills(book.id).length).toBe(1)
   })
 
+  it('importCloudBills 通过 cloud_id 去重（A 本地 bill_xxx 已同步为 cloud_xxx）', () => {
+    const book = setupBook([])
+    // 模拟 A 本地创建了一笔账单（id=bill_local_001），并已同步获得 cloud_id
+    const localBill = billService.createBill({
+      bookId: book.id, amount: 5000, category: CATEGORIES[0],
+      payerId: book.members[0].id, payerName: '测试',
+      memberIds: [book.members[0].id], members: book.members
+    })
+    // 模拟 _syncBillToCloud 成功后保存了 cloud_id
+    billService.updateBill(localBill.id, { synced: true, cloud_id: 'cloud_dedup_001' })
+
+    // syncData 返回同一笔账单（云端 _id 与 local 的 cloud_id 一致）
+    const cloudBills = [{
+      _id: 'cloud_dedup_001',
+      book_id: book.id,
+      amount: 5000,
+      category: 'dining',
+      category_name: '餐饮',
+      payer_id: book.members[0].id,
+      payer_name: '测试',
+      splits: [{ member_id: book.members[0].id, name: '测试', share: 5000, is_shadow: false }],
+      split_type: 'equal',
+      source: 'manual',
+      paid_at: localBill.paid_at,
+      updated_at: Date.now()
+    }]
+
+    // 不应重复导入
+    const added = billService.importCloudBills(book.id, cloudBills, null)
+    expect(added).toBe(0)
+    expect(billService.getBills(book.id).length).toBe(1)
+  })
+
   it('deleteBillsByBook 删除指定账本所有账单', () => {
     const book1 = setupBook([])
     const book2 = setupBook([])
