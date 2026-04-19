@@ -43,6 +43,7 @@ Page({
     // 成员
     members: [],
     pendingClaimCount: 0,
+    myMemberId: '',
 
     // 弹窗状态
     memberPopupVisible: false,
@@ -149,7 +150,8 @@ Page({
       currencySymbol: book.currency_symbol || '¥',
       members: book.members || [],
       bookList: allBooks,
-      currentBookIndex: currentIdx >= 0 ? currentIdx : 0
+      currentBookIndex: currentIdx >= 0 ? currentIdx : 0,
+      myMemberId: this._getMyMemberId(book)
     })
 
     this._updatePendingCount(book.members || [])
@@ -434,6 +436,9 @@ Page({
     const bill = billService.getBillById(id)
     if (!bill) return
 
+    // 为详情弹窗添加视角解析
+    bill.payer_name_display = this._resolvePayerName(bill, this.data.myMemberId, this.data.members)
+
     this.setData({
       selectedBill: bill,
       detailVisible: true
@@ -549,6 +554,9 @@ Page({
 
   _formatGroupedBills(grouped) {
     var self = this
+    var myMemberId = this.data.myMemberId
+    var members = this.data.members
+
     var formatted = grouped.map(function(group) {
       var items = group.items.map(function(bill) {
         var catInfo = getCategoryByKey(bill.category)
@@ -556,7 +564,9 @@ Page({
           category_icon: (catInfo && catInfo.icon) || '📦',
           category_name: (catInfo && catInfo.name) || bill.category_name || '其他',
           amountDisplay: formatAmount(bill.amount, self.data.currencySymbol),
-          timeDisplay: formatDate(bill.paid_at, 'HH:mm')
+          timeDisplay: formatDate(bill.paid_at, 'HH:mm'),
+          // 根据当前用户视角解析付款人名称
+          payer_name_display: self._resolvePayerName(bill, myMemberId, members)
         })
       })
       return Object.assign({}, group, {
@@ -566,6 +576,33 @@ Page({
       })
     })
     this.setData({ groupedBills: formatted })
+  },
+
+  /**
+   * 根据当前用户视角解析付款人名称
+   * 当前用户的付款 → "我"，其他人的付款 → 显示其昵称
+   */
+  _resolvePayerName(bill, myMemberId, members) {
+    if (bill.payer_id === myMemberId) {
+      return '我'
+    }
+    // 从成员列表中查找实际名称
+    var member = members.find(function(m) { return m.id === bill.payer_id })
+    if (member) {
+      return member.nickname || member.shadow_name || '未知'
+    }
+    return bill.payer_name || '未知'
+  },
+
+  _getMyMemberId(book) {
+    try {
+      var openid = app.globalData.openid
+      if (!openid || !book || !book.members) return ''
+      var myMember = book.members.find(function(m) { return m.user_id === openid })
+      return myMember ? myMember.id : ''
+    } catch (e) {
+      return ''
+    }
   },
 
   _calculateSettlement() {

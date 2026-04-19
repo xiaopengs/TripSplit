@@ -125,7 +125,7 @@
                 </view>
                 <text class="tl-note" wx:if="{{bill.note}}">{{bill.note}}</text>
                 <view class="tl-meta">
-                  <text class="tl-payer">{{bill.payer_name}} 支付</text>
+                  <text class="tl-payer">{{bill.payer_name_display}} 支付</text>
                 </view>
               </view>
             </view>

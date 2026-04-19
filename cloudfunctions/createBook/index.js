@@ -4,7 +4,7 @@ const db = cloud.database()
 
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
-  const { name, cover_color, currency, currency_symbol, start_date, end_date, shadowMembers } = event
+  const { name, cover_color, currency, currency_symbol, start_date, end_date, shadowMembers, creatorNickname } = event
 
   if (!name) {
     return { success: false, code: 'INVALID_PARAMS', message: 'Missing book name' }
@@ -30,7 +30,7 @@ exports.main = async (event, context) => {
     // 2. Create creator member
     const creatorDoc = {
       book_id: bookId, type: 'real', user_id: OPENID,
-      nickname: '', avatar_url: '',
+      nickname: creatorNickname || '', avatar_url: '',
       shadow_name: '', is_claimed: false,
       claimed_by: null, claimed_at: null,
       role: 'admin', joined_at: now

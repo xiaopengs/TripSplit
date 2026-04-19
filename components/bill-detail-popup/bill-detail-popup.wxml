@@ -21,7 +21,7 @@
   <view class="info-section">
     <view class="info-row">
       <text class="info-label">支付人</text>
-      <text class="info-value">{{_formattedBill.payer_name || '未知'}}</text>
+      <text class="info-value">{{_formattedBill.payer_name_display || _formattedBill.payer_name || '未知'}}</text>
     </view>
     <view class="info-row">
       <text class="info-label">时间</text>

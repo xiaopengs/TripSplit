@@ -294,3 +294,126 @@ describe('bill.getTotalExpense / getBillsGroupedByDate', () => {
     expect(groups[1].items.length).toBe(2)
   })
 })
+
+describe('bill 多人记账同步', () => {
+  beforeEach(() => clearMockStorage())
+
+  it('importCloudBills 导入云端账单到本地（被邀请者模式，无 ID 映射）', () => {
+    const book = setupBook(['小明'])
+
+    // 模拟云端账单（payer_id 是云端 member _id）
+    const cloudBills = [{
+      _id: 'cloud_bill_001',
+      book_id: 'cloud_book_001',
+      amount: 6000,
+      category: 'food',
+      category_name: '餐饮',
+      note: '午餐',
+      payer_id: 'cloud_mem_001',
+      payer_name: '创建者',
+      splits: [
+        { member_id: 'cloud_mem_001', name: '创建者', share: 3000, is_shadow: false },
+        { member_id: 'cloud_mem_002', name: '小明', share: 3000, is_shadow: false }
+      ],
+      split_type: 'equal',
+      source: 'manual',
+      paid_at: '2026-04-19T12:00:00',
+      updated_at: Date.now()
+    }]
+
+    // B（被邀请者）模式：本地 book.id = cloud _id，无需映射
+    const added = billService.importCloudBills(book.id, cloudBills, null)
+    expect(added).toBe(1)
+
+    const bills = billService.getBills(book.id)
+    expect(bills.length).toBe(1)
+    expect(bills[0].id).toBe('cloud_bill_001')
+    expect(bills[0].payer_id).toBe('cloud_mem_001')
+    expect(bills[0].payer_name).toBe('创建者')
+    expect(bills[0].splits.length).toBe(2)
+  })
+
+  it('importCloudBills 带 ID 映射（创建者模式，cloud → local）', () => {
+    const book = setupBook(['小明'])
+    const localA = book.members[0].id // 创建者本地 ID
+    const localB = book.members[1].id // 小明本地 ID
+
+    // 云端账单使用云端 member ID
+    const cloudBills = [{
+      _id: 'cloud_bill_002',
+      book_id: 'cloud_book_002',
+      amount: 9000,
+      category: 'transport',
+      category_name: '交通',
+      note: '打车',
+      payer_id: 'cloud_mem_b',
+      payer_name: '小明',
+      splits: [
+        { member_id: 'cloud_mem_a', name: '我', share: 4500, is_shadow: false },
+        { member_id: 'cloud_mem_b', name: '小明', share: 4500, is_shadow: false }
+      ],
+      split_type: 'equal',
+      source: 'manual',
+      paid_at: '2026-04-19T14:00:00',
+      updated_at: Date.now()
+    }]
+
+    // ID 映射：cloud → local
+    const memberIdMap = {
+      'cloud_mem_a': localA,
+      'cloud_mem_b': localB
+    }
+
+    const added = billService.importCloudBills(book.id, cloudBills, memberIdMap)
+    expect(added).toBe(1)
+
+    const bills = billService.getBills(book.id)
+    expect(bills[0].payer_id).toBe(localB) // 映射为本地 ID
+    expect(bills[0].splits[0].member_id).toBe(localA)
+    expect(bills[0].splits[1].member_id).toBe(localB)
+  })
+
+  it('importCloudBills 不重复导入已有账单', () => {
+    const book = setupBook([])
+    const cloudBills = [{
+      _id: 'cloud_bill_003',
+      book_id: 'cloud_book_003',
+      amount: 3000,
+      category: 'other',
+      category_name: '其他',
+      payer_id: 'mem_001',
+      payer_name: 'test',
+      splits: [],
+      split_type: 'equal',
+      source: 'cloud',
+      paid_at: '2026-04-19T10:00:00',
+      updated_at: Date.now()
+    }]
+
+    billService.importCloudBills(book.id, cloudBills, null)
+    // 再次导入同样的账单
+    const added = billService.importCloudBills(book.id, cloudBills, null)
+    expect(added).toBe(0)
+    expect(billService.getBills(book.id).length).toBe(1)
+  })
+
+  it('deleteBillsByBook 删除指定账本所有账单', () => {
+    const book1 = setupBook([])
+    const book2 = setupBook([])
+
+    billService.createBill({
+      bookId: book1.id, amount: 1000, category: CATEGORIES[0],
+      payerId: book1.members[0].id, payerName: 'A',
+      memberIds: [book1.members[0].id], members: book1.members
+    })
+    billService.createBill({
+      bookId: book2.id, amount: 2000, category: CATEGORIES[0],
+      payerId: book2.members[0].id, payerName: 'B',
+      memberIds: [book2.members[0].id], members: book2.members
+    })
+
+    billService.deleteBillsByBook(book1.id)
+    expect(billService.getBills(book1.id).length).toBe(0)
+    expect(billService.getBills(book2.id).length).toBe(1)
+  })
+})

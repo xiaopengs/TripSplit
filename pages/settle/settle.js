@@ -12,17 +12,29 @@ Page({
     members: [],
     currencySymbol: '¥',
     roundToYuan: false,
-    result: null
+    result: null,
+    myMemberId: ''
   },
 
   onLoad() {
     const book = bookService.getCurrentBook()
     if (!book) return
 
+    // 确定当前用户的成员 ID
+    var myMemberId = ''
+    try {
+      var openid = getApp().globalData.openid
+      if (openid && book.members) {
+        var myMember = book.members.find(function(m) { return m.user_id === openid })
+        if (myMember) myMemberId = myMember.id
+      }
+    } catch (e) {}
+
     this.setData({
       bookId: book.id,
       members: book.members || [],
-      currencySymbol: book.currency_symbol || '¥'
+      currencySymbol: book.currency_symbol || '¥',
+      myMemberId: myMemberId
     })
 
     this._calculate()
@@ -32,6 +44,16 @@ Page({
     this._calculate()
   },
 
+  /**
+   * 根据当前用户视角解析成员名称
+   */
+  _resolveName(memberId) {
+    if (memberId === this.data.myMemberId) return '我'
+    var member = this.data.members.find(function(m) { return m.id === memberId })
+    if (member) return member.nickname || member.shadow_name || '未知'
+    return '未知'
+  },
+
   _calculate() {
     const bills = billService.getBills(this.data.bookId)
     const result = settleService.calculateSettlement(this.data.members, bills, {
@@ -39,11 +61,16 @@ Page({
       bookId: this.data.bookId
     })
 
-    // 预处理显示数据
+    // 预处理显示数据 — 使用当前用户视角
+    var self = this
     if (result && result.transfers) {
       result.transfers.forEach(t => {
-        t.from_char = (t.from_name || '?')[0] || '?'
-        t.to_char = (t.to_name || '?')[0] || '?'
+        var fromDisplay = self._resolveName(t.from_id)
+        var toDisplay = self._resolveName(t.to_id)
+        t.from_name = fromDisplay
+        t.to_name = toDisplay
+        t.from_char = (fromDisplay || '?')[0] || '?'
+        t.to_char = (toDisplay || '?')[0] || '?'
         t.amountDisplay = formatAmount(t.totalAmount, this.data.currencySymbol)
         t.pendingAmountDisplay = formatAmount(t.pendingAmount, this.data.currencySymbol)
         t.settledAmountDisplay = formatAmount(t.settledAmount, this.data.currencySymbol)

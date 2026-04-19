@@ -86,6 +86,8 @@ function createBook(data) {
 
 async function _syncBookToCloud(book, data) {
   const cloudApi = _getCloudApi()
+  // 获取创建者的昵称
+  const creator = (book.members || []).find(m => m.role === 'admin')
   const result = await cloudApi.call('createBook', {
     name: data.name,
     cover_color: book.cover_color,
@@ -93,7 +95,8 @@ async function _syncBookToCloud(book, data) {
     currency_symbol: book.currency_symbol,
     start_date: book.start_date,
     end_date: null,
-    shadowMembers: data.shadowMembers || []
+    shadowMembers: data.shadowMembers || [],
+    creatorNickname: (creator && creator.nickname) || ''
   })
 
   // 更新本地缓存的 cloud_id 和 cloud_db_id
@@ -245,20 +248,27 @@ function importCloudBook(cloudBook, cloudMembers) {
     member_count: (cloudMembers || []).length,
     created_at: cloudBook.created_at,
     updated_at: cloudBook.updated_at || Date.now(),
-    members: (cloudMembers || []).map(m => ({
-      id: m._id,
-      book_id: cloudBook._id,
-      type: m.type,
-      user_id: m.user_id || '',
-      nickname: m.nickname || '',
-      avatar_url: m.avatar_url || '',
-      shadow_name: m.shadow_name || '',
-      is_claimed: m.is_claimed || false,
-      claimed_by: m.claimed_by || null,
-      claimed_at: m.claimed_at || null,
-      role: m.role || 'member',
-      joined_at: m.joined_at || Date.now()
-    }))
+    members: (cloudMembers || []).map(m => {
+      // 成员名称解析：nickname → shadow_name → 角色默认名
+      var displayName = m.nickname || ''
+      if (!displayName && m.shadow_name) displayName = m.shadow_name
+      if (!displayName && m.type === 'real' && m.role === 'admin') displayName = '创建者'
+      if (!displayName && m.type === 'real') displayName = '成员'
+      return {
+        id: m._id,
+        book_id: cloudBook._id,
+        type: m.type,
+        user_id: m.user_id || '',
+        nickname: displayName,
+        avatar_url: m.avatar_url || '',
+        shadow_name: m.shadow_name || '',
+        is_claimed: m.is_claimed || false,
+        claimed_by: m.claimed_by || null,
+        claimed_at: m.claimed_at || null,
+        role: m.role || 'member',
+        joined_at: m.joined_at || Date.now()
+      }
+    })
   }
 
   books.push(book)
@@ -304,37 +314,54 @@ async function syncCloudMembers(bookId) {
     // 判断是否为创建者（本地 ID 与云端 ID 不同）
     const isCreator = book.cloud_db_id && book.cloud_db_id !== book.id
 
+    // 构建 cloud_id → local_id 映射（用于账单 ID 转换）
+    const cloudToLocal = {}
+    const localToCloud = {}
+
     if (isCreator) {
       // 创建者模式：匹配云端成员到本地成员，只更新认领状态，不改变 ID
       // 避免破坏本地账单中的 payer_id / splits.member_id 引用
-      _mergeMemberClaimStatus(book, result.members)
+      _mergeMemberClaimStatus(book, result.members, cloudToLocal, localToCloud)
     } else {
       // 被邀请者模式：完整替换（ID 本身就是云端 _id，不会冲突）
       if (result.members) {
-        book.members = result.members.map(m => ({
-          id: m._id,
-          book_id: bookId,
-          type: m.type,
-          user_id: m.user_id || '',
-          nickname: m.nickname || '',
-          avatar_url: m.avatar_url || '',
-          shadow_name: m.shadow_name || '',
-          is_claimed: m.is_claimed || false,
-          claimed_by: m.claimed_by || null,
-          claimed_at: m.claimed_at || null,
-          role: m.role || 'member',
-          joined_at: m.joined_at || Date.now()
-        }))
+        book.members = result.members.map(m => {
+          // 成员名称解析
+          var displayName = m.nickname || ''
+          if (!displayName && m.shadow_name) displayName = m.shadow_name
+          if (!displayName && m.type === 'real' && m.role === 'admin') displayName = '创建者'
+          if (!displayName && m.type === 'real') displayName = '成员'
+          return {
+            id: m._id,
+            book_id: bookId,
+            type: m.type,
+            user_id: m.user_id || '',
+            nickname: displayName,
+            avatar_url: m.avatar_url || '',
+            shadow_name: m.shadow_name || '',
+            is_claimed: m.is_claimed || false,
+            claimed_by: m.claimed_by || null,
+            claimed_at: m.claimed_at || null,
+            role: m.role || 'member',
+            joined_at: m.joined_at || Date.now()
+          }
+        })
         book.member_count = book.members.length
       }
     }
+
+    // 保存 ID 映射到 book 上（供账单上传时使用）
+    if (Object.keys(localToCloud).length > 0) {
+      book._localToCloud = localToCloud
+    }
+
     book.updated_at = Date.now()
     cache.set(CACHE_KEY, books)
 
-    // 被邀请者模式：同步云端账单
-    if (!isCreator && result.bills && result.bills.length > 0) {
+    // 同步云端账单（双方都需要）
+    if (result.bills && result.bills.length > 0) {
       const billService = require('./bill.service')
-      billService.importCloudBills(bookId, result.bills)
+      billService.importCloudBills(bookId, result.bills, isCreator ? cloudToLocal : null)
     }
 
     return true
@@ -346,9 +373,10 @@ async function syncCloudMembers(bookId) {
 
 /**
  * 创建者模式：将云端成员的认领状态合并到本地成员
+ * 同时构建 cloud→local 和 local→cloud 的 ID 映射
  * 匹配规则：按 shadow_name 匹配（影子成员可能已被认领为 real），真实成员按 user_id 匹配
  */
-function _mergeMemberClaimStatus(book, cloudMembers) {
+function _mergeMemberClaimStatus(book, cloudMembers, cloudToLocal, localToCloud) {
   if (!cloudMembers || !book.members) return
 
   cloudMembers.forEach(cm => {
@@ -365,6 +393,10 @@ function _mergeMemberClaimStatus(book, cloudMembers) {
     })
 
     if (local) {
+      // 构建 ID 映射
+      cloudToLocal[cm._id] = local.id
+      localToCloud[local.id] = cm._id
+
       // 更新认领状态
       local.is_claimed = cm.is_claimed || false
       local.claimed_by = cm.claimed_by || null
@@ -374,6 +406,10 @@ function _mergeMemberClaimStatus(book, cloudMembers) {
         local.type = 'real'
         local.nickname = cm.nickname || local.shadow_name
         local.user_id = cm.user_id || ''
+      }
+      // 同步云端昵称（如果本地为空但云端有值）
+      if (!local.nickname && cm.nickname) {
+        local.nickname = cm.nickname
       }
     }
   })

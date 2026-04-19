@@ -134,6 +134,12 @@ async function _syncBillToCloud(bill, data) {
     const book = books.find(b => b.id === bill.book_id)
     if (!book || !book.cloud_db_id) return
 
+    // 使用 book 上存储的 local→cloud ID 映射
+    const localToCloud = book._localToCloud || {}
+    const remapId = function(localId) {
+      return (localId && localToCloud[localId]) || localId
+    }
+
     const cloudApi = require('../utils/cloud')
     await cloudApi.call('createBill', {
       bookId: book.cloud_db_id,
@@ -143,9 +149,16 @@ async function _syncBillToCloud(bill, data) {
       note: bill.note,
       images: bill.images,
       location: bill.location,
-      payer_id: bill.payer_id,
+      payer_id: remapId(bill.payer_id),
       payer_name: bill.payer_name,
-      splits: bill.splits,
+      splits: (bill.splits || []).map(function(s) {
+        return {
+          member_id: remapId(s.member_id),
+          name: s.name,
+          share: s.share,
+          is_shadow: s.is_shadow
+        }
+      }),
       split_type: bill.split_type,
       source: bill.source,
       paid_at: bill.paid_at
@@ -232,14 +245,20 @@ function getTotalExpense(bookId) {
  * 已存在的账单不会重复导入
  * @param {string} localBookId - 本地 book.id
  * @param {array} cloudBills - syncData 返回的 bills 数组
+ * @param {object|null} memberIdMap - cloud_member_id → local_member_id 映射（创建者模式需要）
  */
-function importCloudBills(localBookId, cloudBills) {
+function importCloudBills(localBookId, cloudBills, memberIdMap) {
   const allBills = cache.get(CACHE_KEY) || []
   const existingIds = new Set(allBills.map(b => b.id))
 
   let added = 0
   cloudBills.forEach(cloudBill => {
     if (existingIds.has(cloudBill._id)) return
+
+    // ID 映射：cloud_id → local_id
+    const remapId = function(cloudId) {
+      return (memberIdMap && cloudId && memberIdMap[cloudId]) || cloudId
+    }
 
     allBills.push({
       id: cloudBill._id,
@@ -250,9 +269,16 @@ function importCloudBills(localBookId, cloudBills) {
       note: cloudBill.note || '',
       images: cloudBill.images || [],
       location: cloudBill.location || '',
-      payer_id: cloudBill.payer_id,
+      payer_id: remapId(cloudBill.payer_id),
       payer_name: cloudBill.payer_name,
-      splits: cloudBill.splits || [],
+      splits: (cloudBill.splits || []).map(function(s) {
+        return {
+          member_id: remapId(s.member_id),
+          name: s.name,
+          share: s.share,
+          is_shadow: s.is_shadow
+        }
+      }),
       split_type: cloudBill.split_type || 'equal',
       source: cloudBill.source || 'cloud',
       paid_at: cloudBill.paid_at,
