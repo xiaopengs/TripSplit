@@ -86,8 +86,12 @@ function createBook(data) {
 
 async function _syncBookToCloud(book, data) {
   const cloudApi = _getCloudApi()
-  // 获取创建者的昵称
-  const creator = (book.members || []).find(m => m.role === 'admin')
+  // 创建者昵称：优先用微信昵称（而非本地显示名"我"）
+  var creatorNickname = ''
+  try {
+    var userInfo = getApp().globalData.userInfo
+    if (userInfo && userInfo.nickname) creatorNickname = userInfo.nickname
+  } catch (e) {}
   const result = await cloudApi.call('createBook', {
     name: data.name,
     cover_color: book.cover_color,
@@ -96,7 +100,7 @@ async function _syncBookToCloud(book, data) {
     start_date: book.start_date,
     end_date: null,
     shadowMembers: data.shadowMembers || [],
-    creatorNickname: (creator && creator.nickname) || ''
+    creatorNickname: creatorNickname
   })
 
   // 更新本地缓存的 cloud_id 和 cloud_db_id

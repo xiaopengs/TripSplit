@@ -134,12 +134,15 @@ async function _syncBillToCloud(bill, data) {
     const book = books.find(b => b.id === bill.book_id)
     if (!book || !book.cloud_db_id) return
 
+    // 判断是否为创建者（本地 ID 与云端 ID 不同，需要映射）
+    const isCreator = book.cloud_db_id && book.cloud_db_id !== book.id
+
     // 使用 book 上存储的 local→cloud ID 映射
     const localToCloud = book._localToCloud || {}
 
-    // 如果映射表为空（syncCloudMembers 尚未完成），跳过上传
-    // 等待 syncCloudMembers 构建好映射后，通过 retryUnsyncedBills 重试
-    if (Object.keys(localToCloud).length === 0) return
+    // 创建者模式：映射表为空时跳过（等待 syncCloudMembers 构建映射后重试）
+    // 被邀请者模式：本地 ID 就是云端 ID，不需要映射，直接上传
+    if (isCreator && Object.keys(localToCloud).length === 0) return
 
     const remapId = function(localId) {
       return (localId && localToCloud[localId]) || localId
@@ -258,11 +261,18 @@ function importCloudBills(localBookId, cloudBills, memberIdMap) {
   // 去重：同时检查本地 bill.id 和已同步的 cloud_id
   const existingIds = new Set(allBills.map(b => b.id))
   const existingCloudIds = new Set(allBills.filter(b => b.cloud_id).map(b => b.cloud_id))
+  // 二次去重：paid_at + amount 组合键（防止 _syncBillToCloud 与 importCloudBills 并发竞态）
+  const existingTimeAmount = new Set(
+    allBills.filter(b => b.book_id === localBookId).map(b => (b.paid_at || '') + '_' + (b.amount || 0))
+  )
 
   let added = 0
   cloudBills.forEach(cloudBill => {
     if (existingIds.has(cloudBill._id)) return
     if (existingCloudIds.has(cloudBill._id)) return
+    // 二次去重：同一账本内相同时间+金额视为重复
+    var timeAmountKey = (cloudBill.paid_at || '') + '_' + (cloudBill.amount || 0)
+    if (existingTimeAmount.has(timeAmountKey)) return
 
     // ID 映射：cloud_id → local_id
     const remapId = function(cloudId) {
@@ -296,6 +306,7 @@ function importCloudBills(localBookId, cloudBills, memberIdMap) {
       server_updated: cloudBill.updated_at
     })
     existingIds.add(cloudBill._id)
+    existingTimeAmount.add(timeAmountKey)
     added++
   })
 

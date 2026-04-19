@@ -100,9 +100,17 @@ Page({
 
     this.setData({ joining: true })
     try {
+      // 传递微信昵称（如果有的话），否则云函数会降级使用 shadow_name
+      var nickname = ''
+      try {
+        var userInfo = getApp().globalData.userInfo
+        if (userInfo && userInfo.nickname) nickname = userInfo.nickname
+      } catch (e) {}
+
       await cloudApi.call('claimShadow', {
         bookId: bookId,
-        shadowMemberId: selectedShadowId
+        shadowMemberId: selectedShadowId,
+        nickname: nickname || undefined
       })
 
       // 认领成功 → 将云端账本数据写入本地缓存

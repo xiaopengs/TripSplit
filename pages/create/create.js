@@ -146,7 +146,7 @@ Page({
         coverColor: this.data.skinColors[this.data.selectedSkinIndex].value,
         startDate: this.data.startDate,
         creatorId: openid,
-        creatorName: '我',
+        creatorName: (app.globalData.userInfo && app.globalData.userInfo.nickname) || '',
         shadowMembers: this.data.shadowMembers
       })
 
