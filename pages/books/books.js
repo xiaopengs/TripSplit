@@ -22,6 +22,7 @@ Page({
     // 状态
     refreshing: false,
     currentBookId: '',
+    myOpenid: '',
 
     // 成员弹窗
     memberPopupVisible: false,
@@ -50,13 +51,15 @@ Page({
     var allBooks = bookService.getBookList()
     var currentBook = bookService.getCurrentBook()
     var currentBookId = currentBook ? currentBook.id : ''
+    var myOpenid = ''
+    try { myOpenid = getApp().globalData.openid || '' } catch(e) {}
     var self = this
 
     var enriched = allBooks.map(function(book) {
-      return self._enrichBook(book, currentBookId)
+      return self._enrichBook(book, currentBookId, myOpenid)
     })
 
-    this.setData({ books: enriched, currentBookId: currentBookId })
+    this.setData({ books: enriched, currentBookId: currentBookId, myOpenid: myOpenid })
     this._applyFilterAndSort()
 
     // 后台同步云端成员数据
@@ -86,7 +89,7 @@ Page({
     }
   },
 
-  _enrichBook: function(book, currentBookId) {
+  _enrichBook: function(book, currentBookId, myOpenid) {
     var skin = SKIN_COLORS.find(function(s) { return s.value === book.cover_color })
     if (!skin) skin = SKIN_COLORS[0]
 
@@ -107,6 +110,9 @@ Page({
       createdDate = formatDate(new Date(book.created_at).toISOString(), 'YYYY-MM-DD')
     }
 
+    var isCreator = !book.creator_id || book.creator_id === myOpenid
+    var isDeleted = book.status === 'deleted'
+
     // 只传递卡片显示需要的字段，避免 setData 过大
     return {
       id: book.id,
@@ -124,7 +130,9 @@ Page({
       billCount: billCount,
       memberAvatars: memberAvatars,
       createdDateDisplay: createdDate,
-      isCurrentBook: book.id === currentBookId
+      isCurrentBook: book.id === currentBookId,
+      isCreator: isCreator,
+      isDeleted: isDeleted
     }
   },
 
@@ -188,11 +196,33 @@ Page({
 
     wx.showModal({
       title: '删除账本',
-      content: '确定要删除「' + name + '」吗？此操作不可恢复，所有账单数据将丢失。',
+      content: '确定要删除「' + name + '」吗？所有成员将无法继续记账，此操作不可恢复。',
       confirmColor: '#FF3B30',
       success: function(res) {
         if (res.confirm) {
-          bookService.deleteBook(id)
+          var result = bookService.deleteBook(id)
+          if (result) {
+            wx.showToast({ title: '已删除', icon: 'success' })
+            self.loadBooks()
+          } else {
+            wx.showToast({ title: '仅创建者可删除', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  onDeleteBookLocal: function(e) {
+    var id = e.currentTarget.dataset.id
+    var self = this
+
+    wx.showModal({
+      title: '删除本地副本',
+      content: '确定删除该账本的本地数据？删除后将无法恢复。',
+      confirmColor: '#FF3B30',
+      success: function(res) {
+        if (res.confirm) {
+          bookService.deleteBookLocal(id)
           wx.showToast({ title: '已删除', icon: 'success' })
           self.loadBooks()
         }

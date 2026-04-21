@@ -71,14 +71,8 @@ Page({
     if (memberId === this.data.myMemberId && this.data.myMemberId) return '我'
     var member = this.data.members.find(function(m) { return m.id === memberId })
     if (member) {
-      var name = member.nickname || ''
-      // "我"是视角代词，对其他用户应展示真实名称
-      if (name === '我') {
-        name = member.shadow_name || ''
-      }
-      if (!name && member.role === 'admin') name = '创建者'
-      if (!name) name = '成员'
-      return name
+      // shadow_name（创建者起的别名）优先，nickname（微信昵称）次之
+      return member.shadow_name || member.nickname || '成员'
     }
     return '未知'
   },

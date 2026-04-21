@@ -16,6 +16,10 @@ Component({
       type: Array,
       value: []
     },
+    myMemberId: {
+      type: String,
+      value: ''
+    },
     currencySymbol: {
       type: String,
       value: '¥'
@@ -66,12 +70,16 @@ Component({
       }
     },
     'members': function(members) {
-      // 默认付款人：第一个真实成员
+      // 默认付款人：当前用户 > 第一个真实成员 > 第一个成员
       if (!this.data.selectedPayerId || !(members || []).find(m => m.id === this.data.selectedPayerId)) {
-        const realMember = (members || []).find(m => m.type === 'real') || (members || [])[0]
-        this.setData({ selectedPayerId: realMember ? realMember.id : '' })
+        const myId = this.data.myMemberId
+        const defaultPayer = (myId && (members || []).find(m => m.id === myId)) || (members || []).find(m => m.type === 'real') || (members || [])[0]
+        this.setData({ selectedPayerId: defaultPayer ? defaultPayer.id : '' })
       }
       this._selectAllMembers()
+    },
+    'myMemberId': function() {
+      this._rebuildEnrichedMembers()
     },
     'amount, selectedMembers.length': function(amount, count) {
       if (amount > 0 && count > 0) {
@@ -207,12 +215,18 @@ Component({
       const members = this.data.members || []
       const selected = this.data.selectedMembers || []
       const payerId = this.data.selectedPayerId
-      const enriched = members.map(m => ({
-        ...m,
-        avatar_char: (m.nickname || m.shadow_name || '?')[0] || '?',
-        _selected: selected.indexOf(m.id) > -1,
-        _isPayer: m.id === payerId
-      }))
+      const myId = this.data.myMemberId
+      const enriched = members.map(m => {
+        const isMe = m.id === myId && myId
+        const displayName = isMe ? '我' : (m.shadow_name || m.nickname || '?')
+        return {
+          ...m,
+          avatar_char: displayName[0] || '?',
+          display_name: displayName,
+          _selected: selected.indexOf(m.id) > -1,
+          _isPayer: m.id === payerId
+        }
+      })
       this.setData({ _enrichedMembers: enriched })
     },
 
@@ -434,9 +448,10 @@ Component({
     },
 
     _resetForm() {
-      // 先确定默认付款人
+      // 默认付款人：当前用户 > 第一个真实成员 > 第一个成员
       const members = this.data.members || []
-      const realMember = members.find(m => m.type === 'real') || members[0]
+      const myId = this.data.myMemberId
+      const defaultPayer = (myId && members.find(m => m.id === myId)) || members.find(m => m.type === 'real') || members[0]
 
       this.setData({
         rawValue: '',
@@ -447,7 +462,7 @@ Component({
         selectedMembers: [],
         customSplitValues: {},
         lastMemberAutoAmount: '',
-        selectedPayerId: realMember ? realMember.id : '',
+        selectedPayerId: defaultPayer ? defaultPayer.id : '',
         note: '',
         images: [],
         location: '',

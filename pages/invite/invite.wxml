@@ -58,6 +58,19 @@
       </view>
     </view>
 
+    <!-- 你的称呼 -->
+    <view class="section" wx:if="{{unclaimedShadows.length > 0}}">
+      <text class="section-label">你的称呼</text>
+      <input
+        class="nickname-input"
+        type="nickname"
+        placeholder="点击获取微信昵称（选填）"
+        value="{{myNickname}}"
+        bindinput="onNicknameInput"
+        maxlength="20"
+      />
+    </view>
+
     <!-- 操作按钮 -->
     <view class="action-area">
       <view

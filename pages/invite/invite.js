@@ -18,6 +18,7 @@ Page({
 
     cloudBookData: null,
     cloudMembersData: null,
+    myNickname: '',
 
     error: '',
     joined: false,
@@ -71,6 +72,13 @@ Page({
         return
       }
 
+      // 预填已有昵称
+      var nickname = ''
+      try {
+        var userInfo = getApp().globalData.userInfo
+        if (userInfo && userInfo.nickname) nickname = userInfo.nickname
+      } catch (e) {}
+
       const unclaimed = result.members.filter(m => m.type === 'shadow' && !m.is_claimed)
       this.setData({
         loading: false,
@@ -79,7 +87,8 @@ Page({
         memberCount: result.book.member_count,
         unclaimedShadows: unclaimed,
         cloudBookData: result.book,
-        cloudMembersData: result.members
+        cloudMembersData: result.members,
+        myNickname: nickname
       })
     } catch (err) {
       this.setData({ loading: false, error: err.message || '加载失败' })
@@ -91,6 +100,10 @@ Page({
     this.setData({ selectedShadowId: this.data.selectedShadowId === id ? '' : id })
   },
 
+  onNicknameInput(e) {
+    this.setData({ myNickname: e.detail.value })
+  },
+
   async onClaimAndJoin() {
     const { selectedShadowId, bookId, cloudBookData, cloudMembersData } = this.data
     if (!selectedShadowId) {
@@ -100,12 +113,15 @@ Page({
 
     this.setData({ joining: true })
     try {
-      // 传递微信昵称（如果有的话），否则云函数会降级使用 shadow_name
-      var nickname = ''
-      try {
-        var userInfo = getApp().globalData.userInfo
-        if (userInfo && userInfo.nickname) nickname = userInfo.nickname
-      } catch (e) {}
+      // 保存用户昵称到全局 & 缓存
+      var nickname = this.data.myNickname.trim()
+      if (nickname) {
+        var app = getApp()
+        var userInfo = app.globalData.userInfo || {}
+        userInfo.nickname = nickname
+        app.globalData.userInfo = userInfo
+        cache.set('userInfo', userInfo)
+      }
 
       await cloudApi.call('claimShadow', {
         bookId: bookId,

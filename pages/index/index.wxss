@@ -187,6 +187,37 @@
 }
 
 /* ============================================
+   只读提示条
+   ============================================ */
+.readonly-banner {
+  margin: 16rpx 24rpx;
+  padding: 20rpx 24rpx;
+  background: #FFF8E1;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.readonly-text {
+  font-size: var(--font-sm);
+  color: #8B6914;
+  flex: 1;
+}
+
+.readonly-actions {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.readonly-btn {
+  font-size: var(--font-sm);
+  color: #FF3B30;
+  font-weight: 600;
+  padding: 8rpx 16rpx;
+}
+
+/* ============================================
    时间线流水列表
    ============================================ */
 .bill-timeline {

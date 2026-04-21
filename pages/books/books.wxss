@@ -170,6 +170,17 @@
   flex-shrink: 0;
 }
 
+.deleted-badge {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: white;
+  background: #999;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
 /* ============================================
    成员头像行
    ============================================ */

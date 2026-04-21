@@ -50,7 +50,8 @@
           <!-- 名称 + 当前标记 -->
           <view class="card-top">
             <text class="card-name">{{item.name}}</text>
-            <view class="current-badge" wx:if="{{item.isCurrentBook}}">当前</view>
+            <view class="deleted-badge" wx:if="{{item.isDeleted}}">已归档</view>
+            <view class="current-badge" wx:elif="{{item.isCurrentBook}}">当前</view>
           </view>
 
           <!-- 成员头像行 -->
@@ -98,10 +99,22 @@
                 data-id="{{item.id}}"
                 hover-class="hover-opacity"
               >
-                进入
+                查看
               </view>
+              <!-- 已归档账本：仅显示删除本地副本 -->
               <view
                 class="action-btn danger"
+                wx:if="{{item.isDeleted}}"
+                catchtap="onDeleteBookLocal"
+                data-id="{{item.id}}"
+                hover-class="hover-opacity"
+              >
+                删除副本
+              </view>
+              <!-- 活跃账本：仅创建者可删除 -->
+              <view
+                class="action-btn danger"
+                wx:elif="{{item.isCreator}}"
                 catchtap="onDeleteBook"
                 data-id="{{item.id}}"
                 data-name="{{item.name}}"

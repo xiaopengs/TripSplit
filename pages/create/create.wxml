@@ -21,8 +21,8 @@
     <view class="form-item">
       <text class="form-label">账本名称</text>
       <view class="input-row">
-        <input 
-          class="form-input" 
+        <input
+          class="form-input"
           placeholder="例如：曼谷大吃大喝之旅"
           value="{{bookName}}"
           bindinput="onNameInput"
@@ -30,6 +30,24 @@
           focus="{{true}}"
         />
         <text class="char-count">{{bookName.length}}/20</text>
+      </view>
+    </view>
+
+    <!-- 你的称呼 -->
+    <view class="form-item">
+      <view class="form-row">
+        <text class="form-label">你的称呼</text>
+        <text class="form-hint">其他人会看到这个名字</text>
+      </view>
+      <view class="input-row">
+        <input
+          class="form-input"
+          type="nickname"
+          placeholder="点击获取微信昵称"
+          value="{{creatorNickname}}"
+          bindinput="onNicknameInput"
+          maxlength="20"
+        />
       </view>
     </view>
 

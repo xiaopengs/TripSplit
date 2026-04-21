@@ -53,7 +53,13 @@ Page({
 
     // 导航栏高度
     navPaddingTop: 0,
-    navPaddingBottom: 0
+    navPaddingBottom: 0,
+
+    // 刷新状态
+    flowRefreshing: false,
+
+    // 只读模式（账本已被创建者删除）
+    readOnly: false
   },
 
   onLoad(options) {
@@ -69,6 +75,55 @@ Page({
 
   onPullDownRefresh() {
     this.refreshData(() => wx.stopPullDownRefresh())
+  },
+
+  /**
+   * 流水区域下拉刷新
+   */
+  onFlowRefresh() {
+    // 先展示本地数据
+    if (this.data.currentBook) {
+      const grouped = billService.getBillsGroupedByDate(this.data.currentBook.id)
+      this._formatGroupedBills(grouped)
+    }
+
+    // 再从云端同步
+    this._syncAndRefresh(() => {
+      this.setData({ flowRefreshing: false })
+    })
+  },
+
+  /**
+   * 云端同步并刷新 UI
+   */
+  _syncAndRefresh(callback) {
+    const book = bookService.getCurrentBook()
+    if (!book || (!book.cloud_id && !book.cloud_db_id)) {
+      callback && callback()
+      return
+    }
+
+    bookService.syncCloudMembers(book.id).then(synced => {
+      if (synced === 'deleted') {
+        this.loadBookData()
+      } else if (synced) {
+        const updated = bookService.getCurrentBook()
+        if (updated) {
+          this.setData({
+            members: updated.members || [],
+            memberCount: updated.member_count || (updated.members || []).length,
+            myMemberId: this._getMyMemberId(updated)
+          })
+          this._updatePendingCount(updated.members || [])
+          const grouped = billService.getBillsGroupedByDate(updated.id)
+          this._formatGroupedBills(grouped)
+          this._calculateSettlement()
+        }
+      }
+      callback && callback()
+    }).catch(() => {
+      callback && callback()
+    })
   },
 
   _handleEntryOptions(options) {
@@ -130,7 +185,8 @@ Page({
         memberCount: 0,
         groupedBills: [],
         settlementResult: null,
-        pendingClaimCount: 0
+        pendingClaimCount: 0,
+        readOnly: false
       })
       return
     }
@@ -152,7 +208,8 @@ Page({
       members: book.members || [],
       bookList: allBooks,
       currentBookIndex: currentIdx >= 0 ? currentIdx : 0,
-      myMemberId: this._getMyMemberId(book)
+      myMemberId: this._getMyMemberId(book),
+      readOnly: book.status === 'deleted'
     })
 
     this._updatePendingCount(book.members || [])
@@ -161,8 +218,19 @@ Page({
     if (book.cloud_id || book.cloud_db_id) {
       bookService.syncCloudMembers(book.id).then(synced => {
         if (synced === 'deleted') {
-          // 云端已删除，重新加载
-          this.loadBookData()
+          // 创建者已删除 → 标记为只读，保留数据可查看
+          const updated = bookService.getCurrentBook()
+          if (updated) {
+            this.setData({
+              readOnly: true,
+              members: updated.members || [],
+              memberCount: updated.member_count || (updated.members || []).length,
+              myMemberId: this._getMyMemberId(updated)
+            })
+            const grouped = billService.getBillsGroupedByDate(updated.id)
+            this._formatGroupedBills(grouped)
+            this._calculateSettlement()
+          }
           return
         }
         if (synced) {
@@ -221,7 +289,13 @@ Page({
     const tab = e.currentTarget.dataset.tab
     this.setData({ activeTab: tab })
 
-    if (tab === 'settle') {
+    if (tab === 'flow') {
+      // 切换到流水 tab 时刷新账单数据
+      if (this.data.currentBook) {
+        const grouped = billService.getBillsGroupedByDate(this.data.currentBook.id)
+        this._formatGroupedBills(grouped)
+      }
+    } else if (tab === 'settle') {
       this._calculateSettlement()
     }
   },
@@ -229,6 +303,10 @@ Page({
   // === FAB 操作 ===
 
   onFabSelect(e) {
+    if (this.data.readOnly) {
+      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
+      return
+    }
     const key = e.detail.key
     switch (key) {
       case 'manual':
@@ -255,6 +333,10 @@ Page({
   openAddPanel() {
     if (!this.data.currentBook) {
       wx.showToast({ title: '请先创建账本', icon: 'none' })
+      return
+    }
+    if (this.data.readOnly) {
+      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
       return
     }
     this.setData({ addPanelVisible: true })
@@ -304,6 +386,10 @@ Page({
   async handleCameraCapture() {
     if (!this.data.currentBook) {
       wx.showToast({ title: '请先创建账本', icon: 'none' })
+      return
+    }
+    if (this.data.readOnly) {
+      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
       return
     }
 
@@ -526,6 +612,24 @@ Page({
     wx.navigateTo({ url: '/pages/books/books' })
   },
 
+  onDeleteBookLocal() {
+    var self = this
+    wx.showModal({
+      title: '删除本地副本',
+      content: '确定删除该账本的本地数据？删除后将无法恢复。',
+      confirmColor: '#FF3B30',
+      success: function(res) {
+        if (res.confirm) {
+          bookService.deleteBookLocal(self.data.currentBook.id)
+          wx.showToast({ title: '已删除', icon: 'success' })
+          setTimeout(function() {
+            wx.reLaunch({ url: '/pages/index/index' })
+          }, 500)
+        }
+      }
+    })
+  },
+
   // === 私有方法 ===
 
   /**
@@ -593,14 +697,8 @@ Page({
     // 从成员列表中查找实际名称
     var member = members.find(function(m) { return m.id === bill.payer_id })
     if (member) {
-      var name = member.nickname || ''
-      // "我"是视角代词，不是真实名称，对其他用户不应显示
-      if (name === '我') {
-        name = member.shadow_name || ''
-      }
-      if (!name && member.role === 'admin') name = '创建者'
-      if (!name) name = '成员'
-      return name
+      // shadow_name（创建者起的别名）优先，nickname（微信昵称）次之
+      return member.shadow_name || member.nickname || '成员'
     }
     return bill.payer_name || '未知'
   },

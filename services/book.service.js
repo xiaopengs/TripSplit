@@ -182,12 +182,21 @@ function updateBook(bookId, updates) {
 
 /**
  * 删除账本（本地优先，后台同步云端）
- * 仅创建者（admin）可删除
+ * 仅创建者（admin）可删除，非创建者调用返回 false
  */
 function deleteBook(bookId) {
-  // 本地删除
   const books = getBookList()
   const book = books.find(b => b.id === bookId)
+
+  // 权限校验：仅创建者可删除
+  if (book) {
+    var openid = _getOpenid()
+    if (openid && book.creator_id && book.creator_id !== openid) {
+      return false
+    }
+  }
+
+  // 本地删除
   const filtered = books.filter(b => b.id !== bookId)
   cache.set(CACHE_KEY, filtered)
   const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
@@ -199,7 +208,7 @@ function deleteBook(bookId) {
   const billService = require('./bill.service')
   billService.deleteBillsByBook(bookId)
 
-  // 后台同步到云端
+  // 后台同步到云端（软删除）
   if (_isCloudReady() && book) {
     const cloudBookId = book.cloud_db_id || book.id
     const cloudApi = _getCloudApi()
@@ -208,6 +217,22 @@ function deleteBook(bookId) {
     })
   }
 
+  return true
+}
+
+/**
+ * 仅删除本地账本副本（不调用云端，用于非创建者清理已删除的账本）
+ */
+function deleteBookLocal(bookId) {
+  const books = getBookList()
+  const filtered = books.filter(b => b.id !== bookId)
+  cache.set(CACHE_KEY, filtered)
+  const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
+  if (activeId === bookId) {
+    cache.remove(ACTIVE_BOOK_ID_KEY)
+  }
+  const billService = require('./bill.service')
+  billService.deleteBillsByBook(bookId)
   return true
 }
 
@@ -253,11 +278,8 @@ function importCloudBook(cloudBook, cloudMembers) {
     created_at: cloudBook.created_at,
     updated_at: cloudBook.updated_at || Date.now(),
     members: (cloudMembers || []).map(m => {
-      // 成员名称解析：nickname → shadow_name → 角色默认名
-      var displayName = m.nickname || ''
-      if (!displayName && m.shadow_name) displayName = m.shadow_name
-      if (!displayName && m.type === 'real' && m.role === 'admin') displayName = '创建者'
-      if (!displayName && m.type === 'real') displayName = '成员'
+      // 成员名称解析：shadow_name（创建者起的别名） → nickname（微信昵称） → 默认
+      var displayName = m.shadow_name || m.nickname || '成员'
       return {
         id: m._id,
         book_id: cloudBook._id,
@@ -301,17 +323,18 @@ async function syncCloudMembers(bookId) {
     const result = await cloudApi.call('syncData', { bookId: cloudBookId })
     if (!result) return false
 
-    // 检查云端账本是否已被删除
+    // 检查云端账本是否已被删除（创建者已删除 → 本地标记为只读）
     if (result.book && result.book.status === 'deleted') {
-      // 从本地删除该账本及其账单
-      const filtered = books.filter(b => b.id !== bookId)
-      cache.set(CACHE_KEY, filtered)
-      const billService = require('./bill.service')
-      billService.deleteBillsByBook(bookId)
-      const activeId = cache.get(ACTIVE_BOOK_ID_KEY)
-      if (activeId === bookId) {
-        cache.remove(ACTIVE_BOOK_ID_KEY)
+      book.status = 'deleted'
+      book.updated_at = Date.now()
+      cache.set(CACHE_KEY, books)
+
+      // 同步账单（让用户仍能查看流水）
+      if (result.bills && result.bills.length > 0) {
+        const billService = require('./bill.service')
+        billService.importCloudBills(bookId, result.bills, isCreator ? cloudToLocal : null)
       }
+
       return 'deleted'
     }
 
@@ -330,11 +353,8 @@ async function syncCloudMembers(bookId) {
       // 被邀请者模式：完整替换（ID 本身就是云端 _id，不会冲突）
       if (result.members) {
         book.members = result.members.map(m => {
-          // 成员名称解析
-          var displayName = m.nickname || ''
-          if (!displayName && m.shadow_name) displayName = m.shadow_name
-          if (!displayName && m.type === 'real' && m.role === 'admin') displayName = '创建者'
-          if (!displayName && m.type === 'real') displayName = '成员'
+          // 成员名称解析：shadow_name → nickname → 默认
+          var displayName = m.shadow_name || m.nickname || '成员'
           return {
             id: m._id,
             book_id: bookId,
@@ -432,6 +452,7 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
+  deleteBookLocal,
   getBookByCloudId,
   importCloudBook,
   syncCloudMembers

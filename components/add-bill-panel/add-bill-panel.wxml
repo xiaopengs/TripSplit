@@ -163,7 +163,7 @@
           <view class="payer-circle {{item._isPayer ? 'payer-active' : ''}}">
             <text class="payer-char">{{item.avatar_char}}</text>
           </view>
-          <text class="payer-name {{item._isPayer ? 'selected' : ''}}">{{item.nickname || item.shadow_name || '?'}}</text>
+          <text class="payer-name {{item._isPayer ? 'selected' : ''}}">{{item.display_name}}</text>
         </view>
       </view>
     </view>
@@ -194,7 +194,7 @@
               <text class="check-icon">✓</text>
             </view>
           </view>
-          <text class="avatar-name {{item._selected ? 'selected' : ''}}">{{item.nickname || item.shadow_name || '?'}}</text>
+          <text class="avatar-name {{item._selected ? 'selected' : ''}}">{{item.display_name}}</text>
           <view class="shadow-badge" wx:if="{{item.type === 'shadow' && !item.is_claimed}}">
             <text class="shadow-text">影</text>
           </view>
@@ -209,7 +209,7 @@
       <!-- 自定义分摊模式 -->
       <view class="custom-splits" wx:if="{{splitMode !== 'equal'}}">
         <view class="custom-row" wx:for="{{_enrichedMembers}}" wx:key="id">
-          <text class="cs-name">{{item.nickname || item.shadow_name || '?'}}</text>
+          <text class="cs-name">{{item.display_name}}</text>
           <!-- 最后一位成员自动计算 -->
           <view class="cs-auto" wx:if="{{_lastMemberId === item.id && lastMemberAutoAmount}}">
             <text class="cs-auto-value">{{lastMemberAutoAmount}}</text>

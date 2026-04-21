@@ -2,6 +2,7 @@
  * 创建账本页面
  */
 const bookService = require('../../services/book.service')
+const cache = require('../../utils/cache')
 const { SKIN_COLORS, CURRENCIES } = require('../../utils/constants')
 const { formatDate } = require('../../utils/date')
 const locationUtil = require('../../utils/location')
@@ -18,6 +19,7 @@ Page({
     shadowMembers: [],
     newShadowName: '',
     canCreate: false,
+    creatorNickname: '',
     logoIcons: ['🧩', '🏔️', '🏖️', '🎒', '✈️', '🚗', '🏨', '🍜'],
     logoIndex: 0
   },
@@ -28,16 +30,28 @@ Page({
       display: `${c.flag} ${c.name} (${c.symbol})`
     }))
 
+    // 预填已有昵称
+    var nickname = ''
+    try {
+      var userInfo = getApp().globalData.userInfo
+      if (userInfo && userInfo.nickname) nickname = userInfo.nickname
+    } catch (e) {}
+
     this.setData({
       currencies: displayCurrencies,
       startDate: formatDate(new Date()),
-      selectedSkinColor: SKIN_COLORS[this.data.selectedSkinIndex].value
+      selectedSkinColor: SKIN_COLORS[this.data.selectedSkinIndex].value,
+      creatorNickname: nickname
     })
   },
 
   onNameInput(e) {
     const name = e.detail.value
     this.setData({ bookName: name, canCreate: name.trim().length > 0 })
+  },
+
+  onNicknameInput(e) {
+    this.setData({ creatorNickname: e.detail.value })
   },
 
   onCurrencyChange(e) {
@@ -139,6 +153,15 @@ Page({
       const app = getApp()
       const openid = app && app.globalData ? app.globalData.openid : ''
 
+      // 保存用户昵称到全局 & 缓存
+      var nickname = this.data.creatorNickname.trim()
+      if (nickname) {
+        var userInfo = app.globalData.userInfo || { openid: openid }
+        userInfo.nickname = nickname
+        app.globalData.userInfo = userInfo
+        cache.set('userInfo', userInfo)
+      }
+
       const book = bookService.createBook({
         name: this.data.bookName.trim(),
         currency: currency.code,
@@ -146,7 +169,7 @@ Page({
         coverColor: this.data.skinColors[this.data.selectedSkinIndex].value,
         startDate: this.data.startDate,
         creatorId: openid,
-        creatorName: (app.globalData.userInfo && app.globalData.userInfo.nickname) || '',
+        creatorName: nickname || '',
         shadowMembers: this.data.shadowMembers
       })
 
