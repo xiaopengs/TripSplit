@@ -62,8 +62,11 @@ Page({
     this.setData({ books: enriched, currentBookId: currentBookId, myOpenid: myOpenid })
     this._applyFilterAndSort()
 
-    // 后台同步云端成员数据
-    this._syncCloudMembers()
+    // 后台同步云端成员数据（仅首次进入页面时触发一次）
+    if (!this._synced) {
+      this._synced = true
+      this._syncCloudMembers()
+    }
   },
 
   _syncCloudMembers: function() {
@@ -73,20 +76,29 @@ Page({
     } catch (e) { return }
 
     var allBooks = bookService.getBookList()
-    var hasSync = false
     var self = this
 
     allBooks.forEach(function(book) {
       if (book.cloud_id) {
-        hasSync = true
-        bookService.syncCloudMembers(book.id).catch(function() {})
+        bookService.syncCloudMembers(book.id)
+          .then(function(changed) {
+            // 同步完成后刷新一次列表（不再触发 _syncCloudMembers）
+            if (changed) {
+              var allBooks2 = bookService.getBookList()
+              var currentBook = bookService.getCurrentBook()
+              var currentBookId = currentBook ? currentBook.id : ''
+              var myOpenid = ''
+              try { myOpenid = getApp().globalData.openid || '' } catch(e) {}
+              var enriched = allBooks2.map(function(b) {
+                return self._enrichBook(b, currentBookId, myOpenid)
+              })
+              self.setData({ books: enriched, currentBookId: currentBookId, myOpenid: myOpenid })
+              self._applyFilterAndSort()
+            }
+          })
+          .catch(function() {})
       }
     })
-
-    // 如果有同步任务，延迟刷新列表
-    if (hasSync) {
-      setTimeout(function() { self.loadBooks() }, 2000)
-    }
   },
 
   _enrichBook: function(book, currentBookId, myOpenid) {
