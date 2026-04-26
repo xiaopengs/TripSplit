@@ -208,6 +208,54 @@
   color: var(--color-shadow-text);
 }
 
+.icon-person-sm {
+  width: 14px;
+  height: 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+.icon-person-sm::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.icon-person-sm::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 7px;
+  border-radius: 7px 7px 3px 3px;
+  background: currentColor;
+}
+
+.icon-close-sm {
+  width: 10px;
+  height: 10px;
+  position: relative;
+}
+.icon-close-sm::before,
+.icon-close-sm::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.icon-close-sm::before { transform: translateY(-50%) rotate(45deg); }
+.icon-close-sm::after { transform: translateY(-50%) rotate(-45deg); }
+
 .shadow-remove {
   color: var(--color-shadow-text-light);
   font-size: var(--font-sm);

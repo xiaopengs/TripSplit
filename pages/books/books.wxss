@@ -32,6 +32,10 @@
   justify-content: center;
 }
 
+.icon-back {
+  color: var(--text-primary);
+}
+
 .back-icon {
   font-size: 44rpx;
   color: var(--text-primary);

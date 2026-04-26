@@ -13,7 +13,7 @@
   <view class="panel-header">
     <text class="panel-title">{{_editingBillId ? '编辑记录' : '记一笔'}}</text>
     <view class="close-btn" bindtap="onClose" hover-class="close-btn-hover">
-      <text class="close-icon">✕</text>
+      <view class="icon-close"></view>
     </view>
   </view>
 
@@ -67,7 +67,7 @@
     <view class="section">
       <view class="meta-row">
         <view class="meta-item datetime-item">
-          <text class="meta-icon">🕐</text>
+          <view class="meta-icon"><view class="icon-clock"></view></view>
           <picker mode="date" value="{{billDate}}" bindchange="onDateChange">
             <text class="meta-value">{{billDate}}</text>
           </picker>
@@ -90,7 +90,7 @@
           maxlength="50"
         />
         <view class="note-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}" hover-class="note-image-btn-hover">
-          <text class="note-image-icon">📷</text>
+          <view class="note-image-icon"><view class="icon-camera"></view></view>
         </view>
       </view>
       <!-- 已上传图片 -->
@@ -114,19 +114,19 @@
     <view class="section">
       <!-- 未添加位置：点击定位入口 -->
       <view class="loc-trigger" wx:if="{{!location && !locationLoading}}" bindtap="onLocationTap" hover-class="loc-trigger-hover">
-        <text class="loc-trigger-icon">📍</text>
+        <view class="loc-trigger-icon"><view class="icon-pin"></view></view>
         <text class="loc-trigger-text">标记地点</text>
         <text class="loc-trigger-arrow">›</text>
       </view>
       <!-- 定位中 -->
       <view class="loc-trigger" wx:elif="{{locationLoading}}">
-        <text class="loc-trigger-icon">📍</text>
+        <view class="loc-trigger-icon"><view class="icon-pin"></view></view>
         <text class="loc-trigger-text loading">定位中...</text>
       </view>
       <!-- 已有位置：标签样式 -->
       <view class="loc-tag-row" wx:else>
         <view class="loc-tag active">
-          <text class="loc-tag-icon">📍</text>
+          <view class="loc-tag-icon"><view class="icon-pin"></view></view>
           <text class="loc-tag-text">{{location}}</text>
           <text class="loc-tag-clear" catchtap="onClearLocation">✕</text>
         </view>

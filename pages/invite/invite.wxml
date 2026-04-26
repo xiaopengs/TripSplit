@@ -3,13 +3,13 @@
 
   <!-- 加载中 -->
   <view class="state-wrap" wx:if="{{loading}}">
-    <view class="spinner">⏳</view>
+    <view class="icon-spinner"></view>
     <text class="state-text">加载中...</text>
   </view>
 
   <!-- 错误状态 -->
   <view class="state-wrap" wx:elif="{{error}}">
-    <view class="error-icon">😔</view>
+    <view class="icon-error-circle"></view>
     <text class="state-title">无法加入</text>
     <text class="state-desc">{{error}}</text>
     <view class="btn-home" bindtap="onGoHome" hover-class="hover-opacity">
@@ -19,7 +19,7 @@
 
   <!-- 已加入 -->
   <view class="state-wrap" wx:elif="{{joined}}">
-    <view class="success-icon">✅</view>
+    <view class="icon-success-circle"></view>
     <text class="state-title">已加入「{{bookName}}」</text>
     <text class="state-desc">快去和朋友们一起记账吧</text>
     <view class="btn-home" bindtap="onGoHome" hover-class="hover-opacity">
@@ -31,7 +31,7 @@
   <view class="invite-content" wx:elif="{{mode === 'share'}}">
     <!-- 账本信息 -->
     <view class="book-card">
-      <view class="book-icon">📒</view>
+      <view class="book-icon"><view class="icon-notebook"></view></view>
       <view class="book-info">
         <text class="book-name">{{bookName}}</text>
         <text class="book-meta">{{memberCount}} 位成员</text>
@@ -51,7 +51,7 @@
           data-id="{{item._id}}"
         >
           <view class="shadow-avatar">
-            <text>👤</text>
+            <view class="icon-person"></view>
           </view>
           <view class="shadow-body">
             <text class="shadow-name">{{item.shadow_name}}</text>
@@ -66,7 +66,7 @@
           bindtap="onSelectSelf"
         >
           <view class="shadow-avatar self-avatar">
-            <text>😊</text>
+            <view class="icon-smile"></view>
           </view>
           <view class="shadow-body">
             <text class="shadow-name">以自己名称加入</text>

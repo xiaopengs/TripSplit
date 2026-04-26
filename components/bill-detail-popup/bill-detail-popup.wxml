@@ -3,7 +3,7 @@
 
 <view class="popup-container {{visible ? 'show' : ''}}" wx:if="{{_formattedBill}}">
   <!-- 关闭按钮 -->
-  <view class="close-btn" catchtap="onClose"><text>✕</text></view>
+  <view class="close-btn" catchtap="onClose"><view class="icon-close"></view></view>
 
   <!-- 类目图标 -->
   <view class="detail-icon-wrap">

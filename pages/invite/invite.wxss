@@ -20,6 +20,15 @@
   margin-bottom: 32rpx;
 }
 
+.icon-error-circle,
+.icon-success-circle {
+  margin-bottom: 32rpx;
+}
+
+.icon-spinner {
+  margin-bottom: 32rpx;
+}
+
 .state-title {
   font-size: var(--font-lg);
   font-weight: 600;
@@ -73,6 +82,7 @@
 .book-icon {
   font-size: 64rpx;
   margin-right: 24rpx;
+  color: var(--text-primary);
 }
 
 .book-info {

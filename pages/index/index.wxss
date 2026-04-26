@@ -36,9 +36,24 @@
   align-items: center;
 }
 
-.book-emoji {
-  font-size: 40rpx;
+/* CSS 图标：账本 */
+.icon-book {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid rgba(255,255,255,0.9);
+  border-radius: 4rpx 10rpx 4rpx 4rpx;
   margin-right: 12rpx;
+  position: relative;
+  flex-shrink: 0;
+}
+.icon-book::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background: rgba(255,255,255,0.9);
 }
 
 .book-name {
@@ -77,9 +92,30 @@
   justify-content: center;
 }
 
-.member-emoji {
-  font-size: 40rpx;
-  opacity: 0.95;
+/* CSS 图标：成员 */
+.icon-members {
+  width: 34rpx;
+  height: 28rpx;
+  position: relative;
+}
+.icon-members::before,
+.icon-members::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255,255,255,0.9);
+}
+.icon-members::before {
+  width: 20rpx;
+  height: 20rpx;
+  top: 0;
+  left: 0;
+}
+.icon-members::after {
+  width: 18rpx;
+  height: 18rpx;
+  top: 6rpx;
+  left: 12rpx;
 }
 
 .member-badge-count {
@@ -142,16 +178,68 @@
   font-weight: 700;
 }
 
-.tab-icon-emoji {
-  font-size: var(--font-base);
-  margin-right: 8rpx;
+/* CSS 图标：流水 Tab（三横线列表） */
+.icon-tab-flow {
+  width: 16px;
+  height: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-right: 6rpx;
+  flex-shrink: 0;
+}
+.icon-tab-flow::before,
+.icon-tab-flow::after {
+  content: '';
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.icon-tab-flow view {
+  display: none;
+}
+.icon-tab-flow {
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-radius: 1px;
+  background: linear-gradient(currentColor 50%, currentColor 50%) center/100% 2px no-repeat;
+}
+
+/* CSS 图标：结算 Tab（交换箭头） */
+.icon-tab-settle {
+  width: 16px;
+  height: 14px;
+  position: relative;
+  margin-right: 6rpx;
+  flex-shrink: 0;
+}
+.icon-tab-settle::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  width: 10px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transform: rotate(-30deg);
+}
+.icon-tab-settle::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  width: 10px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transform: rotate(-30deg);
 }
 
 .tab-label {
   font-size: var(--font-base);
 }
 
-.tab-item.active .tab-icon-emoji,
 .tab-item.active .tab-label {
   color: var(--color-primary);
   font-weight: 700;
@@ -566,10 +654,9 @@
   margin: 0 20rpx;
 }
 
-.arrow-text {
-  color: white;
-  font-size: var(--font-lg);
-  font-weight: 700;
+/* 右箭头白色变体 */
+.transfer-arrow .icon-arrow-right {
+  border-color: white;
 }
 
 .btn-mark-paid {

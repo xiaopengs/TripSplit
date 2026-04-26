@@ -4,7 +4,7 @@
 <view class="popup-container {{visible ? 'show' : ''}}">
   <!-- 关闭按钮 -->
   <view class="close-btn" bindtap="onClose">
-    <text>✕</text>
+    <view class="icon-close"></view>
   </view>
 
   <block wx:if="{{detail && detail.transfer}}">
@@ -15,7 +15,7 @@
         <text class="summary-role">付款</text>
       </view>
       <view class="summary-arrow">
-        <text>→</text>
+        <view class="icon-arrow-right"></view>
       </view>
       <view class="summary-person">
         <text class="summary-name">{{detail.transfer.to_name}}</text>

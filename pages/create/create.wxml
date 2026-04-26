@@ -2,7 +2,7 @@
 <view class="page">
   <view class="header">
     <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
-      <text class="back-icon">←</text>
+      <view class="icon-back"></view>
     </view>
     <text class="header-title">新建账本</text>
     <view class="header-placeholder"></view>
@@ -112,8 +112,8 @@
       <!-- 已添加的影子成员 -->
       <view class="shadow-list">
         <view class="shadow-tag" wx:for="{{shadowMembers}}" wx:key="index">
-          <text>👤 {{item}}</text>
-          <text class="shadow-remove" data-index="{{index}}" catchtap="removeShadow">✕</text>
+          <view class="icon-person-sm"></view><text>{{item}}</text>
+          <text class="shadow-remove" data-index="{{index}}" catchtap="removeShadow"><view class="icon-close-sm"></view></text>
         </view>
       </view>
 

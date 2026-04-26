@@ -36,9 +36,10 @@
   flex: 1; min-width: 0; overflow: hidden;
   max-width: calc(100% - 44rpx); /* 确保有空间给箭头 */
 }
-.invite-icon { 
-  font-size: 40rpx; flex-shrink: 0; 
+.invite-icon {
+  font-size: 40rpx; flex-shrink: 0;
   width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
+  color: var(--color-primary);
 }
 .invite-text-wrap { 
   flex: 1; min-width: 0; overflow: hidden; 
@@ -119,6 +120,7 @@
   .invite-arrow { font-size: var(--font-md); }
 }
 .avatar.shadow-avatar { background: #E5E5EA; color: var(--text-secondary); font-size: var(--font-sm); }
+.avatar.shadow-avatar .icon-person { color: var(--text-secondary); }
 
 .member-info { flex: 1; min-width: 0; overflow: hidden; }
 .name {

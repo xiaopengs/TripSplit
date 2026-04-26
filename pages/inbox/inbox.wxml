@@ -2,7 +2,7 @@
 <view class="page">
   <view class="header">
     <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
-      <text class="back-icon">←</text>
+      <view class="icon-back"></view>
     </view>
     <text class="header-title">待整理</text>
     <view class="header-badge" wx:if="{{unreadCount > 0}}">{{unreadCount}}</view>
@@ -11,14 +11,16 @@
 
   <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="empty-state" wx:if="{{items.length === 0}}">
-      <text class="empty-icon">✅</text>
+      <view class="empty-check-circle">
+        <text class="empty-check-mark">✓</text>
+      </view>
       <text class="empty-title">全部整理完毕</text>
       <text class="empty-desc">拍照后的识别结果会出现在这里</text>
     </view>
 
     <view class="inbox-list" wx:else>
       <view class="tip-banner">
-        <text>💡 左滑删除废片，右滑确认入账</text>
+        <text>左滑删除废片，右滑确认入账</text>
       </view>
 
       <view class="inbox-item" wx:for="{{items}}" wx:key="id">
@@ -29,7 +31,7 @@
         <view class="item-info">
           <!-- 处理中 -->
           <view wx:if="{{item.status === 'processing'}}" class="status-processing">
-            <text class="spinner">⏳</text>
+            <view class="icon-spinner"></view>
             <text class="status-text">AI 识别中...</text>
           </view>
 

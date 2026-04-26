@@ -8,6 +8,7 @@
 }
 .back-btn { width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; }
 .back-icon { font-size: var(--font-lg); color: var(--text-primary); }
+.icon-back { color: var(--text-primary); }
 .header-title { font-size: var(--font-lg); font-weight: 600; }
 .header-placeholder { width: 64rpx; }
 
@@ -55,7 +56,11 @@
   width: 72rpx; height: 72rpx; border-radius: 50%;
   background: var(--color-primary); color: white;
   display: flex; align-items: center; justify-content: center;
-  font-size: var(--font-base); font-weight: bold; flex-shrink: 0;
+  flex-shrink: 0;
+}
+
+.arrow-circle .icon-arrow-right {
+  border-color: white;
 }
 
 /* 操作按钮 (settle 页特有) */
@@ -75,4 +80,9 @@
 
 .footer-tip {
   text-align: center; padding: 24rpx 0; font-size: var(--font-sm); color: var(--text-tertiary);
+}
+
+/* Large empty state icon */
+.empty-icon-large {
+  width: 130rpx; height: 130rpx; margin-bottom: 32rpx; opacity: 0.4; position: relative;
 }

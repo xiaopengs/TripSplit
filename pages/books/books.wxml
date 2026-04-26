@@ -5,7 +5,7 @@
   <view class="page-header" style="padding-top: {{navPaddingTop}}px;">
     <view class="header-row" style="padding-top: {{navPaddingBottom}}px;">
       <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
-        <text class="back-icon">‹</text>
+        <view class="icon-back"></view>
       </view>
       <text class="header-title">我的账本</text>
       <view class="header-right" bindtap="onSortTap" hover-class="hover-opacity">
@@ -27,7 +27,7 @@
   >
     <!-- 空状态 -->
     <view class="empty-state" wx:if="{{filteredBooks.length === 0}}">
-      <text class="empty-emoji">🏔</text>
+      <view class="empty-icon-large icon-empty-book"></view>
       <text class="empty-title">还没有账本</text>
       <text class="empty-desc">创建一个账本，开启旅行记账</text>
       <button class="btn-primary" bindtap="onCreateBook">+ 新建账本</button>

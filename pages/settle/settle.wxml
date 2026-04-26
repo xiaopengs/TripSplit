@@ -2,7 +2,7 @@
 <view class="page">
   <view class="header">
     <view class="back-btn" bindtap="goBack" hover-class="hover-opacity">
-      <text class="back-icon">←</text>
+      <view class="icon-back"></view>
     </view>
     <text class="header-title">结算中心</text>
     <view class="header-placeholder"></view>
@@ -11,7 +11,7 @@
   <scroll-view class="content" scroll-y enhanced show-scrollbar="{{false}}" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
     <!-- 空状态 -->
     <view class="empty-state" wx:if="{{!result || result.transfers.length === 0}}">
-      <text class="empty-emoji">🧮</text>
+      <view class="empty-icon-large icon-empty-settle"></view>
       <text class="empty-title">暂无结算数据</text>
       <text class="empty-desc">记录更多开销后即可查看结算方案</text>
     </view>
@@ -42,7 +42,7 @@
             </view>
 
             <view class="arrow-circle">
-              <text>→</text>
+              <view class="icon-arrow-right"></view>
             </view>
 
             <view class="person to-person">
@@ -61,7 +61,7 @@
 
       <!-- 底部提示 -->
       <view class="footer-tip">
-        <text>💡 下拉可刷新同步最新数据</text>
+        <text>下拉可刷新同步最新数据</text>
       </view>
     </view>
   </scroll-view>

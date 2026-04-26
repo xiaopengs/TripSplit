@@ -13,20 +13,20 @@
           bindchange="onBookSwitch"
         >
           <view class="book-picker">
-            <text class="book-emoji" wx:if="{{currentBook}}">🏔</text>
+            <view class="icon-book" wx:if="{{currentBook}}"></view>
             <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
             <text class="picker-arrow" wx:if="{{bookList.length > 1}}">▾</text>
           </view>
         </picker>
         <view class="book-picker" wx:else>
-          <text class="book-emoji">🏔</text>
+          <view class="icon-book"></view>
           <text class="book-name">拼途记账</text>
         </view>
         <text class="book-manage-link" bindtap="onManageBooks">账本管理</text>
       </view>
       <view class="header-right" bindtap="onMemberTap" hover-class="hover-opacity">
         <view class="member-icon-wrap">
-          <text class="member-emoji">👥</text>
+          <view class="icon-members"></view>
           <view class="badge" wx:if="{{pendingClaimCount > 0}}">!</view>
         </view>
         <text class="member-badge-count">({{memberCount}})</text>
@@ -39,7 +39,7 @@
     <!-- Tab 栏：圆角药丸 -->
     <view class="tab-bar">
       <view class="tab-item {{activeTab === 'flow' ? 'active' : ''}}" bindtap="switchTab" data-tab="flow">
-        <text class="tab-icon-emoji">☰</text>
+        <view class="icon-tab-flow"></view>
         <text class="tab-label">流水</text>
       </view>
       <!-- 待整理 Tab：MVP 暂不上线拍照识别功能
@@ -50,7 +50,7 @@
       </view>
       -->
       <view class="tab-item {{activeTab === 'settle' ? 'active' : ''}}" bindtap="switchTab" data-tab="settle">
-        <text class="tab-icon-emoji">📊</text>
+        <view class="icon-tab-settle"></view>
         <text class="tab-label">结算</text>
       </view>
     </view>
@@ -80,7 +80,7 @@
 
     <!-- 空状态：无账本 -->
     <view class="empty-state" wx:if="{{!currentBook}}">
-      <text class="empty-emoji large">🏔</text>
+      <view class="empty-icon-large icon-empty-book"></view>
       <text class="empty-title">开启你的旅行记账之旅</text>
       <text class="empty-desc">创建或加入一个账本开始记录</text>
       <button class="btn-primary" bindtap="onCreateBook">+ 新建账本</button>
@@ -88,7 +88,7 @@
 
     <!-- 空状态：有账本但无流水 -->
     <view class="empty-state" wx:elif="{{groupedBills.length === 0}}">
-      <text class="empty-emoji">📝</text>
+      <view class="empty-icon icon-empty-bill"></view>
       <text class="empty-title">还没有记录</text>
       <text class="empty-desc">点击右下角的 + 开始记一笔</text>
     </view>
@@ -213,7 +213,7 @@
     <view class="settle-container">
       <!-- 空状态 -->
       <view class="empty-state" wx:if="{{!settlementResult || settlementResult.transfers.length === 0}}">
-        <text class="empty-emoji">📊</text>
+        <view class="empty-icon icon-empty-settle"></view>
         <text class="empty-title">暂无数据可结算</text>
         <text class="empty-desc">记录更多开销后即可查看结算方案</text>
       </view>
@@ -231,7 +231,7 @@
             </view>
 
             <view class="transfer-arrow">
-              <text class="arrow-text">→</text>
+              <view class="icon-arrow-right"></view>
             </view>
 
             <view class="transfer-person to">

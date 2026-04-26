@@ -94,10 +94,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-base);
-  font-weight: 700;
   flex-shrink: 0;
   margin: 0 20rpx;
+}
+
+.summary-arrow .icon-arrow-right {
+  border-color: white;
 }
 
 /* 金额分解 */

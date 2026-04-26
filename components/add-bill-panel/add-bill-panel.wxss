@@ -76,6 +76,10 @@
   line-height: 1;
 }
 
+.close-btn .icon-close {
+  color: var(--text-secondary);
+}
+
 /* === 滚动内容区 === */
 .panel-body {
   flex: 1;
@@ -274,6 +278,10 @@
   font-size: var(--font-base);
   margin-right: 12rpx;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
 }
 
 .meta-value {
@@ -316,6 +324,10 @@
 .loc-trigger-icon {
   font-size: var(--font-md);
   margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
 }
 
 .loc-trigger-text {
@@ -364,6 +376,10 @@
 .loc-tag-icon {
   font-size: var(--font-sm);
   margin-right: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
 }
 
 .loc-tag-text {
@@ -689,6 +705,10 @@
 .note-image-icon {
   font-size: var(--font-md);
   opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
 }
 
 .note-thumbs {

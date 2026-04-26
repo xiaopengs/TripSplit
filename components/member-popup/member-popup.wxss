@@ -196,6 +196,10 @@
   font-weight: 700;
 }
 
+.share-circle .icon-share {
+  color: #FFFFFF;
+}
+
 /* ============================================
    区块通用
    ============================================ */
@@ -268,8 +272,8 @@
   border: 2rpx dashed #D1D1D6;
 }
 
-.shadow-person {
-  font-size: var(--font-lg);
+.avatar-shadow .icon-person {
+  color: var(--text-secondary);
 }
 
 /* "?" 小圆标 */
@@ -366,6 +370,10 @@
   margin-right: 16rpx;
   flex-shrink: 0;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8B6914;
 }
 
 .tip-body {

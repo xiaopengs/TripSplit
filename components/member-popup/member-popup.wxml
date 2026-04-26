@@ -5,7 +5,7 @@
   <!-- 标题栏 -->
   <view class="popup-header">
     <text class="popup-title">成员管理</text>
-    <view class="close-btn" bindtap="onClose"><text>✕</text></view>
+    <view class="close-btn" bindtap="onClose"><view class="icon-close"></view></view>
   </view>
 
   <!-- 可滚动内容区 -->
@@ -24,7 +24,7 @@
         <text class="invite-desc">分享给微信好友，好友可选择身份加入</text>
       </view>
       <view class="share-circle">
-        <text class="share-icon">↗</text>
+        <view class="icon-share"></view>
       </view>
     </button>
 
@@ -55,7 +55,7 @@
 
       <!-- 说明卡片 -->
       <view class="tip-card" wx:if="{{showTip}}">
-        <text class="tip-emoji">💡</text>
+        <view class="tip-emoji"><view class="icon-bulb"></view></view>
         <view class="tip-body">
           <text class="tip-heading">什么是影子成员？</text>
           <text class="tip-text">旅行开始前，管理员可预先添加成员名字。分账时可直接选择该成员。后期好友加入时，可认领对应的"影子身份"，一键接掌所有历史记录。</text>
@@ -65,7 +65,7 @@
       <!-- 影子成员卡片 -->
       <view class="shadow-member-card" wx:for="{{shadowMembers}}" wx:key="id">
         <view class="avatar avatar-shadow">
-          <text class="shadow-person">👤</text>
+          <view class="icon-person"></view>
           <view class="question-badge">?</view>
         </view>
         <view class="member-body">
@@ -81,7 +81,7 @@
 
     <!-- 添加影子成员按钮 -->
     <view class="add-shadow-btn" hover-class="hover-opacity" bindtap="onAddShadow">
-      <text>👥+ 添加影子成员</text>
+      <text>+ 添加影子成员</text>
     </view>
 
   </scroll-view>
