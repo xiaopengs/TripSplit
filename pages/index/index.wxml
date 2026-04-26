@@ -13,21 +13,22 @@
           bindchange="onBookSwitch"
         >
           <view class="book-picker">
-            <view class="icon-book" wx:if="{{currentBook}}"></view>
+            <view class="book-logo" wx:if="{{currentBook}}">
+              <text class="book-logo-emoji">{{currentBook.cover_icon || '🧩'}}</text>
+            </view>
             <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
             <text class="picker-arrow" wx:if="{{bookList.length > 1}}">▾</text>
           </view>
         </picker>
         <view class="book-picker" wx:else>
-          <view class="icon-book"></view>
+          <text class="book-logo-emoji">🧩</text>
           <text class="book-name">拼途记账</text>
         </view>
         <text class="book-manage-link" bindtap="onManageBooks">账本管理</text>
       </view>
       <view class="header-right" bindtap="onMemberTap" hover-class="hover-opacity">
-        <view class="member-icon-wrap">
+        <view class="member-icon-wrap {{pendingClaimCount > 0 ? 'has-pending' : ''}}">
           <view class="icon-members"></view>
-          <view class="badge" wx:if="{{pendingClaimCount > 0}}">!</view>
         </view>
         <text class="member-badge-count">({{memberCount}})</text>
       </view>
@@ -39,7 +40,10 @@
     <!-- Tab 栏：圆角药丸 -->
     <view class="tab-bar">
       <view class="tab-item {{activeTab === 'flow' ? 'active' : ''}}" bindtap="switchTab" data-tab="flow">
-        <view class="icon-tab-flow"></view>
+        <view class="icon-tab-flow">
+          <text class="yy-back">¥</text>
+          <text class="yy-front">¥</text>
+        </view>
         <text class="tab-label">流水</text>
       </view>
       <!-- 待整理 Tab：MVP 暂不上线拍照识别功能
@@ -50,7 +54,10 @@
       </view>
       -->
       <view class="tab-item {{activeTab === 'settle' ? 'active' : ''}}" bindtap="switchTab" data-tab="settle">
-        <view class="icon-tab-settle"></view>
+        <view class="icon-tab-settle">
+          <text class="aa-back">A</text>
+          <text class="aa-front">A</text>
+        </view>
         <text class="tab-label">结算</text>
       </view>
     </view>

@@ -125,6 +125,7 @@ function _createBookLocal(data, creatorId) {
     id: generateBookId(),
     name: data.name,
     cover_color: data.coverColor || SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)].value,
+    cover_icon: data.coverIcon || '🧩',
     currency: data.currency || 'CNY',
     currency_symbol: data.currencySymbol || '¥',
     start_date: data.startDate || new Date().toISOString().split('T')[0],

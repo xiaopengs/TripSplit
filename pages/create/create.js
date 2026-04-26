@@ -19,8 +19,9 @@ Page({
     newShadowName: '',
     canCreate: false,
     creatorNickname: '',
-    logoIcons: ['🧩', '🏔️', '🏖️', '🎒', '✈️', '🚗', '🏨', '🍜'],
-    logoIndex: 0
+    logoIcons: ['🏔️', '🏖️', '🎒', '✈️', '🚗', '🏨', '🍜', '🎮', '🚴‍♂️', '🏄🏻', '⛹🏻', '🏂', '🏸', '🦯', '🍻', '🚢'],
+    logoIndex: Math.floor(Math.random() * 16),
+    showIconPicker: false
   },
 
   onLoad() {
@@ -114,10 +115,18 @@ Page({
   },
 
   onLogoTap() {
-    // 切换图标
-    const nextIndex = (this.data.logoIndex + 1) % this.data.logoIcons.length
-    this.setData({ logoIndex: nextIndex })
+    this.setData({ showIconPicker: !this.data.showIconPicker })
     wx.vibrateShort({ type: 'light' })
+  },
+
+  onSelectIcon(e) {
+    const index = e.currentTarget.dataset.index
+    this.setData({ logoIndex: index, showIconPicker: false })
+    wx.vibrateShort({ type: 'light' })
+  },
+
+  closeIconPicker() {
+    this.setData({ showIconPicker: false })
   },
 
   onCreate() {
@@ -144,6 +153,7 @@ Page({
         currency: currency.code,
         currencySymbol: currency.symbol,
         coverColor: this.data.skinColors[this.data.selectedSkinIndex].value,
+        coverIcon: this.data.logoIcons[this.data.logoIndex],
         startDate: this.data.startDate,
         creatorId: openid,
         creatorName: nickname || '',
