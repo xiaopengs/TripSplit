@@ -256,17 +256,13 @@ describe('场景5: 完整结算', () => {
     expect(result.transfers.length).toBeGreaterThan(0)
 
     // 总金额守恒：所有转账金额之和 = 总支出中需要转移的部分
-    // 小明支付 96000，应收 64000（多付了64000）
-    // 大壮支付 30000，应付 20000（少付了20000）
-    // 二狗支付 15000，应付 34000（少付了34000）
     const totalExpense = 90000 + 30000 + 15000 + 6000 // 141000
     expect(billService.getTotalExpense(book.id)).toBe(totalExpense)
 
-    // 转账总金额应等于所有净应付之和
-    const rawBalance = result.rawBalance
-    const totalDebt = Object.values(rawBalance)
-      .filter(v => v < 0)
-      .reduce((sum, v) => sum + Math.abs(v), 0)
+    // 转账总金额应等于所有净应付之和（通过 memberSummary 验证）
+    const totalDebt = result.memberSummary
+      .filter(m => m.net < 0)
+      .reduce((sum, m) => sum + Math.abs(m.net), 0)
     expect(result.totalAmount).toBe(totalDebt)
 
     // 转账数 <= 成员数 - 1

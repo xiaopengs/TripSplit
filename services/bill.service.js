@@ -8,6 +8,14 @@ const { splitEqual } = require('../utils/currency')
 const { SPLIT_TYPE } = require('../utils/constants')
 const { sum } = require('../utils/calc')
 
+// 辅助：生成不含 Z 的本地时间字符串（避免时区偏移）
+function _padTime(n) { return String(n).padStart(2, '0') }
+function _localNow() {
+  var d = new Date()
+  return d.getFullYear() + '-' + _padTime(d.getMonth() + 1) + '-' + _padTime(d.getDate()) +
+    'T' + _padTime(d.getHours()) + ':' + _padTime(d.getMinutes()) + ':' + _padTime(d.getSeconds()) + '.000'
+}
+
 const CACHE_KEY = 'bills'
 
 /**
@@ -41,7 +49,7 @@ function getBillsGroupedByDate(bookId) {
   const groups = {}
 
   bills.forEach(bill => {
-    const dateKey = bill.paid_at ? bill.paid_at.split('T')[0] : (bill.local_created ? bill.local_created.split('T')[0] : new Date().toISOString().split('T')[0])
+    const dateKey = bill.paid_at ? bill.paid_at.split('T')[0] : (bill.local_created ? bill.local_created.split('T')[0] : _localNow().split('T')[0])
     if (!groups[dateKey]) {
       groups[dateKey] = {
         date: dateKey,
@@ -102,10 +110,10 @@ function createBill(data) {
     split_type: data.splitType || SPLIT_TYPE.EQUAL,
     source: source,
     ai_confidence: aiConfidence,
-    paid_at: data.paidAt || new Date().toISOString(),
+    paid_at: data.paidAt || _localNow(),
     request_id: generateRequestId(),
     synced: false,
-    local_created: new Date().toISOString(),
+    local_created: _localNow(),
     server_updated: null
   }
 

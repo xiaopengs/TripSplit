@@ -48,17 +48,27 @@ Page({
   },
 
   onShareAppMessage(res) {
-    const data = (res && res.target && res.target.dataset) || {}
-    const bookId = data.bookId || this.data.bookId
-    const bookName = data.bookName || this.data.bookName
+    const bookId = this.data.bookId
+    const bookName = this.data.bookName
 
     if (!bookId) {
       return { title: '拼途记账', path: '/pages/index/index' }
     }
 
+    // 使用 cloud_id 分享（本地 ID 在 B 端不存在）
+    const book = bookService.getCurrentBook()
+    const cloudId = book && book.cloud_id
     const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'
-    const path = `/pages/index/index?bookId=${encodeURIComponent(bookId)}&from=share`
-    return { title, path }
+
+    if (cloudId) {
+      return {
+        title,
+        path: `/pages/invite/invite?cloudId=${encodeURIComponent(cloudId)}&from=share`
+      }
+    }
+
+    wx.showToast({ title: '正在同步云端，请稍后再分享', icon: 'none' })
+    return { title, path: '/pages/index/index' }
   },
 
   goBack() { wx.navigateBack() }

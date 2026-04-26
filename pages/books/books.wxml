@@ -50,7 +50,8 @@
           <!-- 名称 + 当前标记 -->
           <view class="card-top">
             <text class="card-name">{{item.name}}</text>
-            <view class="deleted-badge" wx:if="{{item.isDeleted}}">已归档</view>
+            <view class="archived-badge" wx:if="{{item.isArchived}}">已归档</view>
+            <view class="deleted-badge" wx:elif="{{item.isDeleted}}">已删除</view>
             <view class="current-badge" wx:elif="{{item.isCurrentBook}}">当前</view>
           </view>
 
@@ -101,7 +102,17 @@
               >
                 查看
               </view>
-              <!-- 已归档账本：仅显示删除本地副本 -->
+              <!-- 已归档：取消归档 + 删除 -->
+              <view
+                class="action-btn warn"
+                wx:if="{{item.isArchived}}"
+                catchtap="onUnarchiveBook"
+                data-id="{{item.id}}"
+                hover-class="hover-opacity"
+              >
+                取消归档
+              </view>
+              <!-- 已删除远程：仅显示删除本地副本 -->
               <view
                 class="action-btn danger"
                 wx:if="{{item.isDeleted}}"
@@ -111,10 +122,20 @@
               >
                 删除副本
               </view>
-              <!-- 活跃账本：仅创建者可删除 -->
+              <!-- 活跃账本：仅创建者可归档/删除 -->
+              <view
+                class="action-btn warn"
+                wx:if="{{!item.isArchived && !item.isDeleted && item.isCreator}}"
+                catchtap="onArchiveBook"
+                data-id="{{item.id}}"
+                data-name="{{item.name}}"
+                hover-class="hover-opacity"
+              >
+                归档
+              </view>
               <view
                 class="action-btn danger"
-                wx:elif="{{item.isCreator}}"
+                wx:elif="{{!item.isArchived && !item.isDeleted && item.isCreator}}"
                 catchtap="onDeleteBook"
                 data-id="{{item.id}}"
                 data-name="{{item.name}}"

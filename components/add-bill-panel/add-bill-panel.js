@@ -6,6 +6,14 @@ const { CATEGORIES, CATEGORY_TAGS, SPLIT_TYPE, getSkinColor } = require('../../u
 const { formatAmount } = require('../../utils/currency')
 const { formatDate } = require('../../utils/date')
 
+// 辅助：两位补零
+function _padTime(n) { return String(n).padStart(2, '0') }
+
+// 辅助：生成不含 Z 的本地时间字符串
+function _formatLocalISO(d) {
+  return `${d.getFullYear()}-${_padTime(d.getMonth() + 1)}-${_padTime(d.getDate())}T${_padTime(d.getHours())}:${_padTime(d.getMinutes())}:${_padTime(d.getSeconds())}.000`
+}
+
 Component({
   properties: {
     visible: {
@@ -23,6 +31,10 @@ Component({
     currencySymbol: {
       type: String,
       value: '¥'
+    },
+    editBill: {
+      type: Object,
+      value: null
     }
   },
 
@@ -60,13 +72,29 @@ Component({
     // 备注
     note: '',
     selectedQuickTag: '',
-    images: []
+    images: [],
+
+    // 滚动位置控制
+    scrollTop: 0,
+
+    // 编辑模式
+    _editingBillId: null
   },
 
   observers: {
     'visible': function(val) {
       if (val) {
-        this._resetForm()
+        if (this.data.editBill) {
+          this._populateForm(this.data.editBill)
+        } else {
+          this._resetForm()
+        }
+        // 重置滚动位置到顶部（先设为 1 再设为 0，确保即使上次也是 0 也能触发滚动）
+        var self = this
+        self.setData({ scrollTop: 1 })
+        wx.nextTick(function() {
+          self.setData({ scrollTop: 0 })
+        })
       }
     },
     'members': function(members) {
@@ -139,21 +167,21 @@ Component({
     onLocationTap() {
       if (this.data.location) return
       this.setData({ locationLoading: true })
-      const location = require('../../utils/location')
-      location.getLocation().then(loc => {
-        const text = loc.city || loc.district || ''
-        // 构建附近位置列表
-        const nearby = []
-        if (loc.street) nearby.push(loc.street)
-        if (loc.district && loc.district !== text) nearby.push(loc.district)
-        if (loc.city && loc.city !== text) nearby.push(loc.city)
-        this.setData({
-          location: text,
-          locationLoading: false,
-          nearbyLocations: nearby.slice(0, 5)
-        })
-      }).catch(() => {
-        this.setData({ locationLoading: false })
+      wx.chooseLocation({
+        success: (res) => {
+          const text = res.name || res.address || ''
+          this.setData({
+            location: text,
+            locationLoading: false,
+            nearbyLocations: []
+          })
+        },
+        fail: (err) => {
+          this.setData({ locationLoading: false })
+          if (err.errMsg && err.errMsg.indexOf('cancel') === -1) {
+            wx.showToast({ title: '无法获取位置信息', icon: 'none' })
+          }
+        }
       })
     },
 
@@ -412,12 +440,12 @@ Component({
         catName = catInfo.name
       }
 
-      // 构建时间
-      let paidAt = new Date().toISOString()
+      // 构建时间（不使用 Z 后缀，保持本地时间语义）
+      let paidAt = _formatLocalISO(new Date())
       if (this.data.billDate) {
         const dateStr = this.data.billDate
-        const timeStr = this.data.billTime || new Date().toTimeString().slice(0, 5)
-        paidAt = `${dateStr}T${timeStr}:00.000Z`
+        const timeStr = this.data.billTime || _padTime(new Date().getHours()) + ':' + _padTime(new Date().getMinutes())
+        paidAt = `${dateStr}T${timeStr}:00.000`
       }
 
       const submitData = {
@@ -440,6 +468,11 @@ Component({
       if (payer) {
         submitData.payerId = payer.id
         submitData.payerName = payer.nickname || payer.shadow_name || '我'
+      }
+
+      // 标记编辑模式
+      if (this.data._editingBillId) {
+        submitData._editingBillId = this.data._editingBillId
       }
 
       this.triggerEvent('onsubmit', submitData)
@@ -467,10 +500,74 @@ Component({
         images: [],
         location: '',
         nearbyLocations: [],
-        quickTags: []
+        quickTags: [],
+        _editingBillId: null
       })
       this._selectAllMembers()
       this._initDateTime()
+    },
+
+    _populateForm(bill) {
+      if (!bill) return
+
+      var amountYuan = fenToYuan(bill.amount || 0)
+      var rawValue = amountYuan
+
+      // 解析分摊成员
+      var selectedMembers = (bill.splits || []).map(function(s) { return s.member_id })
+      if (selectedMembers.length === 0) {
+        this._selectAllMembers()
+        selectedMembers = this.data.selectedMembers
+      }
+
+      // 解析自定义分摊
+      var customSplitValues = {}
+      if (bill.split_type === SPLIT_TYPE.CUSTOM && bill.splits) {
+        bill.splits.forEach(function(s) {
+          customSplitValues[s.member_id] = fenToYuan(s.share)
+        })
+      }
+
+      // 解析日期时间
+      var billDate = ''
+      var billTime = ''
+      if (bill.paid_at) {
+        var d = new Date(bill.paid_at)
+        if (!isNaN(d.getTime())) {
+          billDate = formatDate(d, 'YYYY-MM-DD')
+          billTime = formatDate(d, 'HH:mm')
+        }
+      }
+
+      var note = bill.note || ''
+      var selectedQuickTag = ''
+
+      this.setData({
+        rawValue: rawValue,
+        displayValue: amountYuan,
+        amount: bill.amount || 0,
+        selectedCategory: bill.category || '',
+        splitMode: bill.split_type || SPLIT_TYPE.EQUAL,
+        selectedMembers: selectedMembers,
+        customSplitValues: customSplitValues,
+        lastMemberAutoAmount: '',
+        selectedPayerId: bill.payer_id || '',
+        note: note,
+        selectedQuickTag: selectedQuickTag,
+        images: bill.images || [],
+        location: bill.location || '',
+        nearbyLocations: [],
+        billDate: billDate,
+        billTime: billTime,
+        _editingBillId: bill.id || null
+      })
+
+      this._rebuildEnrichedMembers()
+
+      // 加载类目标签
+      var catKey = bill.category || ''
+      var tags = CATEGORY_TAGS[catKey] || []
+      this.setData({ quickTags: tags })
     }
   }
 })

@@ -92,7 +92,6 @@ page {
   --spring-curve: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  font-size: var(--font-body);
   line-height: 1.5;
 }
 
@@ -214,3 +213,25 @@ button::after {
 .hover-card {
   opacity: 0.85;
 }
+
+/* === Shared: Transfer Card (结算) === */
+.transfer-card {
+  background: white;
+  border-radius: var(--border-radius-xl);
+  padding: 36rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+
+.amount-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 24rpx 0 8rpx;
+  padding: 20rpx 24rpx;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+}
+
+.amount-info { display: flex; flex-direction: column; }
+.amount-total-label { font-size: var(--font-xs); color: var(--text-tertiary); }
+.amount-total-value { font-size: var(--font-lg); font-weight: 700; color: var(--text-primary); }

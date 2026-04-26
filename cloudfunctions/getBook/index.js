@@ -37,10 +37,17 @@ exports.main = async (event, context) => {
       .limit(1).get()
     const isMember = memRes.data.length > 0
 
-    // Get all members
-    const allMembersRes = await db.collection('members')
-      .where({ book_id: book._id }).get()
-    const members = allMembersRes.data
+    // Get all members (分页获取，默认 get() 最多返回 20 条)
+    var members = []
+    var batchSize = 100
+    var batch = await db.collection('members')
+      .where({ book_id: book._id }).limit(batchSize).get()
+    members = members.concat(batch.data)
+    while (batch.data.length === batchSize) {
+      batch = await db.collection('members')
+        .where({ book_id: book._id }).skip(members.length).limit(batchSize).get()
+      members = members.concat(batch.data)
+    }
 
     return {
       success: true,

@@ -21,7 +21,7 @@
     >
       <view class="invite-info">
         <text class="invite-title">邀请好友加入账本</text>
-        <text class="invite-desc">生成分享卡片，好友可认领影子身份</text>
+        <text class="invite-desc">分享给微信好友，好友可选择身份加入</text>
       </view>
       <view class="share-circle">
         <text class="share-icon">↗</text>

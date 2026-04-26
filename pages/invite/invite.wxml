@@ -38,10 +38,11 @@
       </view>
     </view>
 
-    <!-- 选择影子身份 -->
-    <view class="section" wx:if="{{unclaimedShadows.length > 0}}">
+    <!-- 选择身份 -->
+    <view class="section">
       <text class="section-label">选择你的身份</text>
       <view class="shadow-list">
+        <!-- 影子成员选项 -->
         <view
           class="shadow-item {{selectedShadowId === item._id ? 'selected' : ''}}"
           wx:for="{{unclaimedShadows}}"
@@ -52,14 +53,32 @@
           <view class="shadow-avatar">
             <text>👤</text>
           </view>
-          <text class="shadow-name">{{item.shadow_name}}</text>
+          <view class="shadow-body">
+            <text class="shadow-name">{{item.shadow_name}}</text>
+            <text class="shadow-hint">认领此身份</text>
+          </view>
           <view class="check-mark" wx:if="{{selectedShadowId === item._id}}">✓</view>
+        </view>
+
+        <!-- 以自己名称加入选项 -->
+        <view
+          class="shadow-item self-item {{joinMode === 'self' ? 'selected' : ''}}"
+          bindtap="onSelectSelf"
+        >
+          <view class="shadow-avatar self-avatar">
+            <text>😊</text>
+          </view>
+          <view class="shadow-body">
+            <text class="shadow-name">以自己名称加入</text>
+            <text class="shadow-hint">使用微信昵称作为新成员</text>
+          </view>
+          <view class="check-mark" wx:if="{{joinMode === 'self'}}">✓</view>
         </view>
       </view>
     </view>
 
     <!-- 你的称呼 -->
-    <view class="section" wx:if="{{unclaimedShadows.length > 0}}">
+    <view class="section">
       <text class="section-label">你的称呼</text>
       <input
         class="nickname-input"
@@ -74,12 +93,11 @@
     <!-- 操作按钮 -->
     <view class="action-area">
       <view
-        class="btn-join"
-        wx:if="{{unclaimedShadows.length > 0}}"
-        bindtap="onClaimAndJoin"
-        hover-class="hover-opacity"
+        class="btn-join {{!joinMode ? 'disabled' : ''}}"
+        bindtap="onJoin"
+        hover-class="{{joinMode ? 'hover-opacity' : ''}}"
       >
-        <text>{{joining ? '加入中...' : '认领并加入'}}</text>
+        <text>{{joining ? '加入中...' : (joinMode === 'shadow' ? '认领并加入' : '加入账本')}}</text>
       </view>
     </view>
   </view>

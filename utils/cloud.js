@@ -42,6 +42,12 @@ async function call(name, data = {}, options = {}) {
         if (showLoading) wx.hideLoading()
         throw err
       }
+      // Don't retry on cloud platform errors (function not deployed, etc.)
+      var errMsg = err.errMsg || err.message || ''
+      if (errMsg.indexOf('-501000') !== -1 || errMsg.indexOf('-501001') !== -1) {
+        if (showLoading) wx.hideLoading()
+        throw err
+      }
       // Retry on network errors
       if (attempt < retries) {
         await new Promise(r => setTimeout(r, 500 * (attempt + 1)))

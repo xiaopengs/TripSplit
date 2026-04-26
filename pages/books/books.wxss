@@ -181,6 +181,17 @@
   flex-shrink: 0;
 }
 
+.archived-badge {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: white;
+  background: #FF9500;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
 /* ============================================
    成员头像行
    ============================================ */
@@ -303,7 +314,7 @@
 
 .action-btn {
   font-size: var(--font-sm);
-  padding: 8rpx 20rpx;
+  padding: 16rpx 28rpx;
   border-radius: 20rpx;
   font-weight: 500;
 }
@@ -316,6 +327,11 @@
 .action-btn.danger {
   color: var(--color-danger);
   background: #FFF0F0;
+}
+
+.action-btn.warn {
+  color: #FF9500;
+  background: #FFF8F0;
 }
 
 /* ============================================

@@ -5,7 +5,6 @@ const bookService = require('../../services/book.service')
 const cache = require('../../utils/cache')
 const { SKIN_COLORS, CURRENCIES } = require('../../utils/constants')
 const { formatDate } = require('../../utils/date')
-const locationUtil = require('../../utils/location')
 
 Page({
   data: {
@@ -102,28 +101,6 @@ Page({
     const list = [...this.data.shadowMembers]
     list.splice(index, 1)
     this.setData({ shadowMembers: list })
-  },
-
-  onAutoDetect() {
-    wx.showLoading({ title: '定位中...', mask: true })
-    
-    locationUtil.getLocation()
-      .then(loc => {
-        wx.hideLoading()
-        const currency = locationUtil.detectCurrency(loc.city, '')
-        
-        const idx = this.data.currencies.findIndex(c => c.code === currency)
-        if (idx > -1) {
-          this.setData({ currencyIndex: idx })
-          wx.showToast({ title: `检测到 ${this.data.currencies[idx].name}`, icon: 'success' })
-        } else {
-          wx.showToast({ title: '默认使用人民币', icon: 'none' })
-        }
-      })
-      .catch(err => {
-        wx.hideLoading()
-        wx.showToast({ title: '定位失败，使用默认币种', icon: 'none' })
-      })
   },
 
   goBack() {

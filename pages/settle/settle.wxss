@@ -1,5 +1,5 @@
-/* 结算中心页样式 */
-.page { min-height: 100vh; background: var(--bg-primary); }
+/* 结算中心页样式 (共享结算样式在 app.wxss) */
+.page { height: 100vh; display: flex; flex-direction: column; background: var(--bg-primary); }
 
 .header {
   display: flex; align-items: center; justify-content: space-between;
@@ -11,7 +11,7 @@
 .header-title { font-size: var(--font-lg); font-weight: 600; }
 .header-placeholder { width: 64rpx; }
 
-.content { padding: 0 24rpx; }
+.content { flex: 1; height: 0; padding: 0 24rpx; }
 .settle-view { padding-bottom: 20rpx; }
 
 /* 汇总卡片 */
@@ -33,14 +33,8 @@
 }
 .setting-label { font-size: var(--font-base); color: var(--text-primary); }
 
-/* 转账卡片 */
+/* 转账卡片布局 */
 .transfer-list { padding-bottom: 20rpx; }
-
-.transfer-card {
-  background: white; border-radius: var(--border-radius-xl); padding: 36rpx 28rpx;
-  margin-bottom: 20rpx; box-shadow: var(--shadow-sm);
-}
-.transfer-card.card-done { opacity: 0.7; }
 
 .transfer-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -58,62 +52,17 @@
 .person-role { font-size: var(--font-xs); color: var(--text-tertiary); margin-top: 2rpx; }
 
 .arrow-circle {
-  width: 64rpx; height: 64rpx; border-radius: 50%;
+  width: 72rpx; height: 72rpx; border-radius: 50%;
   background: var(--color-primary); color: white;
   display: flex; align-items: center; justify-content: center;
   font-size: var(--font-base); font-weight: bold; flex-shrink: 0;
 }
 
-/* 每张卡片的金额行 */
-.amount-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin: 24rpx 0 8rpx;
-  padding: 20rpx 24rpx;
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-md);
-}
-.amount-info { display: flex; flex-direction: column; }
-.amount-total-label { font-size: var(--font-xs); color: var(--text-tertiary); }
-.amount-total-value { font-size: var(--font-lg); font-weight: 700; color: var(--text-primary); }
-
-.amount-settled-hint {
-  font-size: var(--font-xs);
-  color: var(--color-success);
-  margin-top: 4rpx;
-}
-
-.amount-pending, .amount-settled { display: flex; flex-direction: column; align-items: flex-end; }
-.pending-label, .settled-label, .forgiven-label { font-size: var(--font-xs); color: var(--text-tertiary); }
-.pending-value { font-size: var(--font-lg); font-weight: 700; color: var(--color-primary); }
-.settled-value { font-size: var(--font-lg); font-weight: 700; color: var(--color-success); }
-.forgiven-value { font-size: var(--font-lg); font-weight: 700; color: var(--text-tertiary); }
-
-/* 操作按钮 */
-.transfer-actions {
-  display: flex; gap: 16rpx; justify-content: center;
-}
+/* 操作按钮 (settle 页特有) */
 .action-btn {
   flex: 1; text-align: center; padding: 16rpx 0; border-radius: 40rpx; font-size: var(--font-base);
 }
 .action-btn.paid { background: #F2F2F7; color: var(--text-primary); }
-.action-btn.forgive { border: 2rpx solid var(--color-primary); color: var(--color-primary); background: transparent; }
-
-/* 已处理状态行 */
-.transfer-status {
-  display: flex; align-items: center; justify-content: center; gap: 24rpx;
-}
-.status-tag {
-  font-size: var(--font-base); font-weight: 500;
-  padding: 12rpx 32rpx; border-radius: 32rpx;
-}
-.status-paid { color: var(--color-success); background: rgba(52,199,89,0.1); }
-.status-forgiven { color: var(--text-tertiary); background: var(--bg-primary); }
-
-.undo-btn {
-  font-size: var(--font-sm); color: var(--text-secondary);
-  padding: 8rpx 20rpx; border: 1rpx solid var(--border-color);
-  border-radius: 24rpx;
-}
 
 /* 底部重置按钮 */
 .footer-area { padding: 0 0 12rpx; }
@@ -127,5 +76,3 @@
 .footer-tip {
   text-align: center; padding: 24rpx 0; font-size: var(--font-sm); color: var(--text-tertiary);
 }
-
-.hover-opacity { opacity: 0.7; }

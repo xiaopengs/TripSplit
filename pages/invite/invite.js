@@ -16,6 +16,9 @@ Page({
     unclaimedShadows: [],
     selectedShadowId: '',
 
+    // 'shadow' = selected a shadow member, 'self' = join with own name
+    joinMode: '',
+
     cloudBookData: null,
     cloudMembersData: null,
     myNickname: '',
@@ -41,7 +44,6 @@ Page({
 
   async _loadByToken(token) {
     try {
-      // Call joinBook to validate token and get book info
       const result = await cloudApi.call('joinBook', { token })
       if (result.alreadyMember) {
         this.setData({ loading: false, joined: true, bookName: result.bookName })
@@ -68,6 +70,9 @@ Page({
       const result = await cloudApi.call('getBook', { bookId, cloudId })
 
       if (result.isMember) {
+        // 已是成员 → 确保本地有这本书并设为当前
+        var imported = bookService.importCloudBook(result.book, result.members)
+        bookService.setCurrentBook(imported.id)
         this.setData({ loading: false, joined: true, bookName: result.book.name })
         return
       }
@@ -86,6 +91,8 @@ Page({
         bookName: result.book.name,
         memberCount: result.book.member_count,
         unclaimedShadows: unclaimed,
+        // 如果没有影子成员，默认选择"以自己名称加入"
+        joinMode: unclaimed.length === 0 ? 'self' : '',
         cloudBookData: result.book,
         cloudMembersData: result.members,
         myNickname: nickname
@@ -97,16 +104,35 @@ Page({
 
   onSelectShadow(e) {
     const id = e.currentTarget.dataset.id
-    this.setData({ selectedShadowId: this.data.selectedShadowId === id ? '' : id })
+    if (this.data.selectedShadowId === id) {
+      // 取消选择
+      this.setData({ selectedShadowId: '', joinMode: '' })
+    } else {
+      this.setData({ selectedShadowId: id, joinMode: 'shadow' })
+    }
+  },
+
+  onSelectSelf() {
+    if (this.data.joinMode === 'self') {
+      this.setData({ joinMode: '' })
+    } else {
+      this.setData({ joinMode: 'self', selectedShadowId: '' })
+    }
   },
 
   onNicknameInput(e) {
     this.setData({ myNickname: e.detail.value })
   },
 
-  async onClaimAndJoin() {
-    const { selectedShadowId, bookId, cloudBookData, cloudMembersData } = this.data
-    if (!selectedShadowId) {
+  async onJoin() {
+    const { joinMode, selectedShadowId, bookId, cloudBookData, cloudMembersData } = this.data
+
+    if (!joinMode) {
+      wx.showToast({ title: '请选择加入方式', icon: 'none' })
+      return
+    }
+
+    if (joinMode === 'shadow' && !selectedShadowId) {
       wx.showToast({ title: '请选择你的身份', icon: 'none' })
       return
     }
@@ -123,45 +149,50 @@ Page({
         cache.set('userInfo', userInfo)
       }
 
-      await cloudApi.call('claimShadow', {
-        bookId: bookId,
-        shadowMemberId: selectedShadowId,
-        nickname: nickname || undefined
-      })
+      if (joinMode === 'shadow') {
+        // 认领影子成员
+        await cloudApi.call('claimShadow', {
+          bookId: bookId,
+          shadowMemberId: selectedShadowId,
+          nickname: nickname || undefined
+        })
+      } else {
+        // 以自己名称直接加入
+        await cloudApi.call('directJoin', {
+          bookId: bookId,
+          nickname: nickname || undefined
+        })
+      }
 
-      // 认领成功 → 将云端账本数据写入本地缓存
+      // 加入成功 → 将云端账本数据写入本地缓存
       if (cloudBookData && cloudMembersData) {
-        const book = bookService.importCloudBook(cloudBookData, cloudMembersData)
-        bookService.setCurrentBook(book.id)
+        // 需要重新获取最新的成员列表（包含新加入的成员）
+        try {
+          const latestResult = await cloudApi.call('getBook', { bookId })
+          if (latestResult.members) {
+            const book = bookService.importCloudBook(latestResult.book, latestResult.members)
+            bookService.setCurrentBook(book.id)
+          }
+        } catch (syncErr) {
+          // 如果获取最新数据失败，用之前的数据
+          const book = bookService.importCloudBook(cloudBookData, cloudMembersData)
+          bookService.setCurrentBook(book.id)
+        }
 
-        // 后台同步账单（让 B 能看到 A 的流水）
-        bookService.syncCloudMembers(book.id).catch(() => {})
+        // 后台同步账单
+        bookService.syncCloudMembers(bookService.getCurrentBook().id).catch(() => {})
       }
 
       this.setData({ joined: true, joining: false })
       wx.showToast({ title: '加入成功', icon: 'success' })
     } catch (err) {
       this.setData({ joining: false })
-      wx.showToast({ title: err.message || '认领失败', icon: 'none' })
-    }
-  },
-
-  async onDirectJoin() {
-    const { bookId } = this.data
-    this.setData({ joining: true })
-    try {
-      const result = await cloudApi.call('generateInvite', { bookId, type: 'generic' })
-      // Actually, we should use joinBook with a token. But in share mode,
-      // we just claim the shadow. If no shadow selected, generate a generic invite.
-      // For direct join without shadow, use claimShadow is not right.
-      // Instead, create a real member directly via a simplified path.
-      // Actually we should just call joinBook with a fresh token.
-      const joinResult = await cloudApi.call('joinBook', { token: result.token })
-      this.setData({ joined: true, joining: false })
-      wx.showToast({ title: '加入成功', icon: 'success' })
-    } catch (err) {
-      this.setData({ joining: false })
-      wx.showToast({ title: err.message || '加入失败', icon: 'none' })
+      // 云函数未部署或平台级错误给出友好提示
+      var msg = err.message || ''
+      if (msg.indexOf('-501000') !== -1 || msg.indexOf('callFunction:fail') !== -1) {
+        msg = '服务暂时不可用，请稍后再试'
+      }
+      wx.showToast({ title: msg || '加入失败', icon: 'none' })
     }
   },
 

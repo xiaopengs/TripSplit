@@ -70,8 +70,8 @@
   >
     <!-- 只读提示条 -->
     <view class="readonly-banner" wx:if="{{readOnly}}">
-      <text class="readonly-text">该账本已被创建者删除，仅供查看</text>
-      <view class="readonly-actions">
+      <text class="readonly-text">{{currentBook.status === 'archived' ? '该账本已归档，仅供查看' : '该账本已被创建者删除，仅供查看'}}</text>
+      <view class="readonly-actions" wx:if="{{currentBook.status === 'deleted'}}">
         <view class="readonly-btn" bindtap="onDeleteBookLocal" hover-class="hover-opacity">
           <text>删除本地副本</text>
         </view>
@@ -101,7 +101,6 @@
           <view class="date-badge">
             <view class="date-badge-dot"></view>
             <text class="date-text">{{item.dateLabel}}</text>
-            <text class="location-text" wx:if="{{item.location}}">📍 {{item.location}}</text>
           </view>
           <view class="day-summary">
             <text class="day-count">{{item.items.length}}笔</text>
@@ -140,6 +139,7 @@
                 <text class="tl-note" wx:if="{{bill.note}}">{{bill.note}}</text>
                 <view class="tl-meta">
                   <text class="tl-payer">{{bill.payer_name_display}} 支付</text>
+                  <text class="tl-location" wx:if="{{bill.location}}">{{bill.location}}</text>
                 </view>
               </view>
             </view>
@@ -204,6 +204,10 @@
     scroll-y
     enhanced
     show-scrollbar="{{false}}"
+    refresher-enabled="{{true}}"
+    refresher-threshold="{{80}}"
+    refresher-triggered="{{settleRefreshing}}"
+    bindrefresherrefresh="onSettleRefresh"
     wx:if="{{activeTab === 'settle'}}"
   >
     <view class="settle-container">
@@ -219,7 +223,7 @@
         <text class="settle-title">结算方案</text>
         <text class="settle-subtitle">已优化为最少转账次数（{{settlementResult.totalTransfers}}笔）</text>
 
-        <view class="transfer-card {{item.status !== 'pending' ? 'card-done' : ''}}" wx:for="{{settlementResult.transfers}}" wx:key="id">
+        <view class="transfer-card" wx:for="{{settlementResult.transfers}}" wx:key="id" bindtap="onTransferTap" data-id="{{item.id}}">
           <view class="transfer-row">
             <view class="transfer-person from">
               <text class="person-label">付款人</text>
@@ -236,43 +240,12 @@
             </view>
           </view>
 
-          <!-- 金额行：总金额 + 待结算金额 -->
+          <!-- 金额 -->
           <view class="amount-row">
             <view class="amount-info">
               <text class="amount-total-label">结算金额</text>
               <text class="amount-total-value">{{item.amountDisplay}}</text>
-              <text class="amount-settled-hint" wx:if="{{item.settledAmount > 0 && item.pendingAmount > 0}}">已结 {{item.settledAmountDisplay}}</text>
             </view>
-            <view class="amount-pending" wx:if="{{item.status === 'pending'}}">
-              <text class="pending-label">待结算</text>
-              <text class="pending-value">{{item.pendingAmountDisplay}}</text>
-            </view>
-            <view class="amount-settled" wx:elif="{{item.status === 'paid'}}">
-              <text class="settled-label">已结算</text>
-              <text class="settled-value">{{item.amountDisplay}}</text>
-            </view>
-            <view class="amount-settled" wx:elif="{{item.status === 'forgiven'}}">
-              <text class="forgiven-label">已免除</text>
-              <text class="forgiven-value">{{item.amountDisplay}}</text>
-            </view>
-          </view>
-
-          <!-- pending：操作按钮 -->
-          <view class="transfer-actions" wx:if="{{item.status === 'pending'}}">
-            <view class="btn-mark-paid" bindtap="onMarkPaid" data-id="{{item.id}}" hover-class="hover-opacity">标记已付</view>
-            <view class="btn-forgive" bindtap="onForgive" data-id="{{item.id}}" hover-class="hover-opacity">下顿他请</view>
-          </view>
-
-          <!-- paid -->
-          <view class="transfer-status" wx:if="{{item.status === 'paid'}}">
-            <text class="status-tag status-paid">✓ 已付款</text>
-            <view class="undo-btn" bindtap="onUndoSettle" data-id="{{item.id}}" hover-class="hover-opacity">撤销</view>
-          </view>
-
-          <!-- forgiven -->
-          <view class="transfer-status" wx:if="{{item.status === 'forgiven'}}">
-            <text class="status-tag status-forgiven">已被免除</text>
-            <view class="undo-btn" bindtap="onUndoSettle" data-id="{{item.id}}" hover-class="hover-opacity">撤销</view>
           </view>
         </view>
       </view>
@@ -302,6 +275,7 @@
     visible="{{addPanelVisible}}"
     members="{{members}}"
     myMemberId="{{myMemberId}}"
+    editBill="{{editingBill}}"
     bind:onclose="closeAddPanel"
     bind:onsubmit="onAddBillSubmit"
   />
@@ -313,5 +287,13 @@
     currencySymbol="{{currencySymbol}}"
     bind:onclose="closeDetailPopup"
     bind:ondelete="onDeleteBill"
+    bind:onedit="onEditBill"
+  />
+
+  <!-- 结算明细弹窗 -->
+  <settle-detail-popup
+    visible="{{settleDetailVisible}}"
+    detail="{{settleDetailData}}"
+    bind:onclose="closeSettleDetail"
   />
 </view>

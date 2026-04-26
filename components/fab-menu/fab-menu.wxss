@@ -8,7 +8,7 @@
   width: 104rpx;
   height: 104rpx;
   border-radius: 50%;
-  background: #34C759;
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;

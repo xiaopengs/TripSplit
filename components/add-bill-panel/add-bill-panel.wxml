@@ -11,14 +11,14 @@
 <view class="panel {{visible ? 'show' : ''}}">
   <!-- 头部：标题 + 关闭 -->
   <view class="panel-header">
-    <text class="panel-title">记一笔</text>
+    <text class="panel-title">{{_editingBillId ? '编辑记录' : '记一笔'}}</text>
     <view class="close-btn" bindtap="onClose" hover-class="close-btn-hover">
       <text class="close-icon">✕</text>
     </view>
   </view>
 
   <!-- 滚动内容区 -->
-  <scroll-view class="panel-body" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="panel-body" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}">
     <!-- 金额显示 -->
     <view class="amount-display">
       <text class="amount-symbol">{{currencySymbol}}</text>
@@ -236,7 +236,7 @@
         bindtap="onSubmit"
         hover-class="{{amount > 0 && selectedCategory ? 'submit-hover' : ''}}"
       >
-        <text class="submit-text">记一笔{{amount > 0 ? ' ' + displayValue : ''}}</text>
+        <text class="submit-text">{{_editingBillId ? '保存修改' : '记一笔'}}{{amount > 0 ? ' ' + displayValue : ''}}</text>
       </view>
     </view>
 

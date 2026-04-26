@@ -22,17 +22,15 @@
 /* 面板容器 */
 .panel {
   position: fixed;
-  left: 24rpx;
-  right: 24rpx;
+  left: 0;
+  right: 0;
   bottom: 0;
-  height: 88vh;
+  height: 85vh;
   background: var(--bg-card);
-  border-radius: 32rpx 32rpx 0 0;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  width: auto;
-  max-width: calc(100vw - 48rpx);
   transform: translateY(100%);
   transition: transform 280ms var(--ease-out);
   overflow: hidden;
@@ -141,7 +139,7 @@
 }
 
 .mode-tab {
-  padding: 8rpx 24rpx;
+  padding: 14rpx 32rpx;
   font-size: var(--font-sm);
   color: var(--text-secondary);
   border-radius: 18rpx;
@@ -170,7 +168,7 @@
 .cat-chip {
   display: inline-flex;
   align-items: center;
-  padding: 12rpx 24rpx;
+  padding: 20rpx 24rpx;
   border-radius: 32rpx;
   background: var(--bg-primary);
   border: 2rpx solid transparent;
@@ -229,7 +227,7 @@
 .qtag {
   display: inline-flex;
   align-items: center;
-  padding: 10rpx 24rpx;
+  padding: 18rpx 28rpx;
   border-radius: 24rpx;
   background: var(--color-tag-bg);
   border: 1rpx solid var(--color-tag-border);
@@ -666,7 +664,7 @@
   flex: 1;
   padding: 16rpx 24rpx;
   background: var(--bg-primary);
-  border-radius: 16rpx;
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-base);
   box-sizing: border-box;
   height: 72rpx;

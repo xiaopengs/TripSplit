@@ -26,7 +26,8 @@ const testSuites = {
     require('./settle.test'),
     require('./book.test'),
     require('./bill.test'),
-    require('./member.test')
+    require('./member.test'),
+    require('./sync.test')
   ],
   // === 集成测试 ===
   integration: [

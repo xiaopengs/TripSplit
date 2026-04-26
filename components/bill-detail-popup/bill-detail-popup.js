@@ -61,7 +61,7 @@ Component({
     },
 
     onEdit() {
-      wx.showToast({ title: '编辑功能开发中', icon: 'none' })
+      this.triggerEvent('onedit', { bill: this.data.bill })
     },
 
     onDelete() {

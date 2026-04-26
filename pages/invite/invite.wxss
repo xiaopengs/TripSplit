@@ -144,6 +144,21 @@
   color: var(--text-primary);
 }
 
+.shadow-body {
+  flex: 1;
+}
+
+.shadow-hint {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  display: block;
+  margin-top: 4rpx;
+}
+
+.self-avatar {
+  background: rgba(52, 199, 89, 0.1);
+}
+
 .check-mark {
   width: 40rpx;
   height: 40rpx;
@@ -165,10 +180,10 @@
 /* === 昵称输入 === */
 .nickname-input {
   padding: 20rpx 24rpx;
-  background: var(--bg-card);
-  border-radius: var(--border-radius-lg);
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-md);
-  border: 2rpx solid var(--bg-primary);
+  border: none;
   height: 88rpx;
   box-sizing: border-box;
 }
@@ -185,4 +200,9 @@
   font-size: var(--font-md);
   font-weight: 600;
   box-shadow: 0 4rpx 16rpx rgba(52, 199, 89, 0.3);
+}
+
+.btn-join.disabled {
+  background: #C7C7CC;
+  box-shadow: none;
 }

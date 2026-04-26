@@ -51,8 +51,8 @@
 .close-btn {
   order: 0;
   align-self: flex-end;
-  width: 64rpx;
-  height: 64rpx;
+  width: 60rpx;
+  height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,8 +206,8 @@
 /* 影子成员标签 — 黄底深色文字 */
 .shadow-label {
   font-size: var(--font-xs);
-  background: #FFF3D0;
-  color: #8B6914;
+  background: var(--color-shadow-bg);
+  color: var(--color-shadow-text);
   padding: 2rpx 12rpx;
   border-radius: 8rpx;
   font-weight: 500;

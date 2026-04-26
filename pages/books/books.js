@@ -112,6 +112,7 @@ Page({
 
     var isCreator = !book.creator_id || book.creator_id === myOpenid
     var isDeleted = book.status === 'deleted'
+    var isArchived = book.status === 'archived'
 
     // 只传递卡片显示需要的字段，避免 setData 过大
     return {
@@ -132,7 +133,8 @@ Page({
       createdDateDisplay: createdDate,
       isCurrentBook: book.id === currentBookId,
       isCreator: isCreator,
-      isDeleted: isDeleted
+      isDeleted: isDeleted,
+      isArchived: isArchived
     }
   },
 
@@ -228,6 +230,34 @@ Page({
         }
       }
     })
+  },
+
+  onArchiveBook: function(e) {
+    var id = e.currentTarget.dataset.id
+    var name = e.currentTarget.dataset.name
+    var self = this
+
+    wx.showModal({
+      title: '归档账本',
+      content: '归档后所有成员将无法继续记账，但可查看已有数据。确定归档「' + name + '」？',
+      confirmColor: '#FF9500',
+      success: function(res) {
+        if (res.confirm) {
+          bookService.archiveBook(id)
+          wx.showToast({ title: '已归档', icon: 'success' })
+          self.loadBooks()
+        }
+      }
+    })
+  },
+
+  onUnarchiveBook: function(e) {
+    var id = e.currentTarget.dataset.id
+    var self = this
+
+    bookService.unarchiveBook(id)
+    wx.showToast({ title: '已恢复', icon: 'success' })
+    self.loadBooks()
   },
 
   // === 成员管理 ===

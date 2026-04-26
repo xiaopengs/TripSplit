@@ -13,14 +13,16 @@ Page({
     currencySymbol: '¥',
     roundToYuan: false,
     result: null,
-    myMemberId: ''
+    myMemberId: '',
+    settleDetailVisible: false,
+    settleDetailData: null,
+    refreshing: false
   },
 
   onLoad() {
     const book = bookService.getCurrentBook()
     if (!book) return
 
-    // 确定当前用户的成员 ID
     var myMemberId = ''
     try {
       var openid = getApp().globalData.openid
@@ -41,7 +43,6 @@ Page({
   },
 
   onShow() {
-    // 重新读取最新数据（可能已被 syncCloudMembers 更新）
     const book = bookService.getCurrentBook()
     if (!book) return
 
@@ -65,13 +66,55 @@ Page({
   },
 
   /**
-   * 根据当前用户视角解析成员名称
+   * 下拉刷新：同步云端数据
    */
+  onRefresh() {
+    var self = this
+    var book = bookService.getCurrentBook()
+    if (!book) {
+      this.setData({ refreshing: false })
+      return
+    }
+
+    this._calculate()
+
+    var hasCloud = book.cloud_id || book.cloud_db_id
+    if (!hasCloud) {
+      this.setData({ refreshing: false })
+      return
+    }
+
+    bookService.syncCloudMembers(book.id).then(function() {
+      var updated = bookService.getCurrentBook()
+      if (updated) {
+        var myMemberId = ''
+        try {
+          var openid = getApp().globalData.openid
+          if (openid && updated.members) {
+            var myMember = updated.members.find(function(m) { return m.user_id === openid })
+            if (myMember) myMemberId = myMember.id
+          }
+        } catch (e) {}
+
+        self.setData({
+          members: updated.members || [],
+          myMemberId: myMemberId
+        })
+      }
+      self._calculate()
+      self.setData({ refreshing: false })
+    }).catch(function() {
+      self.setData({ refreshing: false })
+    })
+  },
+
   _resolveName(memberId) {
     if (memberId === this.data.myMemberId && this.data.myMemberId) return '我'
     var member = this.data.members.find(function(m) { return m.id === memberId })
     if (member) {
-      // shadow_name（创建者起的别名）优先，nickname（微信昵称）次之
+      if (member.is_claimed || member.type === 'real') {
+        return member.nickname || member.shadow_name || '成员'
+      }
       return member.shadow_name || member.nickname || '成员'
     }
     return '未知'
@@ -84,7 +127,6 @@ Page({
       bookId: this.data.bookId
     })
 
-    // 预处理显示数据 — 使用当前用户视角
     var self = this
     if (result && result.transfers) {
       result.transfers.forEach(t => {
@@ -94,14 +136,19 @@ Page({
         t.to_name = toDisplay
         t.from_char = (fromDisplay || '?')[0] || '?'
         t.to_char = (toDisplay || '?')[0] || '?'
-        t.amountDisplay = formatAmount(t.totalAmount, this.data.currencySymbol)
-        t.pendingAmountDisplay = formatAmount(t.pendingAmount, this.data.currencySymbol)
-        t.settledAmountDisplay = formatAmount(t.settledAmount, this.data.currencySymbol)
+        t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)
       })
+      if (result.memberSummary) {
+        result.memberSummary.forEach(m => {
+          m.name = self._resolveName(m.id)
+          m.paidDisplay = formatAmount(m.paid, self.data.currencySymbol)
+          m.shareDisplay = formatAmount(m.share, self.data.currencySymbol)
+          m.netDisplay = formatAmount(Math.abs(m.net), self.data.currencySymbol)
+        })
+      }
     }
 
     result.totalAmountDisplay = formatAmount(result.totalAmount, this.data.currencySymbol)
-    result.pendingAmountDisplay = formatAmount(result.pendingAmount, this.data.currencySymbol)
 
     this.setData({ result })
   },
@@ -111,62 +158,22 @@ Page({
     this._calculate()
   },
 
-  onMarkPaid(e) {
-    const index = e.currentTarget.dataset.index
-    const transfer = this.data.result.transfers[index]
-    settleService.markTransferPaid(transfer)
-    wx.showToast({ title: '已标记', icon: 'success' })
-    this._calculate()
-  },
-
-  onForgive(e) {
-    const index = e.currentTarget.dataset.index
-    const transfer = this.data.result.transfers[index]
-    wx.showModal({
-      title: '免除债务', content: '确定让这笔账"下顿他请"吗？',
-      confirmText: '确认', confirmColor: '#34C759',
-      success: res => {
-        if (res.confirm) {
-          settleService.forgiveTransfer(transfer)
-          wx.showToast({ title: '已免除', icon: 'success' })
-          this._calculate()
-        }
+  onTransferTap(e) {
+    var index = e.currentTarget.dataset.index
+    var transfers = (this.data.result || {}).transfers || []
+    var t = transfers[index]
+    if (!t) return
+    this.setData({
+      settleDetailVisible: true,
+      settleDetailData: {
+        transfer: t,
+        memberSummary: (this.data.result || {}).memberSummary || []
       }
     })
   },
 
-  onUndo(e) {
-    const index = e.currentTarget.dataset.index
-    const transfers = this.data.result.transfers
-    const transfer = transfers[index]
-
-    wx.showModal({
-      title: '撤销操作',
-      content: '确定撤销此笔结算状态吗？',
-      confirmText: '撤销', confirmColor: '#FF9500',
-      success: res => {
-        if (res.confirm) {
-          settleService.unmarkTransfer(transfer.id)
-          wx.showToast({ title: '已撤销', icon: 'success' })
-          this._calculate()
-        }
-      }
-    })
-  },
-
-  onResetAll() {
-    wx.showModal({
-      title: '重置结算',
-      content: '确定重置所有结算状态吗？所有已标记的转账将恢复为待结算。',
-      confirmText: '全部重置', confirmColor: '#FF3B30',
-      success: res => {
-        if (res.confirm) {
-          settleService.resetAllStatuses()
-          wx.showToast({ title: '已重置', icon: 'success' })
-          this._calculate()
-        }
-      }
-    })
+  closeSettleDetail() {
+    this.setData({ settleDetailVisible: false })
   },
 
   goBack() { wx.navigateBack() }

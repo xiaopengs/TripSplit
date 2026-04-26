@@ -8,7 +8,7 @@
     <view class="header-placeholder"></view>
   </view>
 
-  <scroll-view class="content safe-bottom" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="content" scroll-y enhanced show-scrollbar="{{false}}" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
     <!-- 空状态 -->
     <view class="empty-state" wx:if="{{!result || result.transfers.length === 0}}">
       <text class="empty-emoji">🧮</text>
@@ -18,7 +18,7 @@
 
     <!-- 结算方案 -->
     <view class="settle-view" wx:else>
-      <!-- 汇总卡片：仅显示笔数和人数 -->
+      <!-- 汇总卡片 -->
       <view class="summary-card">
         <text class="summary-title">智能结算方案</text>
         <text class="summary-optimized">已优化为最少转账（{{result.totalTransfers}}笔）· {{result.memberCount}}人参与</text>
@@ -32,7 +32,7 @@
 
       <!-- 转账建议列表 -->
       <view class="transfer-list">
-        <view class="transfer-card {{item.status !== 'pending' ? 'card-done' : ''}}" wx:for="{{result.transfers}}" wx:key="id">
+        <view class="transfer-card" wx:for="{{result.transfers}}" wx:key="id" bindtap="onTransferTap" data-index="{{index}}">
           <!-- 人物信息 -->
           <view class="transfer-header">
             <view class="person from-person">
@@ -52,57 +52,24 @@
             </view>
           </view>
 
-          <!-- 金额行：总金额 + 待结算金额 -->
+          <!-- 金额 -->
           <view class="amount-row">
-            <view class="amount-info">
-              <text class="amount-total-label">结算金额</text>
-              <text class="amount-total-value">{{item.amountDisplay}}</text>
-              <text class="amount-settled-hint" wx:if="{{item.settledAmount > 0 && item.pendingAmount > 0}}">已结 {{item.settledAmountDisplay}}</text>
-            </view>
-            <view class="amount-pending" wx:if="{{item.status === 'pending'}}">
-              <text class="pending-label">待结算</text>
-              <text class="pending-value">{{item.pendingAmountDisplay}}</text>
-            </view>
-            <view class="amount-settled" wx:elif="{{item.status === 'paid'}}">
-              <text class="settled-label">已结算</text>
-              <text class="settled-value">{{item.amountDisplay}}</text>
-            </view>
-            <view class="amount-settled" wx:elif="{{item.status === 'forgiven'}}">
-              <text class="forgiven-label">已免除</text>
-              <text class="forgiven-value">{{item.amountDisplay}}</text>
-            </view>
+            <text class="amount-value">{{item.amountDisplay}}</text>
           </view>
-
-          <!-- pending 状态：操作按钮 -->
-          <view class="transfer-actions" wx:if="{{item.status === 'pending'}}">
-            <view class="action-btn paid" bindtap="onMarkPaid" data-index="{{index}}" hover-class="hover-opacity">标记已付</view>
-            <view class="action-btn forgive" bindtap="onForgive" data-index="{{index}}" hover-class="hover-opacity">下顿他请</view>
-          </view>
-
-          <!-- paid/forgiven 状态：状态标签 + 撤销 -->
-          <view class="transfer-status" wx:if="{{item.status === 'paid'}}">
-            <text class="status-tag status-paid">✓ 已付款</text>
-            <view class="undo-btn" bindtap="onUndo" data-index="{{index}}" hover-class="hover-opacity">撤销</view>
-          </view>
-
-          <view class="transfer-status" wx:if="{{item.status === 'forgiven'}}">
-            <text class="status-tag status-forgiven">已被免除</text>
-            <view class="undo-btn" bindtap="onUndo" data-index="{{index}}" hover-class="hover-opacity">撤销</view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 底部操作区 -->
-      <view class="footer-area" wx:if="{{result.settledCount > 0}}">
-        <view class="reset-all-btn" bindtap="onResetAll" hover-class="hover-opacity">
-          <text>重置所有结算状态</text>
         </view>
       </view>
 
       <!-- 底部提示 -->
       <view class="footer-tip">
-        <text>💡 新增记账后，已结算状态会自动重置</text>
+        <text>💡 下拉可刷新同步最新数据</text>
       </view>
     </view>
   </scroll-view>
+
+  <!-- 结算明细弹窗 -->
+  <settle-detail-popup
+    visible="{{settleDetailVisible}}"
+    detail="{{settleDetailData}}"
+    bind:onclose="closeSettleDetail"
+  />
 </view>

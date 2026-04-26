@@ -50,6 +50,8 @@ Page({
     addPanelVisible: false,
     detailVisible: false,
     selectedBill: null,
+    settleDetailVisible: false,
+    settleDetailData: null,
 
     // 导航栏高度
     navPaddingTop: 0,
@@ -58,14 +60,22 @@ Page({
     // 刷新状态
     flowRefreshing: false,
 
-    // 只读模式（账本已被创建者删除）
-    readOnly: false
+    // 结算tab刷新
+    settleRefreshing: false,
+
+    // 只读模式（账本已被创建者删除或已归档）
+    readOnly: false,
+
+    // 编辑账单
+    editingBill: null
   },
 
   onLoad(options) {
     this._calcNavHeight()
-    this._handleEntryOptions(options)
-    this.loadBookData()
+    var redirecting = this._handleEntryOptions(options)
+    if (!redirecting) {
+      this.loadBookData()
+    }
     this._setupStoreSubscriptions()
   },
 
@@ -90,6 +100,21 @@ Page({
     // 再从云端同步
     this._syncAndRefresh(() => {
       this.setData({ flowRefreshing: false })
+    })
+  },
+
+  /**
+   * 结算区域下拉刷新
+   */
+  onSettleRefresh() {
+    // 重新计算结算
+    if (this.data.currentBook) {
+      this._calculateSettlement()
+    }
+
+    // 同步云端数据
+    this._syncAndRefresh(() => {
+      this.setData({ settleRefreshing: false })
     })
   },
 
@@ -128,18 +153,27 @@ Page({
 
   _handleEntryOptions(options) {
     const bookId = options && options.bookId
+    const cloudId = options && options.cloudId
     const from = options && options.from
-    if (!bookId) return
+    if (!bookId && !cloudId) return false
 
-    const switched = bookService.setCurrentBook(bookId)
-    if (switched) return
-
+    // 分享链接 → 跳转邀请页面（统一入口）
     if (from === 'share') {
-      // 非本机账本 → 跳转邀请页面
+      var params = []
+      if (cloudId) params.push('cloudId=' + encodeURIComponent(cloudId))
+      if (bookId) params.push('bookId=' + encodeURIComponent(bookId))
+      params.push('from=share')
       wx.redirectTo({
-        url: `/pages/invite/invite?bookId=${encodeURIComponent(bookId)}&from=share`
+        url: '/pages/invite/invite?' + params.join('&')
       })
+      return true
     }
+
+    // 非分享场景：尝试切换到已有账本
+    if (bookId) {
+      bookService.setCurrentBook(bookId)
+    }
+    return false
   },
 
   onShareAppMessage(res) {
@@ -209,7 +243,7 @@ Page({
       bookList: allBooks,
       currentBookIndex: currentIdx >= 0 ? currentIdx : 0,
       myMemberId: this._getMyMemberId(book),
-      readOnly: book.status === 'deleted'
+      readOnly: book.status === 'deleted' || book.status === 'archived'
     })
 
     this._updatePendingCount(book.members || [])
@@ -304,7 +338,9 @@ Page({
 
   onFabSelect(e) {
     if (this.data.readOnly) {
-      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
+      var status = this.data.currentBook && this.data.currentBook.status
+      var msg = status === 'archived' ? '该账本已归档，无法记账' : '该账本已被创建者删除，无法记账'
+      wx.showToast({ title: msg, icon: 'none' })
       return
     }
     const key = e.detail.key
@@ -336,48 +372,72 @@ Page({
       return
     }
     if (this.data.readOnly) {
-      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
+      var status = this.data.currentBook && this.data.currentBook.status
+      var msg = status === 'archived' ? '该账本已归档，无法记账' : '该账本已被创建者删除，无法记账'
+      wx.showToast({ title: msg, icon: 'none' })
       return
     }
     this.setData({ addPanelVisible: true })
   },
 
   closeAddPanel() {
-    this.setData({ addPanelVisible: false })
+    this.setData({ addPanelVisible: false, editingBill: null })
   },
 
   async onAddBillSubmit(e) {
     const formData = e.detail
-    
+
     try {
       app.showLoading('保存中...')
-      
-      const bill = billService.createBill({
-        bookId: this.data.currentBook.id,
-        amount: formData.amount,
-        category: formData.category,
-        note: formData.note,
-        images: formData.images || [],
-        location: formData.location || '',
-        payerId: formData.payerId || (this.data.members[0] && this.data.members[0].id),
-        payerName: formData.payerName || (this.data.members[0] && (this.data.members[0].nickname || '我')),
-        memberIds: formData.memberIds || this.data.members.map(m => m.id),
-        members: this.data.members,
-        splitType: formData.splitType || 'equal',
-        customSplits: formData.customSplits,
-        paidAt: formData.paidAt || new Date().toISOString(),
-        source: 'manual'
-      })
 
-      app.hideLoading()
-      this.closeAddPanel()
-      this.refreshData()
-      
-      wx.showToast({ title: '已记录', icon: 'success' })
+      if (formData._editingBillId) {
+        // 编辑模式：更新现有账单
+        billService.updateBill(formData._editingBillId, {
+          amount: formData.amount,
+          category: formData.category ? formData.category.key : '',
+          category_name: formData.category ? formData.category.name : '',
+          note: formData.note || '',
+          images: formData.images || [],
+          location: formData.location || '',
+          payer_id: formData.payerId,
+          payer_name: formData.payerName,
+          splits: formData.customSplits || [],
+          split_type: formData.splitType || 'equal',
+          paid_at: formData.paidAt
+        })
+
+        app.hideLoading()
+        this.setData({ addPanelVisible: false, editingBill: null })
+        this.refreshData()
+        wx.showToast({ title: '已保存', icon: 'success' })
+      } else {
+        // 新建模式
+        const bill = billService.createBill({
+          bookId: this.data.currentBook.id,
+          amount: formData.amount,
+          category: formData.category,
+          note: formData.note,
+          images: formData.images || [],
+          location: formData.location || '',
+          payerId: formData.payerId || (this.data.members[0] && this.data.members[0].id),
+          payerName: formData.payerName || (this.data.members[0] && (this.data.members[0].nickname || '我')),
+          memberIds: formData.memberIds || this.data.members.map(m => m.id),
+          members: this.data.members,
+          splitType: formData.splitType || 'equal',
+          customSplits: formData.customSplits,
+          paidAt: formData.paidAt || new Date().toISOString(),
+          source: 'manual'
+        })
+
+        app.hideLoading()
+        this.closeAddPanel()
+        this.refreshData()
+        wx.showToast({ title: '已记录', icon: 'success' })
+      }
     } catch (err) {
       app.hideLoading()
-      console.error('Create bill error:', err)
-      wx.showToast({ title: '记录失败', icon: 'none' })
+      console.error('Save bill error:', err)
+      wx.showToast({ title: '保存失败', icon: 'none' })
     }
   },
 
@@ -389,7 +449,9 @@ Page({
       return
     }
     if (this.data.readOnly) {
-      wx.showToast({ title: '该账本已被创建者删除，无法记账', icon: 'none' })
+      var status = this.data.currentBook && this.data.currentBook.status
+      var msg = status === 'archived' ? '该账本已归档，无法记账' : '该账本已被创建者删除，无法记账'
+      wx.showToast({ title: msg, icon: 'none' })
       return
     }
 
@@ -538,6 +600,17 @@ Page({
     this.setData({ detailVisible: false, selectedBill: null })
   },
 
+  onEditBill(e) {
+    var bill = e.detail && e.detail.bill
+    if (!bill) return
+    this.setData({
+      detailVisible: false,
+      selectedBill: null,
+      editingBill: bill,
+      addPanelVisible: true
+    })
+  },
+
   onDeleteBill(e) {
     const id = e.detail && e.detail.id
     if (!id) return
@@ -555,49 +628,22 @@ Page({
 
   // === 结算操作 ===
 
-  onMarkPaid(e) {
-    const id = e.currentTarget.dataset.id
-    const transfer = this.data.settlementResult.transfers.find(t => t.id === id)
-    if (!transfer) return
-    settleService.markTransferPaid(transfer)
-    this._calculateSettlement()
-    wx.showToast({ title: '已标记', icon: 'success' })
-  },
-
-  onForgive(e) {
-    const id = e.currentTarget.dataset.id
-    const transfer = this.data.settlementResult.transfers.find(t => t.id === id)
-    if (!transfer) return
-    wx.showModal({
-      title: '确认免除',
-      content: '确定让这笔账"下顿他请"吗？',
-      confirmText: '确认',
-      confirmColor: '#34C759',
-      success: res => {
-        if (res.confirm) {
-          settleService.forgiveTransfer(transfer)
-          this._calculateSettlement()
-          wx.showToast({ title: '已免除', icon: 'success' })
-        }
+  onTransferTap(e) {
+    var id = e.currentTarget.dataset.id
+    var transfer = (this.data.settlementResult || {}).transfers || []
+    var t = transfer.find(function(item) { return item.id === id })
+    if (!t) return
+    this.setData({
+      settleDetailVisible: true,
+      settleDetailData: {
+        transfer: t,
+        memberSummary: (this.data.settlementResult || {}).memberSummary || []
       }
     })
   },
 
-  onUndoSettle(e) {
-    const id = e.currentTarget.dataset.id
-    wx.showModal({
-      title: '撤销操作',
-      content: '确定撤销此笔结算状态吗？',
-      confirmText: '撤销',
-      confirmColor: '#FF9500',
-      success: res => {
-        if (res.confirm) {
-          settleService.unmarkTransfer(id)
-          this._calculateSettlement()
-          wx.showToast({ title: '已撤销', icon: 'success' })
-        }
-      }
-    })
+  closeSettleDetail() {
+    this.setData({ settleDetailVisible: false })
   },
 
   // === 创建账本跳转 ===
@@ -694,12 +740,8 @@ Page({
     if (bill.payer_id === myMemberId && myMemberId) {
       return '我'
     }
-    // 从成员列表中查找实际名称
     var member = members.find(function(m) { return m.id === bill.payer_id })
-    if (member) {
-      // shadow_name（创建者起的别名）优先，nickname（微信昵称）次之
-      return member.shadow_name || member.nickname || '成员'
-    }
+    if (member) return this._resolveDisplayName(member)
     return bill.payer_name || '未知'
   },
 
@@ -714,6 +756,24 @@ Page({
     }
   },
 
+  /**
+   * 统一名称解析：已认领/真实成员 → nickname 优先（微信用户名），影子成员 → shadow_name 优先
+   */
+  _resolveDisplayName(member) {
+    if (member.is_claimed || member.type === 'real') {
+      return member.nickname || member.shadow_name || '成员'
+    }
+    return member.shadow_name || member.nickname || '成员'
+  },
+
+  _resolveMemberName(memberId) {
+    var myMemberId = this.data.myMemberId
+    if (memberId === myMemberId && myMemberId) return '我'
+    var member = (this.data.members || []).find(function(m) { return m.id === memberId })
+    if (member) return this._resolveDisplayName(member)
+    return '未知'
+  },
+
   _calculateSettlement() {
     if (!this.data.currentBook) return
 
@@ -724,14 +784,24 @@ Page({
     )
 
     if (result.transfers.length > 0) {
+      var self = this
       result.transfers.forEach(t => {
-        t.amountDisplay = formatAmount(t.totalAmount, this.data.currencySymbol)
-        t.pendingAmountDisplay = formatAmount(t.pendingAmount, this.data.currencySymbol)
-        t.settledAmountDisplay = formatAmount(t.settledAmount, this.data.currencySymbol)
+        t.from_name = self._resolveMemberName(t.from_id)
+        t.to_name = self._resolveMemberName(t.to_id)
+        t.amountDisplay = formatAmount(t.amount, this.data.currencySymbol)
       })
+      // 格式化 memberSummary
+      if (result.memberSummary) {
+        result.memberSummary.forEach(m => {
+          m.name = self._resolveMemberName(m.id)
+          m.paidDisplay = formatAmount(m.paid, this.data.currencySymbol)
+          m.shareDisplay = formatAmount(m.share, this.data.currencySymbol)
+          m.netDisplay = formatAmount(Math.abs(m.net), this.data.currencySymbol)
+        })
+      }
     }
 
-    result.pendingAmountDisplay = formatAmount(result.pendingAmount, this.data.currencySymbol)
+    result.totalAmountDisplay = formatAmount(result.totalAmount, this.data.currencySymbol)
 
     this.setData({ settlementResult: result })
   },
