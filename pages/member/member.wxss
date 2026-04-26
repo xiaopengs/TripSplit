@@ -120,7 +120,8 @@
   .invite-arrow { font-size: var(--font-md); }
 }
 .avatar.shadow-avatar { background: #E5E5EA; color: var(--text-secondary); font-size: var(--font-sm); }
-.avatar.shadow-avatar .icon-person { color: var(--text-secondary); }
+.avatar.shadow-avatar .icon-person::before,
+.avatar.shadow-avatar .icon-person::after { background: #AEAEB2; }
 
 .member-info { flex: 1; min-width: 0; overflow: hidden; }
 .name {

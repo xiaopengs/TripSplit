@@ -113,7 +113,7 @@
       <view class="shadow-list">
         <view class="shadow-tag" wx:for="{{shadowMembers}}" wx:key="index">
           <view class="icon-person-sm"></view><text>{{item}}</text>
-          <text class="shadow-remove" data-index="{{index}}" catchtap="removeShadow"><view class="icon-close-sm"></view></text>
+          <text class="shadow-remove" data-index="{{index}}" catchtap="removeShadow">✕</text>
         </view>
       </view>
 

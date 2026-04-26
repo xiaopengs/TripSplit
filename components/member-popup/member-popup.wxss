@@ -272,8 +272,9 @@
   border: 2rpx dashed #D1D1D6;
 }
 
-.avatar-shadow .icon-person {
-  color: var(--text-secondary);
+.avatar-shadow .icon-person::before,
+.avatar-shadow .icon-person::after {
+  background: var(--text-secondary);
 }
 
 /* "?" 小圆标 */

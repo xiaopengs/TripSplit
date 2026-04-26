@@ -4,7 +4,7 @@
 <view class="popup-container {{visible ? 'show' : ''}}">
   <!-- 关闭按钮 -->
   <view class="close-btn" bindtap="onClose">
-    <view class="icon-close"></view>
+    <text>✕</text>
   </view>
 
   <block wx:if="{{detail && detail.transfer}}">

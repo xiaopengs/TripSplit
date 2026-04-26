@@ -13,7 +13,7 @@
   <view class="panel-header">
     <text class="panel-title">{{_editingBillId ? '编辑记录' : '记一笔'}}</text>
     <view class="close-btn" bindtap="onClose" hover-class="close-btn-hover">
-      <view class="icon-close"></view>
+      <text class="close-icon">✕</text>
     </view>
   </view>
 

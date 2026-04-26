@@ -348,27 +348,6 @@ button::after {
 
 /* === Global CSS Icon Library === */
 
-/* Close ✕ — X mark */
-.icon-close {
-  width: 14px;
-  height: 14px;
-  position: relative;
-  flex-shrink: 0;
-}
-.icon-close::before,
-.icon-close::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: currentColor;
-  border-radius: 1px;
-}
-.icon-close::before { transform: translateY(-50%) rotate(45deg); }
-.icon-close::after { transform: translateY(-50%) rotate(-45deg); }
-
 /* Back ← — chevron left */
 .icon-back {
   width: 10px;
@@ -411,7 +390,7 @@ button::after {
   transform: rotate(45deg);
 }
 
-/* Person silhouette 👤 */
+/* Person silhouette 👤 — head + shoulders */
 .icon-person {
   width: 16px;
   height: 18px;
@@ -427,7 +406,7 @@ button::after {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--text-secondary);
 }
 .icon-person::after {
   content: '';
@@ -438,14 +417,14 @@ button::after {
   width: 14px;
   height: 8px;
   border-radius: 8px 8px 3px 3px;
-  background: currentColor;
+  background: var(--text-secondary);
 }
 
 /* Clock 🕐 */
 .icon-clock {
   width: 16px;
   height: 16px;
-  border: 2px solid currentColor;
+  border: 2px solid var(--text-secondary);
   border-radius: 50%;
   position: relative;
   flex-shrink: 0;
@@ -457,7 +436,7 @@ button::after {
   left: 50%;
   width: 2px;
   height: 5px;
-  background: currentColor;
+  background: var(--text-secondary);
   transform: translate(-50%, -100%);
   border-radius: 1px;
 }
@@ -468,7 +447,7 @@ button::after {
   left: 50%;
   width: 4px;
   height: 2px;
-  background: currentColor;
+  background: var(--text-secondary);
   transform: translate(0, -50%);
   border-radius: 1px;
 }
@@ -487,7 +466,7 @@ button::after {
   left: 0;
   width: 18px;
   height: 11px;
-  border: 2px solid currentColor;
+  border: 2px solid var(--text-secondary);
   border-radius: 3px;
 }
 .icon-camera::after {
@@ -499,7 +478,7 @@ button::after {
   width: 6px;
   height: 3px;
   border-radius: 2px 2px 0 0;
-  background: currentColor;
+  background: var(--text-secondary);
 }
 
 /* Pin 📍 */
@@ -518,7 +497,7 @@ button::after {
   width: 10px;
   height: 10px;
   border-radius: 50% 50% 50% 0;
-  background: currentColor;
+  background: var(--text-secondary);
 }
 .icon-pin::after {
   content: '';
@@ -548,7 +527,7 @@ button::after {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: currentColor;
+  background: #B8922A;
 }
 .icon-bulb::after {
   content: '';
@@ -559,7 +538,7 @@ button::after {
   width: 6px;
   height: 5px;
   border-radius: 0 0 2px 2px;
-  border: 2px solid currentColor;
+  border: 2px solid #B8922A;
   border-top: none;
 }
 
@@ -567,7 +546,7 @@ button::after {
 .icon-notebook {
   width: 20px;
   height: 24px;
-  border: 2px solid currentColor;
+  border: 2px solid var(--text-primary);
   border-radius: 2px 6px 6px 2px;
   position: relative;
   flex-shrink: 0;
@@ -579,7 +558,7 @@ button::after {
   left: 0;
   right: 0;
   height: 2px;
-  background: currentColor;
+  background: var(--text-primary);
   transform: translateY(-50%);
 }
 
@@ -598,7 +577,7 @@ button::after {
   transform: translateY(-50%);
   width: 10px;
   height: 8px;
-  border: 2px solid currentColor;
+  border: 2px solid var(--color-primary);
   border-radius: 4px;
   border-right: none;
 }
@@ -610,7 +589,7 @@ button::after {
   transform: translateY(-50%);
   width: 10px;
   height: 8px;
-  border: 2px solid currentColor;
+  border: 2px solid var(--color-primary);
   border-radius: 4px;
   border-left: none;
 }

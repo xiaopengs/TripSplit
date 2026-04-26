@@ -92,30 +92,35 @@
   justify-content: center;
 }
 
-/* CSS 图标：成员 */
+/* CSS 图标：成员（两人 — 头 + 肩膀） */
 .icon-members {
-  width: 34rpx;
-  height: 28rpx;
+  width: 36rpx;
+  height: 32rpx;
   position: relative;
+  flex-shrink: 0;
 }
-.icon-members::before,
+/* 两人合用的肩膀弧线 */
+.icon-members::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 2rpx;
+  width: 32rpx;
+  height: 14rpx;
+  border-radius: 14rpx 14rpx 4rpx 4rpx;
+  background: rgba(255, 255, 255, 0.4);
+}
+/* 两个头部圆点（第二个用 box-shadow） */
 .icon-members::after {
   content: '';
   position: absolute;
-  border-radius: 50%;
-  border: 3rpx solid rgba(255,255,255,0.9);
-}
-.icon-members::before {
-  width: 20rpx;
-  height: 20rpx;
   top: 0;
-  left: 0;
-}
-.icon-members::after {
-  width: 18rpx;
-  height: 18rpx;
-  top: 6rpx;
-  left: 12rpx;
+  left: 4rpx;
+  width: 13rpx;
+  height: 13rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 15rpx 5rpx 0 rgba(255, 255, 255, 0.95);
 }
 
 .member-badge-count {
