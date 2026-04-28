@@ -90,7 +90,7 @@
           maxlength="50"
         />
         <view class="note-image-btn" bindtap="chooseImage" wx:if="{{images.length < 3}}" hover-class="note-image-btn-hover">
-          <view class="note-image-icon"><view class="icon-camera"></view></view>
+          <view class="note-image-icon"><view class="icon-image"></view></view>
         </view>
       </view>
       <!-- 已上传图片 -->

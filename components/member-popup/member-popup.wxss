@@ -196,9 +196,6 @@
   font-weight: 700;
 }
 
-.share-circle .icon-share {
-  color: #FFFFFF;
-}
 
 /* ============================================
    区块通用

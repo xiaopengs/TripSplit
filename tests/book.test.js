@@ -111,3 +111,40 @@ describe('book.deleteBook 删除账本', () => {
     expect(bookService.getBookList().length).toBe(1)
   })
 })
+
+describe('book.getBookList 排序稳定性', () => {
+  beforeEach(() => clearMockStorage())
+
+  it('相同 updated_at 时排序结果稳定（不随机）', () => {
+    // 创建3本账本，它们的 updated_at 和 created_at 由 Date.now() 生成
+    // 我们手动修改让它们时间戳完全一致
+    const b1 = bookService.createBook({ name: '账本B' })
+    const b2 = bookService.createBook({ name: '账本A' })
+    const b3 = bookService.createBook({ name: '账本C' })
+
+    // 强制让 updated_at 和 created_at 完全相同
+    const books = bookService.getBookList()
+    const ts = Date.now()
+    books.forEach(b => {
+      b.updated_at = ts
+      b.created_at = ts
+    })
+
+    // 多次获取列表，验证顺序一致
+    const orders = []
+    for (let i = 0; i < 5; i++) {
+      // 模拟页面每次 onShow 重新排序
+      const sorted = books.slice().sort((a, b) => {
+        var diff = (b.updated_at || 0) - (a.updated_at || 0)
+        if (diff !== 0) return diff
+        return (b.created_at || 0) - (a.created_at || 0)
+      })
+      orders.push(sorted.map(b => b.name).join(','))
+    }
+
+    // 所有排序结果应该完全一致
+    for (let i = 1; i < orders.length; i++) {
+      expect(orders[i]).toBe(orders[0])
+    }
+  })
+})

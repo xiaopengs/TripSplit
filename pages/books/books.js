@@ -156,9 +156,19 @@ Page({
 
     var sorted = books.slice()
     if (sortBy === 'updated') {
-      sorted.sort(function(a, b) { return (b.updated_at || 0) - (a.updated_at || 0) })
+      sorted.sort(function(a, b) {
+        var diff = (b.updated_at || 0) - (a.updated_at || 0)
+        if (diff !== 0) return diff
+        // 相同 updated_at 时按 created_at 降序
+        return (b.created_at || 0) - (a.created_at || 0)
+      })
     } else {
-      sorted.sort(function(a, b) { return (b.created_at || 0) - (a.created_at || 0) })
+      sorted.sort(function(a, b) {
+        var diff = (b.created_at || 0) - (a.created_at || 0)
+        if (diff !== 0) return diff
+        // 相同 created_at 时按名称排序
+        return (a.name || '').localeCompare(b.name || '')
+      })
     }
 
     this.setData({ filteredBooks: sorted })

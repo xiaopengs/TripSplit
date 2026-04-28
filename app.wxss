@@ -369,25 +369,46 @@ button::after {
   flex-shrink: 0;
 }
 
-/* Share arrow ↗ */
+/* Share ↗ — curved forward arrow (Lucide icon) */
 .icon-share {
-  width: 14px;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KICA8IS0tIFN3ZWVwaW5nIGFyYyBmcm9tIGJvdHRvbS1sZWZ0IGN1cnZpbmcgdXAgdG8gcmlnaHQgLS0+CiAgPHBhdGggZD0iTTcgMTdDNyAxNyA4IDcgMTcgNyIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPgogIDwhLS0gRmlsbGVkIHRyaWFuZ3VsYXIgYXJyb3doZWFkIGF0IHRoZSBlbmQgb2YgdGhlIGFyYywgcG9pbnRpbmcgcmlnaHQgLS0+CiAgPHBvbHlnb24gcG9pbnRzPSIxNSwzIDIxLDcuNSAxNSwxMiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+/* Image/Photo 🖼 — frame + sun dot + mountain */
+.icon-image {
+  width: 16px;
   height: 14px;
-  border-top: 2.5px solid currentColor;
-  border-right: 2.5px solid currentColor;
+  border: 2px solid currentColor;
+  border-radius: 2px;
   position: relative;
   flex-shrink: 0;
 }
-.icon-share::after {
+.icon-image::before {
   content: '';
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 8px;
-  height: 8px;
-  border-top: 2.5px solid currentColor;
-  border-right: 2.5px solid currentColor;
-  transform: rotate(45deg);
+  top: 1px;
+  left: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.icon-image::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: 1px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 6px solid currentColor;
 }
 
 /* Person silhouette 👤 — head + shoulders */

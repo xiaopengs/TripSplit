@@ -1,1 +1,1 @@
-{"component": true, "usingComponents": {"amount-keyboard": "/components/amount-keyboard/amount-keyboard"}}
+{"component": true, "styleIsolation": "apply-shared", "usingComponents": {"amount-keyboard": "/components/amount-keyboard/amount-keyboard"}}
