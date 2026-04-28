@@ -36,68 +36,84 @@ Page({
   },
 
   onShow: function() {
-    this.loadBooks()
+    // 1) 立即从本地缓存渲染，用户看到的是上一次的数据，无闪屏
+    this._loadBooksFromCache()
+
+    // 2) 后台同步云端数据（仅首次进入触发一次，所有同步完成后统一刷新一次）
+    if (!this._synced) {
+      this._synced = true
+      this._syncAllCloudMembers()
+    }
   },
 
   onRefresh: function() {
-    this.setData({ refreshing: true })
-    this.loadBooks()
-    this.setData({ refreshing: false })
+    var self = this
+    // 先刷本地
+    this._loadBooksFromCache()
+    // 再同步云端，完成后关闭刷新动画
+    this._syncAllCloudMembers(function() {
+      self.setData({ refreshing: false })
+    })
   },
 
   // === 核心数据加载 ===
 
-  loadBooks: function() {
+  /** 从本地缓存加载数据，立即渲染（无异步，无闪屏） */
+  _loadBooksFromCache: function() {
     var allBooks = bookService.getBookList()
     var currentBook = bookService.getCurrentBook()
     var currentBookId = currentBook ? currentBook.id : ''
     var myOpenid = ''
     try { myOpenid = getApp().globalData.openid || '' } catch(e) {}
-    var self = this
 
+    var self = this
     var enriched = allBooks.map(function(book) {
       return self._enrichBook(book, currentBookId, myOpenid)
     })
 
     this.setData({ books: enriched, currentBookId: currentBookId, myOpenid: myOpenid })
     this._applyFilterAndSort()
-
-    // 后台同步云端成员数据（仅首次进入页面时触发一次）
-    if (!this._synced) {
-      this._synced = true
-      this._syncCloudMembers()
-    }
   },
 
-  _syncCloudMembers: function() {
+  /**
+   * 同步所有云端账本的成员数据
+   * 关键：所有 syncCloudMembers 全部完成后，只做一次 _loadBooksFromCache
+   * 避免多个云账本各自触发独立刷新导致多次 setData
+   */
+  _syncAllCloudMembers: function(onComplete) {
     try {
       var app = getApp()
-      if (!app || !app.globalData || !app.globalData.cloudReady) return
-    } catch (e) { return }
+      if (!app || !app.globalData || !app.globalData.cloudReady) {
+        onComplete && onComplete()
+        return
+      }
+    } catch (e) {
+      onComplete && onComplete()
+      return
+    }
 
     var allBooks = bookService.getBookList()
-    var self = this
+    var cloudBooks = allBooks.filter(function(b) { return b.cloud_id })
 
-    allBooks.forEach(function(book) {
-      if (book.cloud_id) {
-        bookService.syncCloudMembers(book.id)
-          .then(function(changed) {
-            // 同步完成后刷新一次列表（不再触发 _syncCloudMembers）
-            if (changed) {
-              var allBooks2 = bookService.getBookList()
-              var currentBook = bookService.getCurrentBook()
-              var currentBookId = currentBook ? currentBook.id : ''
-              var myOpenid = ''
-              try { myOpenid = getApp().globalData.openid || '' } catch(e) {}
-              var enriched = allBooks2.map(function(b) {
-                return self._enrichBook(b, currentBookId, myOpenid)
-              })
-              self.setData({ books: enriched, currentBookId: currentBookId, myOpenid: myOpenid })
-              self._applyFilterAndSort()
-            }
-          })
-          .catch(function() {})
+    if (cloudBooks.length === 0) {
+      onComplete && onComplete()
+      return
+    }
+
+    var self = this
+    var promises = cloudBooks.map(function(book) {
+      return bookService.syncCloudMembers(book.id)
+        .then(function(changed) { return changed })
+        .catch(function() { return false })
+    })
+
+    // 等全部同步完毕，只要有任何一本变了就统一刷新一次
+    Promise.all(promises).then(function(results) {
+      var anyChanged = results.some(function(c) { return c })
+      if (anyChanged) {
+        self._loadBooksFromCache()
       }
+      onComplete && onComplete()
     })
   },
 
@@ -126,7 +142,6 @@ Page({
     var isDeleted = book.status === 'deleted'
     var isArchived = book.status === 'archived'
 
-    // 只传递卡片显示需要的字段，避免 setData 过大
     return {
       id: book.id,
       name: book.name,
@@ -150,27 +165,42 @@ Page({
     }
   },
 
+  /**
+   * 排序：当前账本始终置顶，其余按选定规则排序
+   */
   _applyFilterAndSort: function() {
     var books = this.data.books
     var sortBy = this.data.sortBy
+    var currentBookId = this.data.currentBookId
 
-    var sorted = books.slice()
+    // 分离当前账本
+    var currentBook = null
+    var others = []
+    for (var i = 0; i < books.length; i++) {
+      if (books[i].id === currentBookId) {
+        currentBook = books[i]
+      } else {
+        others.push(books[i])
+      }
+    }
+
+    // 对非当前账本排序
     if (sortBy === 'updated') {
-      sorted.sort(function(a, b) {
+      others.sort(function(a, b) {
         var diff = (b.updated_at || 0) - (a.updated_at || 0)
         if (diff !== 0) return diff
-        // 相同 updated_at 时按 created_at 降序
         return (b.created_at || 0) - (a.created_at || 0)
       })
     } else {
-      sorted.sort(function(a, b) {
+      others.sort(function(a, b) {
         var diff = (b.created_at || 0) - (a.created_at || 0)
         if (diff !== 0) return diff
-        // 相同 created_at 时按名称排序
         return (a.name || '').localeCompare(b.name || '')
       })
     }
 
+    // 当前账本始终排第一
+    var sorted = currentBook ? [currentBook].concat(others) : others
     this.setData({ filteredBooks: sorted })
   },
 
@@ -227,7 +257,7 @@ Page({
           var result = bookService.deleteBook(id)
           if (result) {
             wx.showToast({ title: '已删除', icon: 'success' })
-            self.loadBooks()
+            self._loadBooksFromCache()
           } else {
             wx.showToast({ title: '仅创建者可删除', icon: 'none' })
           }
@@ -248,7 +278,7 @@ Page({
         if (res.confirm) {
           bookService.deleteBookLocal(id)
           wx.showToast({ title: '已删除', icon: 'success' })
-          self.loadBooks()
+          self._loadBooksFromCache()
         }
       }
     })
@@ -267,7 +297,7 @@ Page({
         if (res.confirm) {
           bookService.archiveBook(id)
           wx.showToast({ title: '已归档', icon: 'success' })
-          self.loadBooks()
+          self._loadBooksFromCache()
         }
       }
     })
@@ -279,7 +309,7 @@ Page({
 
     bookService.unarchiveBook(id)
     wx.showToast({ title: '已恢复', icon: 'success' })
-    self.loadBooks()
+    this._loadBooksFromCache()
   },
 
   // === 成员管理 ===
@@ -307,7 +337,7 @@ Page({
 
     var member = memberService.addShadowMember(this.data.memberPopupBookId, name.trim())
     if (member) {
-      this.loadBooks()
+      this._loadBooksFromCache()
       wx.showToast({ title: '已添加 ' + name, icon: 'success' })
     }
   },
