@@ -30,7 +30,7 @@ async function main() {
   const command = process.argv[2] || 'preview'
 
   log(`${BOLD}\n🚀 TripSplit 发布工具${RESET}`)
-  log(`${BOLD}   拼途记账 - 旅行分账小程序${RESET}\n`)
+  log(`${BOLD}   AA友账 - 旅行分账小程序${RESET}\n`)
 
   // 检查私钥
   if (!fs.existsSync(KEY_PATH)) {
@@ -85,7 +85,7 @@ async function main() {
     // 上传
     const pkg = JSON.parse(fs.readFileSync(path.join(PROJECT_DIR, 'package.json')).toString())
     const version = pkg.version || '1.0.0'
-    const desc = pkg.description || 'TripSplit 拼途记账'
+    const desc = pkg.description || 'AA友账'
 
     log(`[${GREEN}上传模式${RESET}] 上传到微信后台...`)
     log(`  版本: ${version}`)

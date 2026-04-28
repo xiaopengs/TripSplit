@@ -146,7 +146,7 @@ function ensurePackageJson() {
     const pkg = {
       name: 'tripsplit',
       version: '1.0.0',
-      description: '拼途记账 - 旅行分账小程序',
+      description: 'AA友账 - 旅行分账小程序',
       private: true,
       scripts: {
         test: 'node tests/run.js',
@@ -167,7 +167,7 @@ async function main() {
   const startTime = Date.now()
   
   log(`${BOLD}\n🚀 TripSplit 发布工具${RESET}`)
-  log(`${BOLD}   拼途记账 - 旅行分账小程序${RESET}\n`)
+  log(`${BOLD}   AA友账 - 旅行分账小程序${RESET}\n`)
 
   ensurePackageJson()
 

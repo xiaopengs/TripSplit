@@ -185,7 +185,7 @@ Page({
     const cloudId = book && book.cloud_id
 
     if (!bookId) {
-      return { title: '拼途记账', path: '/pages/index/index' }
+      return { title: 'AA友账', path: '/pages/index/index' }
     }
 
     const title = bookName ? `邀请你加入「${bookName}」一起记账` : '邀请你一起记账'

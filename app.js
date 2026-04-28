@@ -1,5 +1,5 @@
 /**
- * 拼途记账 - 小程序入口
+ * AA友账 - 小程序入口
  * 初始化全局数据、Store、云环境、网络监听
  */
 
@@ -17,7 +17,7 @@ App({
   },
 
   onLaunch() {
-    console.log('🧩 拼途记账 TripSplit launched')
+    console.log('🧩 AA友账 TripSplit launched')
 
     // 获取系统信息（兼容新旧 API）
     this.globalData.systemInfo = this._getSystemInfo()

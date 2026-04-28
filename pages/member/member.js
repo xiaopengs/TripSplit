@@ -52,7 +52,7 @@ Page({
     const bookName = this.data.bookName
 
     if (!bookId) {
-      return { title: '拼途记账', path: '/pages/index/index' }
+      return { title: 'AA友账', path: '/pages/index/index' }
     }
 
     // 使用 cloud_id 分享（本地 ID 在 B 端不存在）

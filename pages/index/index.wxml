@@ -16,13 +16,13 @@
             <view class="book-logo" wx:if="{{currentBook}}">
               <text class="book-logo-emoji">{{currentBook.cover_icon || '🧩'}}</text>
             </view>
-            <text class="book-name">{{currentBook.name || '拼途记账'}}</text>
+            <text class="book-name">{{currentBook.name || 'AA友账'}}</text>
             <text class="picker-arrow" wx:if="{{bookList.length > 1}}">▾</text>
           </view>
         </picker>
         <view class="book-picker" wx:else>
           <text class="book-logo-emoji">🧩</text>
-          <text class="book-name">拼途记账</text>
+          <text class="book-name">AA友账</text>
         </view>
         <text class="book-manage-link" bindtap="onManageBooks">账本管理</text>
       </view>

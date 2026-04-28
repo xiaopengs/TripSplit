@@ -1,7 +1,7 @@
 {
   "name": "tripsplit",
   "version": "1.0.0",
-  "description": "拼途记账 - 微信原生小程序旅行分账工具",
+  "description": "AA友账 - 微信原生小程序旅行分账工具",
   "private": true,
   "scripts": {
     "test": "node tests/run.js",
